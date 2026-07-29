@@ -1,84 +1,41 @@
-name: Import File 20 baseline
+name: File 20 Baseline Integrity
 
 on:
   pull_request:
     branches:
       - main
-    types:
-      - opened
-      - synchronize
-      - reopened
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  import-source:
-    if: github.head_ref == 'baseline/file-20-original-import'
+  validate-baseline:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out pull request branch
+      - name: Check out pull request
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
-          fetch-depth: 0
 
-      - name: Detect pending source import
-        id: preflight
-        shell: bash
-        run: |
-          if compgen -G '.source-upload/part-*.b64' > /dev/null; then
-            echo 'ready=true' >> "$GITHUB_OUTPUT"
-          else
-            echo 'ready=false' >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Reconstruct canonical Base64 payload
-        if: steps.preflight.outputs.ready == 'true'
+      - name: Verify repository boundaries
         shell: bash
         run: |
           set -euo pipefail
-          cat .source-upload/part-*.b64 > file-20-combined.b64
-          python3 - <<'PY'
-          from pathlib import Path
-
-          path = Path('file-20-combined.b64')
-          payload = path.read_text(encoding='utf-8')
-
-          # Deterministic transport correction, established by comparing the
-          # uploaded payload artifact with the canonical local package.
-          payload = payload[:4683] + 'R' + payload[4683:]
-          payload = payload[:8000] + payload[10000:]
-          payload = payload[:56425] + 'q' + payload[56425:]
-
-          if len(payload) != 66516:
-              raise SystemExit(f'Unexpected canonical Base64 length: {len(payload)}')
-
-          path.write_text(payload, encoding='utf-8')
-          PY
-
-      - name: Decode and verify exact ZIP
-        if: steps.preflight.outputs.ready == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p SOURCE-ARCHIVE
-          base64 --decode file-20-combined.b64 > SOURCE-ARCHIVE/20-sabri-unified-application-shell-1.0.0-FINAL.zip
-          sha256sum --check CHECKSUMS.sha256
-          unzip -t SOURCE-ARCHIVE/20-sabri-unified-application-shell-1.0.0-FINAL.zip
-
-      - name: Extract exact plugin source
-        if: steps.preflight.outputs.ready == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm -rf sabri-unified-application-shell
-          unzip -q SOURCE-ARCHIVE/20-sabri-unified-application-shell-1.0.0-FINAL.zip
+          test ! -d .source-upload
+          test -f SOURCE-ARCHIVE/20-sabri-unified-application-shell-1.0.0-FINAL.zip
           test -f sabri-unified-application-shell/sabri-unified-application-shell.php
 
-      - name: Validate imported source
-        if: steps.preflight.outputs.ready == 'true'
+      - name: Verify exact source package
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum --check CHECKSUMS.sha256
+          unzip -t SOURCE-ARCHIVE/20-sabri-unified-application-shell-1.0.0-FINAL.zip
+          rm -rf /tmp/file-20-extracted
+          mkdir -p /tmp/file-20-extracted
+          unzip -q SOURCE-ARCHIVE/20-sabri-unified-application-shell-1.0.0-FINAL.zip -d /tmp/file-20-extracted
+          diff -qr /tmp/file-20-extracted/sabri-unified-application-shell sabri-unified-application-shell
+
+      - name: Validate PHP and JavaScript syntax
         shell: bash
         run: |
           set -euo pipefail
@@ -86,15 +43,3 @@ jobs:
           test "$php_count" = '16'
           find sabri-unified-application-shell -type f -name '*.php' -print0 | xargs -0 -n1 php -l
           node --check sabri-unified-application-shell/assets/js/shell.js
-
-      - name: Commit exact package and extracted source
-        if: steps.preflight.outputs.ready == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm -rf .source-upload file-20-combined.b64
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add --all
-          git commit -m 'chore: import original File 20 source package'
-          git push origin HEAD:${{ github.head_ref }}
