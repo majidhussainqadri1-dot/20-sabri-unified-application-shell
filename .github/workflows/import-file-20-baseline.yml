@@ -24,11 +24,11 @@ jobs:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
 
-      - name: Detect pending source import
+      - name: Detect completed exact upload
         id: preflight
         shell: bash
         run: |
-          if compgen -G '.source-upload/part-*.b64' > /dev/null; then
+          if test -f '.source-upload/EXACT_READY'; then
             echo 'ready=true' >> "$GITHUB_OUTPUT"
           else
             echo 'ready=false' >> "$GITHUB_OUTPUT"
@@ -40,7 +40,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p SOURCE-ARCHIVE
-          cat .source-upload/part-*.b64 | base64 --decode > SOURCE-ARCHIVE/20-sabri-unified-application-shell-1.0.0-FINAL.zip
+          cat .source-upload/exact-*.b64 .source-upload/part-005a.b64 .source-upload/part-005b.b64 .source-upload/part-005c.b64 | base64 --decode > SOURCE-ARCHIVE/20-sabri-unified-application-shell-1.0.0-FINAL.zip
           sha256sum --check CHECKSUMS.sha256
           unzip -t SOURCE-ARCHIVE/20-sabri-unified-application-shell-1.0.0-FINAL.zip
 
