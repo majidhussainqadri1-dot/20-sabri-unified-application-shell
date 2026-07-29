@@ -1,4 +1,4 @@
-name: Import File 20 baseline
+name: Capture File 20 upload payload
 
 on:
   pull_request:
@@ -10,10 +10,10 @@ on:
       - reopened
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  import-source:
+  capture-payload:
     if: github.head_ref == 'baseline/file-20-original-import'
     runs-on: ubuntu-latest
 
@@ -24,53 +24,17 @@ jobs:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
 
-      - name: Detect completed exact upload
-        id: preflight
-        shell: bash
-        run: |
-          if test -f '.source-upload/EXACT_READY'; then
-            echo 'ready=true' >> "$GITHUB_OUTPUT"
-          else
-            echo 'ready=false' >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Reconstruct and verify exact ZIP
-        if: steps.preflight.outputs.ready == 'true'
+      - name: Combine uploaded package segments
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p SOURCE-ARCHIVE
-          cat .source-upload/exact-*.b64 .source-upload/part-005a.b64 .source-upload/part-005b.b64 .source-upload/part-005c.b64 | base64 --decode > SOURCE-ARCHIVE/20-sabri-unified-application-shell-1.0.0-FINAL.zip
-          sha256sum --check CHECKSUMS.sha256
-          unzip -t SOURCE-ARCHIVE/20-sabri-unified-application-shell-1.0.0-FINAL.zip
+          cat .source-upload/part-*.b64 > file-20-combined.b64
+          wc -c file-20-combined.b64
 
-      - name: Extract exact plugin source
-        if: steps.preflight.outputs.ready == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm -rf sabri-unified-application-shell
-          unzip -q SOURCE-ARCHIVE/20-sabri-unified-application-shell-1.0.0-FINAL.zip
-          test -f sabri-unified-application-shell/sabri-unified-application-shell.php
-
-      - name: Validate imported source
-        if: steps.preflight.outputs.ready == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          php_count="$(find sabri-unified-application-shell -type f -name '*.php' | wc -l | tr -d ' ')"
-          test "$php_count" = '16'
-          find sabri-unified-application-shell -type f -name '*.php' -print0 | xargs -0 -n1 php -l
-          node --check sabri-unified-application-shell/assets/js/shell.js
-
-      - name: Commit exact package and extracted source
-        if: steps.preflight.outputs.ready == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm -rf .source-upload
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add --all
-          git commit -m 'chore: import original File 20 source package'
-          git push origin HEAD:${{ github.head_ref }}
+      - name: Upload combined payload for integrity diagnosis
+        uses: actions/upload-artifact@v4
+        with:
+          name: file-20-combined-b64
+          path: file-20-combined.b64
+          if-no-files-found: error
+          retention-days: 1
