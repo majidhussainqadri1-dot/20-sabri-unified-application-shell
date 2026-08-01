@@ -32,6 +32,42 @@ final class CreateContract {
 		add_filter( 'body_class', array( __CLASS__, 'body_classes' ), 30 );
 	}
 
+	/** Verify classes and global producer functions are sourced by this package. */
+	private static function package_owned() {
+		if ( ! defined( 'SABRI_SHELL_PATH' ) || ! defined( 'SABRI_SHELL_FILE' ) ) {
+			return false;
+		}
+		$path = realpath( (string) SABRI_SHELL_PATH );
+		$file = realpath( (string) SABRI_SHELL_FILE );
+		if ( false === $path || false === $file || dirname( $file ) !== $path ) {
+			return false;
+		}
+		$prefix = rtrim( $path, '/\\' ) . DIRECTORY_SEPARATOR;
+		try {
+			foreach ( array( __CLASS__, SafeMode::class ) as $class_name ) {
+				$source = ( new \ReflectionClass( $class_name ) )->getFileName();
+				$source = is_string( $source ) ? realpath( $source ) : false;
+				if ( false === $source || 0 !== strpos( $source, $prefix ) ) {
+					return false;
+				}
+			}
+			foreach ( array( 'sabri_shell_create_contract_available', 'sabri_shell_create_visible_for_current_user' ) as $function ) {
+				if ( ! function_exists( $function ) ) {
+					return false;
+				}
+				$source = ( new \ReflectionFunction( $function ) )->getFileName();
+				$source = is_string( $source ) ? realpath( $source ) : false;
+				if ( false === $source || $source !== $file ) {
+					return false;
+				}
+			}
+		} catch ( \Throwable $error ) {
+			unset( $error );
+			return false;
+		}
+		return true;
+	}
+
 	/** Whether the exact package-owned public contract is available. */
 	public static function available() {
 		return defined( 'SABRI_SHELL_CREATE_CONTRACT_VERSION' )
@@ -40,8 +76,7 @@ final class CreateContract {
 			&& 'sabri-unified-application-shell' === SABRI_SHELL_CREATE_CONTRACT_OWNER
 			&& defined( 'SABRI_SHELL_CREATE_FUNCTIONS_OWNED' )
 			&& true === SABRI_SHELL_CREATE_FUNCTIONS_OWNED
-			&& function_exists( 'sabri_shell_create_contract_available' )
-			&& function_exists( 'sabri_shell_create_visible_for_current_user' )
+			&& self::package_owned()
 			&& ! SafeMode::disabled();
 	}
 
@@ -85,6 +120,9 @@ final class CreateContract {
 			 * @param array<string,mixed> $settings Current File 20 settings.
 			 */
 			return (bool) apply_filters( 'sabri_shell_can_show_create', $base_allowed, $user_id, $settings );
+		} catch ( \Throwable $error ) {
+			unset( $error );
+			return false;
 		} finally {
 			self::$resolving = false;
 		}
