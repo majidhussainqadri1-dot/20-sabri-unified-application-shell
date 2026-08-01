@@ -1,0 +1,74 @@
+/* File 20 corrective layout and File 22 Create-contract presentation. */
+
+.sabri-shell-create-contract-denied .sabri-shell-create-action {
+	display: none !important;
+}
+
+.sabri-shell-user-card > div {
+	display: grid;
+	gap: 4px;
+	min-width: 0;
+}
+
+.sabri-shell-user-card > div > strong,
+.sabri-shell-user-card > div > span {
+	display: block;
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+.sabri-shell-user-card > div > span {
+	color: var(--sabri-shell-muted);
+	font-size: 0.9em;
+}
+
+.sabri-shell-layout-ready .sabri-shell-content-column {
+	padding-block-start: max(12px, calc(var(--sabri-shell-gap, 24px) / 2));
+	scroll-margin-block-start: calc(var(--sabri-shell-admin-bar) + var(--sabri-shell-chrome-height) + 12px);
+}
+
+.sabri-hnf-managed-single .sabri-hnf-single-content,
+.sabri-hnf-managed-single .sabri-hnf-actions,
+.sabri-hnf-managed-single .sabri-hnf-comments {
+	box-sizing: border-box;
+	min-width: 0;
+	max-width: min(880px, 100%);
+	overflow-wrap: anywhere;
+}
+
+.sabri-hnf-managed-single .sabri-hnf-single-content :where(img, video, iframe, canvas, svg, table, pre) {
+	max-width: 100%;
+}
+
+.sabri-hnf-managed-single .sabri-hnf-single-content :where(table, pre) {
+	overflow-x: auto;
+}
+
+.sabri-hnf-managed-single :where(h1, h2, h3, h4, [id]) {
+	scroll-margin-block-start: calc(var(--sabri-shell-admin-bar) + var(--sabri-shell-chrome-height) + 16px);
+}
+
+@media (min-width: 1024px) {
+	.sabri-shell-primary-nav {
+		overflow-x: hidden;
+		scrollbar-width: none;
+	}
+
+	.sabri-shell-primary-nav::-webkit-scrollbar {
+		display: none;
+	}
+
+	.sabri-shell-primary-nav ul {
+		flex-wrap: wrap;
+		white-space: normal;
+	}
+}
+
+@media (max-width: 1023px) {
+	.sabri-hnf-managed-single .sabri-hnf-single-content,
+	.sabri-hnf-managed-single .sabri-hnf-actions,
+	.sabri-hnf-managed-single .sabri-hnf-comments {
+		width: 100%;
+		margin-inline: 0;
+	}
+}
