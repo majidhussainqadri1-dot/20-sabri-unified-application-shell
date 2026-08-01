@@ -56,14 +56,24 @@ spl_autoload_register(
 );
 
 /*
+ * File 22 performs a non-autoloading reflection check for the canonical File 20
+ * SafeMode class while registering its shell bridge. Resolve that package-owned
+ * class at plugin include time so active-plugin ordering cannot create a false
+ * missing-contract result.
+ */
+$sabri_shell_safe_mode_loaded = class_exists( 'Sabri\\UnifiedShell\\SafeMode' );
+
+/*
  * Exact optional File 20 Create producer contract consumed by File 22.
  *
  * The family is declared only when every marker and function name is wholly
- * unclaimed. A partial or foreign preclaim is deliberately left incomplete so
- * File 22's reflection-backed trust check fails closed instead of accepting a
- * mixed-owner contract.
+ * unclaimed and the package-owned SafeMode class is loadable. A partial or
+ * foreign preclaim is deliberately left incomplete so File 22's
+ * reflection-backed trust check fails closed instead of accepting a mixed-owner
+ * contract.
  */
-$sabri_shell_create_contract_unclaimed = ! defined( 'SABRI_SHELL_CREATE_CONTRACT_VERSION' )
+$sabri_shell_create_contract_unclaimed = $sabri_shell_safe_mode_loaded
+	&& ! defined( 'SABRI_SHELL_CREATE_CONTRACT_VERSION' )
 	&& ! defined( 'SABRI_SHELL_CREATE_CONTRACT_OWNER' )
 	&& ! defined( 'SABRI_SHELL_CREATE_FUNCTIONS_OWNED' )
 	&& ! function_exists( 'sabri_shell_create_contract_available' )
@@ -86,7 +96,7 @@ if ( $sabri_shell_create_contract_unclaimed ) {
 			&& Sabri\UnifiedShell\CreateContract::visible_for_current_user();
 	}
 }
-unset( $sabri_shell_create_contract_unclaimed );
+unset( $sabri_shell_safe_mode_loaded, $sabri_shell_create_contract_unclaimed );
 
 register_activation_hook( __FILE__, array( 'Sabri\\UnifiedShell\\Plugin', 'activate' ) );
 register_deactivation_hook( __FILE__, array( 'Sabri\\UnifiedShell\\Plugin', 'deactivate' ) );
