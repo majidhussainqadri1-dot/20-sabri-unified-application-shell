@@ -37,9 +37,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat .corrective-upload/part-*.b64 | base64 --decode > /tmp/20-sabri-unified-application-shell-1.1.0-RC1.zip
-          echo 'afa8c7e9fb1586aa8e3b872fe59e26c4133fad1fb8f1ee776183ae1adb0a3d15  /tmp/20-sabri-unified-application-shell-1.1.0-RC1.zip' | sha256sum --check
-          unzip -t /tmp/20-sabri-unified-application-shell-1.1.0-RC1.zip
+          output='/tmp/20-sabri-unified-application-shell-1.1.0-RC1.zip'
+          expected='afa8c7e9fb1586aa8e3b872fe59e26c4133fad1fb8f1ee776183ae1adb0a3d15'
+          if compgen -G '.corrective-upload/exact-*.b64' > /dev/null; then
+            chunks=(.corrective-upload/exact-*.b64)
+          else
+            chunks=(.corrective-upload/part-*.b64)
+          fi
+          cat "${chunks[@]}" | base64 --decode > "$output"
+          actual="$(sha256sum "$output" | awk '{print $1}')"
+          echo "Candidate SHA-256: $actual"
+          test "$actual" = "$expected"
+          unzip -t "$output"
       - name: Replace source from verified candidate
         shell: bash
         run: |
