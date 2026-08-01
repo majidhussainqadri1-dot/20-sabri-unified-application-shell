@@ -24,6 +24,11 @@ final class CreateContract {
 
 	/** Register presentation evidence for the exact current-user decision. */
 	public static function register() {
+		// File 22 verifies the SafeMode class without autoloading. Eagerly resolve
+		// the package-owned class before File 22 registers its shell bridge.
+		if ( ! class_exists( SafeMode::class ) ) {
+			return;
+		}
 		add_filter( 'body_class', array( __CLASS__, 'body_classes' ), 30 );
 	}
 
