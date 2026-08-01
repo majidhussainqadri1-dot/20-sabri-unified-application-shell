@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace {
 	define( 'ABSPATH', __DIR__ . '/' );
+	define( 'SABRI_SHELL_PATH', dirname( __DIR__ ) . DIRECTORY_SEPARATOR );
+	define( 'SABRI_SHELL_FILE', __FILE__ );
 	define( 'SABRI_SHELL_CREATE_CONTRACT_VERSION', '1.0.1' );
 	define( 'SABRI_SHELL_CREATE_CONTRACT_OWNER', 'sabri-unified-application-shell' );
 	define( 'SABRI_SHELL_CREATE_FUNCTIONS_OWNED', true );
@@ -24,6 +26,7 @@ namespace {
 		if ( 'deny' === $GLOBALS['shell_filter_mode'] ) { return false; }
 		if ( 'allow' === $GLOBALS['shell_filter_mode'] ) { return true; }
 		if ( 'recursive' === $GLOBALS['shell_filter_mode'] ) { return sabri_shell_create_visible_for_current_user(); }
+		if ( 'throw' === $GLOBALS['shell_filter_mode'] ) { throw new \RuntimeException( 'Adapter failure' ); }
 		return $value;
 	}
 	function sabri_shell_create_contract_available() {
@@ -73,6 +76,8 @@ namespace Sabri\UnifiedShell {
 
 	$GLOBALS['shell_filter_mode'] = 'recursive';
 	$assert( ! CreateContract::visible_for_current_user(), 'Recursive visibility resolution fails closed.' );
+	$GLOBALS['shell_filter_mode'] = 'throw';
+	$assert( ! CreateContract::visible_for_current_user(), 'Adapter/filter exceptions fail closed.' );
 	$GLOBALS['shell_filter_mode'] = 'pass';
 
 	SafeMode::$disabled = true;
@@ -96,15 +101,19 @@ namespace Sabri\UnifiedShell {
 
 	$root = dirname( __DIR__ );
 	$main = file_get_contents( $root . '/sabri-unified-application-shell.php' );
+	$contract = file_get_contents( $root . '/includes/class-create-contract.php' );
 	$css = file_get_contents( $root . '/assets/css/shell-corrective-1.1.1.css' );
 	$js = file_get_contents( $root . '/assets/js/shell-corrective-1.1.1.js' );
 	$assert( false !== strpos( $main, "SABRI_SHELL_CREATE_CONTRACT_VERSION', '1.0.1" ), 'Main package declares exact File 22 contract version.' );
 	$assert( false !== strpos( $main, "SABRI_SHELL_CREATE_CONTRACT_OWNER', 'sabri-unified-application-shell" ), 'Main package declares canonical owner.' );
 	$assert( false !== strpos( $main, 'SABRI_SHELL_CREATE_FUNCTIONS_OWNED' ), 'Main package declares function ownership.' );
+	$assert( false !== strpos( $main, "class_exists( 'Sabri\\\\UnifiedShell\\\\SafeMode' )" ), 'Canonical bootstrap eagerly resolves SafeMode before File 22 reflection.' );
 	$assert( false !== strpos( $main, 'CreateContract::register()' ) && false !== strpos( $main, 'LayoutCorrection::register()' ), 'Corrective services register from canonical bootstrap.' );
+	$assert( false !== strpos( $contract, 'ReflectionClass' ) && false !== strpos( $contract, 'ReflectionFunction' ), 'Contract verifies package-source ownership.' );
+	$assert( false !== strpos( $contract, 'catch ( \\Throwable $error )' ), 'Contract fails closed on adapter/filter exceptions.' );
 	$assert( false !== strpos( $css, 'flex-wrap: wrap' ) && false !== strpos( $css, '.sabri-shell-user-card > div' ), 'Navigation wrap and user-card separation are present.' );
 	$assert( false !== strpos( $js, 'MutationObserver' ) && false !== strpos( $js, 'sabri-hnf-single-content' ), 'Bounded managed-single target recovery is present.' );
-	$assert( false === strpos( $js, 'appendChild(' ) && false === strpos( $js, 'replaceChild(' ), 'Correction does not reparent theme or companion DOM.' );
+	$assert( false === strpos( $js, 'appendChild(' ) && false === strpos( $js, 'replaceChild(' ) && false === strpos( $js, 'insertBefore(' ), 'Correction does not reparent theme or companion DOM.' );
 
 	if ( $failures ) {
 		fwrite( STDERR, "File20 Create/layout correction: {$passed} PASS, " . count( $failures ) . " FAIL\n- " . implode( "\n- ", $failures ) . "\n" );
