@@ -36,8 +36,11 @@
 			return false;
 		}
 
+		// A managed single publication must have exactly one File 20 content
+		// column. Remove only File 20's annotation from stale candidates; never
+		// move, replace, or delete theme/companion nodes.
 		document.querySelectorAll('.sabri-shell-content-column[data-sabri-shell-content-column="true"]').forEach(function (candidate) {
-			if (candidate !== target && candidate.contains(target)) {
+			if (candidate !== target) {
 				candidate.classList.remove('sabri-shell-content-column');
 				candidate.removeAttribute('data-sabri-shell-content-column');
 			}
