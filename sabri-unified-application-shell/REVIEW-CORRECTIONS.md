@@ -19,7 +19,8 @@
 | Private actions shown publicly | Messages and Notifications enforce logged-in visibility. |
 | Generic/duplicate Notifications | Uses File 19 bell and suppresses its duplicate floating output for shell requests. |
 | Wrong doctor/clinic data model | Consumes File 03 approved projection and directory-eligibility contracts; direct queries to non-owned Membership Core tables are removed. |
-| Stale role/meta authority and public-contact leakage | File 00 current assertions govern publishing; File 03 governs public doctor eligibility and explicit phone/WhatsApp consent. |
+| Stale role/meta authority and public-contact leakage | File 00 current assertions govern publishing; File 03 governs public doctor eligibility and explicit phone/WhatsApp consent. Legacy role/meta fallbacks now fail closed. |
+| Combined Network/Messages destination | File 20 prefers a dedicated File 17 `messages_url()`/page-map contract and uses the shared Network URL only as a compatibility fallback. |
 | Duplicate/weak verified-doctor panel | Verification is checked authoritatively and profiles are linked. |
 | Duplicate Home feed | Detects authoritative platform/File 04/File 21 feed shortcodes before fallback insertion. |
 | News fallback to Home | Removed; unresolved News remains hidden. |
@@ -35,7 +36,7 @@
 - PHP syntax for every plugin PHP file;
 - JavaScript syntax for `assets/js/shell.js`;
 - behavioral regression suite in `tests/run.php`;
-- adversarial File 00 suspension/2FA and File 03 profile/contact-consent regression matrix;
+- adversarial File 00 suspension/2FA, missing-authority fail-closed, and File 03 profile/contact-consent regression matrix;
 - static proof that File 20 contains no direct queries to File 00-owned or nonexistent professional/clinic tables;
 - CSS brace balance;
 - prohibited-pattern scans for unsafe DOM movement and the core admin composer;

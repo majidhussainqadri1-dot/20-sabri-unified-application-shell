@@ -87,6 +87,8 @@ final class Integrations {
 			'complete'      => array( array( 'sa_page_map', 'complete' ) ),
 			'forgot'        => array( array( 'sa_page_map', 'forgot' ) ),
 			'create'        => array( array( 'snp_page_map', 'publish' ) ),
+			'network'       => array( array( 'sn_page_map', 'network' ) ),
+			'messages'      => array( array( 'sn_page_map', 'messages' ) ),
 		);
 
 		return apply_filters( 'sabri_shell_page_contracts', $contracts );
@@ -229,7 +231,19 @@ final class Integrations {
 				return (string) $url;
 			}
 		}
-		if ( in_array( $key, array( 'network', 'messages' ), true ) && class_exists( 'SN_Activator' ) && is_callable( array( 'SN_Activator', 'network_url' ) ) ) {
+		if ( 'messages' === $key && class_exists( 'SN_Activator' ) && is_callable( array( 'SN_Activator', 'messages_url' ) ) ) {
+			$url = \SN_Activator::messages_url();
+			if ( $url ) {
+				return (string) $url;
+			}
+		}
+		if ( 'network' === $key && class_exists( 'SN_Activator' ) && is_callable( array( 'SN_Activator', 'network_url' ) ) ) {
+			$url = \SN_Activator::network_url();
+			if ( $url ) {
+				return (string) $url;
+			}
+		}
+		if ( 'messages' === $key && class_exists( 'SN_Activator' ) && is_callable( array( 'SN_Activator', 'network_url' ) ) ) {
 			$url = \SN_Activator::network_url();
 			if ( $url ) {
 				return (string) $url;
@@ -329,13 +343,7 @@ final class Integrations {
 			return 'administrator' === ( $assertions['account_class'] ?? '' ) && user_can( $user_id, 'manage_options' );
 		}
 
-		if ( self::is_founder( $user_id ) ) {
-			return true;
-		}
-		if ( function_exists( 'smc_is_trusted_publisher' ) && smc_is_trusted_publisher( $user_id ) ) {
-			return true;
-		}
-		return (bool) get_user_meta( $user_id, '_smc_trusted_publisher', true );
+		return false;
 	}
 
 	/**
@@ -364,14 +372,7 @@ final class Integrations {
 			return 'doctor' === ( $assertions['membership_type'] ?? '' ) && ( ! empty( $assertions['can_practice'] ) || ! empty( $assertions['can_publish'] ) );
 		}
 
-		if ( get_user_meta( $user_id, '_smc_doctor_verified', true ) ) {
-			return true;
-		}
-		if ( class_exists( 'SPD_Helpers' ) && is_callable( array( 'SPD_Helpers', 'verification_status' ) ) && 'verified' === \SPD_Helpers::verification_status( $user_id ) ) {
-			return true;
-		}
-		$user = get_userdata( $user_id );
-		return $user && (bool) array_intersect( self::verified_doctor_role_candidates(), (array) $user->roles );
+		return false;
 	}
 
 	/**
@@ -400,10 +401,7 @@ final class Integrations {
 			return 'administrator' === ( $assertions['account_class'] ?? '' ) && user_can( $user_id, 'manage_options' );
 		}
 
-		if ( user_can( $user_id, 'manage_options' ) || self::is_trusted_publisher( $user_id ) ) {
-			return true;
-		}
-		return self::is_verified_doctor( $user_id ) && ( user_can( $user_id, 'edit_posts' ) || user_can( $user_id, 'smc_submit_knowledge' ) );
+		return false;
 	}
 
 	/**
@@ -433,10 +431,11 @@ final class Integrations {
 			}
 		} else {
 			$assertions = self::membership_assertions( $user_id );
-			if ( ! $founder && ! empty( $assertions ) ) {
-				if ( ! empty( $assertions['_contract_error'] ) || ! empty( $assertions['suspended'] ) || empty( $assertions['approved'] ) || 'doctor' !== ( $assertions['membership_type'] ?? '' ) || empty( $assertions['public_profile_allowed'] ) ) {
-					return array();
-				}
+			if ( empty( $assertions ) || ! empty( $assertions['_contract_error'] ) || ! empty( $assertions['suspended'] ) || empty( $assertions['approved'] ) ) {
+				return array();
+			}
+			if ( ! $founder && ( 'doctor' !== ( $assertions['membership_type'] ?? '' ) || empty( $assertions['public_profile_allowed'] ) ) ) {
+				return array();
 			}
 		}
 
@@ -481,7 +480,7 @@ final class Integrations {
 		if ( class_exists( 'SPD_Helpers' ) && is_callable( array( 'SPD_Helpers', 'can_show_contact' ) ) ) {
 			$contact_allowed = (bool) \SPD_Helpers::can_show_contact( $user_id, $founder );
 		}
-		$contact_allowed = (bool) apply_filters( 'sabri_shell_public_contact_allowed', $contact_allowed, $user_id, $data );
+		$contact_allowed = $contact_allowed && (bool) apply_filters( 'sabri_shell_public_contact_allowed', true, $user_id, $data );
 		if ( $contact_allowed ) {
 			$data['phone']    = (string) ( $approved_fields['phone'] ?? '' );
 			$data['whatsapp'] = (string) ( $approved_fields['whatsapp'] ?? '' );

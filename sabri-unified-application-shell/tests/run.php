@@ -156,6 +156,18 @@ $GLOBALS['test_public_contact'][11] = false;
 $raw_profile_contact = Integrations::doctor_public_data( 11 );
 $assert( '' === $raw_profile_contact['phone'] && '' === $raw_profile_contact['whatsapp'], 'Raw Membership profile contact never becomes public data without the File 03 consent contract.' );
 
+
+$GLOBALS['test_users'][12] = new WP_User( 12, array( 'sabri_doctor_verified' ), 'Stale Legacy Doctor' );
+$GLOBALS['test_user_meta'][12]['_smc_doctor_verified'] = 1;
+$GLOBALS['test_user_meta'][12]['_smc_trusted_publisher'] = 1;
+$GLOBALS['test_user_caps'][12]['edit_posts'] = true;
+$GLOBALS['test_membership_assertions'][12] = array();
+$GLOBALS['test_directory_eligible'][12] = false;
+$assert( ! Integrations::is_verified_doctor( 12 ), 'Legacy verified metadata cannot substitute for File 00 and File 03 authority.' );
+$assert( ! Integrations::is_trusted_publisher( 12 ), 'Legacy trusted-publisher metadata cannot substitute for current File 00 assertions.' );
+$assert( ! Integrations::can_publish( 12 ), 'Composer access fails closed when the identity authority is unavailable.' );
+$assert( array() === Integrations::doctor_public_data( 12 ), 'Public doctor data fails closed when both approved File 03 projection and valid File 00 assertions are unavailable.' );
+
 if ( $failures ) {
 	echo "\n" . count( $failures ) . " test(s) failed.\n";
 	exit( 1 );
