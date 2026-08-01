@@ -13,7 +13,11 @@
 		if (!element || element === document.body || element === document.documentElement) {
 			return false;
 		}
-		if (element.matches('.wp-site-blocks, #page, .site, [data-sabri-shell-component]') || element.closest('[data-sabri-shell-component]')) {
+		if (
+			element.matches('.wp-site-blocks, #page, .site, [data-sabri-shell-component]') ||
+			element.closest('[data-sabri-shell-component]') ||
+			element.querySelector('[data-sabri-shell-component]')
+		) {
 			return false;
 		}
 		return true;
@@ -27,8 +31,14 @@
 		if (!managed) {
 			return null;
 		}
-		var target = managed.closest(selectors);
-		return safeTarget(target) ? target : null;
+		var node = managed.parentElement;
+		while (node && node !== document.body && node !== document.documentElement) {
+			if (node.matches(selectors) && safeTarget(node)) {
+				return node;
+			}
+			node = node.parentElement;
+		}
+		return null;
 	}
 
 	function applyTarget(target) {
