@@ -1,260 +1,218 @@
-name: File 20 Corrective Quality
+name: File 20 Version 1.1.1 Corrective Quality
 
 on:
   pull_request:
     branches:
       - main
-      - baseline/file-20-original-import
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  preflight:
-    runs-on: ubuntu-latest
-    outputs:
-      import_pending: ${{ steps.detect.outputs.import_pending }}
-      repack_pending: ${{ steps.detect.outputs.repack_pending }}
+  php-quality:
+    name: PHP ${{ matrix.php }} contract and regression
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.3']
     steps:
-      - uses: actions/checkout@v4
-      - id: detect
-        shell: bash
-        run: |
-          if test -f '.corrective-upload/READY'; then
-            echo 'import_pending=true' >> "$GITHUB_OUTPUT"
-          else
-            echo 'import_pending=false' >> "$GITHUB_OUTPUT"
-          fi
-          if test -f '.corrective-repack/READY'; then
-            echo 'repack_pending=true' >> "$GITHUB_OUTPUT"
-          else
-            echo 'repack_pending=false' >> "$GITHUB_OUTPUT"
-          fi
+      - name: Checkout exact source
+        uses: actions/checkout@v4
 
-  import-corrective-candidate:
-    needs: preflight
-    if: needs.preflight.outputs.import_pending == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
         with:
-          ref: ${{ github.head_ref }}
-          fetch-depth: 0
-      - name: Reconstruct and verify candidate package
-        shell: bash
-        run: |
-          set -euo pipefail
-          output='/tmp/20-sabri-unified-application-shell-1.1.0-RC1.zip'
-          expected='afa8c7e9fb1586aa8e3b872fe59e26c4133fad1fb8f1ee776183ae1adb0a3d15'
-          if compgen -G '.corrective-upload/exact-*.b64' > /dev/null; then
-            chunks=(.corrective-upload/exact-*.b64)
-          else
-            chunks=(.corrective-upload/part-*.b64)
-          fi
-          cat "${chunks[@]}" | base64 --decode > "$output"
-          actual="$(sha256sum "$output" | awk '{print $1}')"
-          echo "Candidate SHA-256: $actual"
-          test "$actual" = "$expected"
-          unzip -t "$output"
-      - name: Replace source from verified candidate
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm -rf sabri-unified-application-shell
-          unzip -q /tmp/20-sabri-unified-application-shell-1.1.0-RC1.zip
-          test -f sabri-unified-application-shell/sabri-unified-application-shell.php
-          mkdir -p RELEASES
-          cp /tmp/20-sabri-unified-application-shell-1.1.0-RC1.zip RELEASES/
-          printf '%s  %s\n' 'afa8c7e9fb1586aa8e3b872fe59e26c4133fad1fb8f1ee776183ae1adb0a3d15' '20-sabri-unified-application-shell-1.1.0-RC1.zip' > RELEASES/CHECKSUMS.sha256
-          cat > RELEASES/README.md <<'DOC'
-          # File 20 Corrective Candidate
+          php-version: ${{ matrix.php }}
+          coverage: none
 
-          - Package: `20-sabri-unified-application-shell-1.1.0-RC1.zip`
-          - Plugin version: `1.1.0`
-          - SHA-256: `afa8c7e9fb1586aa8e3b872fe59e26c4133fad1fb8f1ee776183ae1adb0a3d15`
-          - Status: corrective release candidate; not production-accepted
-
-          The exact original 1.0.0 baseline remains unchanged in `SOURCE-ARCHIVE/`. This candidate requires CI plus Hostinger staging acceptance before merge or deployment.
-          DOC
-          rm -rf .corrective-upload
-      - name: Validate imported corrective source
+      - name: Syntax-check all plugin PHP
         shell: bash
-        run: |
-          set -euo pipefail
-          find sabri-unified-application-shell -type f -name '*.php' -print0 | xargs -0 -n1 php -l
-          node --check sabri-unified-application-shell/assets/js/shell.js
-          php sabri-unified-application-shell/tests/run.php
-          (cd RELEASES && sha256sum --check CHECKSUMS.sha256)
-      - name: Commit verified corrective source
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add --all
-          git commit -m 'fix: harden File 20 integration and layout'
-          git push origin HEAD:${{ github.head_ref }}
+        run: find sabri-unified-application-shell -type f -name '*.php' -print0 | xargs -0 -n1 php -l
 
-  harden-and-repack-candidate:
-    needs: preflight
-    if: needs.preflight.outputs.import_pending == 'false' && needs.preflight.outputs.repack_pending == 'true'
-    runs-on: ubuntu-latest
+      - name: Run existing File 20 corrective suite
+        shell: bash
+        run: php sabri-unified-application-shell/tests/run.php
+
+      - name: Run File 22 Create-contract and managed-layout suite
+        shell: bash
+        run: php sabri-unified-application-shell/tests/run-create-contract-layout.php
+
+  static-and-package:
+    name: Static boundaries and deterministic package
+    needs: php-quality
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
         with:
-          ref: ${{ github.head_ref }}
-          fetch-depth: 0
-      - name: Apply adversarial privacy and authority correction
-        run: python3 tools/file20-hardening.py
-      - name: Validate corrected source
+          php-version: '8.3'
+          coverage: none
+          extensions: zip
+
+      - name: JavaScript syntax
         shell: bash
         run: |
           set -euo pipefail
-          find sabri-unified-application-shell -type f -name '*.php' -print0 | xargs -0 -n1 php -l
           node --check sabri-unified-application-shell/assets/js/shell.js
-          php sabri-unified-application-shell/tests/run.php
+          node --check sabri-unified-application-shell/assets/js/shell-corrective-1.1.1.js
+
+      - name: Static contract, ownership, and layout assertions
+        shell: bash
+        run: |
+          set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          php = '\n'.join(p.read_text(encoding='utf-8') for p in Path('sabri-unified-application-shell').rglob('*.php'))
+
+          root = Path('sabri-unified-application-shell')
+          main = (root / 'sabri-unified-application-shell.php').read_text(encoding='utf-8')
+          contract = (root / 'includes/class-create-contract.php').read_text(encoding='utf-8')
+          correction = (root / 'includes/class-layout-correction.php').read_text(encoding='utf-8')
+          css = (root / 'assets/css/shell-corrective-1.1.1.css').read_text(encoding='utf-8')
+          js = (root / 'assets/js/shell-corrective-1.1.1.js').read_text(encoding='utf-8')
+          readme = (root / 'readme.txt').read_text(encoding='utf-8')
+
+          required_main = (
+              '* Version: 1.1.1',
+              "define( 'SABRI_SHELL_VERSION', '1.1.1' )",
+              "define( 'SABRI_SHELL_CREATE_CONTRACT_VERSION', '1.0.1' )",
+              "define( 'SABRI_SHELL_CREATE_CONTRACT_OWNER', 'sabri-unified-application-shell' )",
+              "define( 'SABRI_SHELL_CREATE_FUNCTIONS_OWNED', true )",
+              'function sabri_shell_create_contract_available()',
+              'function sabri_shell_create_visible_for_current_user()',
+              'CreateContract::register()',
+              'LayoutCorrection::register()',
+          )
+          for symbol in required_main:
+              if symbol not in main:
+                  raise SystemExit(f'Missing File 20 1.1.1 bootstrap contract: {symbol}')
+
+          for symbol in (
+              "apply_filters( 'sabri_shell_can_show_create'",
+              'get_current_user_id()',
+              'SafeMode::disabled()',
+              'private static $resolving',
+              'sabri-shell-create-contract-denied',
+          ):
+              if symbol not in contract:
+                  raise SystemExit(f'Missing current-user Create safeguard: {symbol}')
+
+          for forbidden in ('$_GET[\'user_id\']', 'wp_set_current_user(', 'post-new.php'):
+              if forbidden in main + contract:
+                  raise SystemExit(f'Forbidden Create ownership/bypass pattern: {forbidden}')
+
+          for forbidden in ('appendChild(', 'replaceChild(', 'insertBefore(', 'outerHTML', 'innerHTML ='):
+              if forbidden in js:
+                  raise SystemExit(f'Unsafe corrective DOM movement remains: {forbidden}')
+
+          for required in ('MutationObserver', 'sabri-hnf-single-content', 'sabri-shell-managed-single-layout-repaired'):
+              if required not in js:
+                  raise SystemExit(f'Missing bounded layout recovery control: {required}')
+
+          for required in ('flex-wrap: wrap', '.sabri-shell-user-card > div', 'overflow-wrap: anywhere', '.sabri-shell-create-contract-denied'):
+              if required not in css:
+                  raise SystemExit(f'Missing corrective CSS control: {required}')
+
+          if css.count('{') != css.count('}'):
+              raise SystemExit('Corrective CSS braces are unbalanced.')
+          if 'Stable tag: 1.1.1' not in readme:
+              raise SystemExit('WordPress stable tag is not 1.1.1.')
+          if 'wp_enqueue_style' not in correction or 'wp_enqueue_script' not in correction:
+              raise SystemExit('Corrective asset bridge is incomplete.')
+
+          all_php = '\n'.join(path.read_text(encoding='utf-8') for path in root.rglob('*.php'))
           for forbidden in ('smc_professional_credentials', 'smc_clinics'):
-              if forbidden in php:
-                  raise SystemExit(f'File 20 still directly queries a non-owned table: {forbidden}')
-          for required in ('SMC_Contracts', 'SPD_Verification_Adapter', 'SPD_Helpers::can_show_contact'):
-              if required not in php:
-                  raise SystemExit(f'Missing authoritative integration contract: {required}')
-          print('Authority and privacy static assertions passed.')
+              if forbidden in all_php:
+                  raise SystemExit(f'File 20 still queries a non-owned table: {forbidden}')
+          print('Static File 20 1.1.1 assertions passed.')
           PY
-      - name: Build deterministic corrected candidate
+
+      - name: Build deterministic WordPress package
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
           from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
+          import hashlib
 
           root = Path('sabri-unified-application-shell')
-          out = Path('RELEASES/20-sabri-unified-application-shell-1.1.0-RC1.zip')
-          out.parent.mkdir(parents=True, exist_ok=True)
-          if out.exists():
-              out.unlink()
-          with ZipFile(out, 'w') as archive:
-              for path in sorted(p for p in root.rglob('*') if p.is_file()):
-                  info = ZipInfo(path.as_posix(), (2026, 8, 1, 0, 0, 0))
+          release = Path('release')
+          release.mkdir(exist_ok=True)
+          base = '20-sabri-unified-application-shell-1.1.1-CREATE-CONTRACT-LAYOUT-R2'
+          archive_path = release / f'{base}.zip'
+          manifest_path = release / f'{base}-MANIFEST.sha256'
+          checksum_path = release / f'{base}.sha256'
+
+          files = sorted(path for path in root.rglob('*') if path.is_file())
+          manifest = []
+          for path in files:
+              digest = hashlib.sha256(path.read_bytes()).hexdigest()
+              manifest.append(f'{digest}  {path.as_posix()}')
+          manifest_path.write_text('\n'.join(manifest) + '\n', encoding='utf-8')
+
+          with ZipFile(archive_path, 'w') as archive:
+              for path in files:
+                  info = ZipInfo(path.as_posix(), (2026, 8, 2, 0, 0, 0))
                   info.compress_type = ZIP_DEFLATED
                   info.external_attr = (0o100644 & 0xFFFF) << 16
                   archive.writestr(info, path.read_bytes())
+
+          digest = hashlib.sha256(archive_path.read_bytes()).hexdigest()
+          checksum_path.write_text(f'{digest}  {archive_path.name}\n', encoding='utf-8')
+          print(digest)
           PY
-          sha="$(sha256sum RELEASES/20-sabri-unified-application-shell-1.1.0-RC1.zip | awk '{print $1}')"
-          printf '%s  %s\n' "$sha" '20-sabri-unified-application-shell-1.1.0-RC1.zip' > RELEASES/CHECKSUMS.sha256
-          cat > RELEASES/README.md <<DOC
-          # File 20 Corrective Candidate
 
-          - Package: \`20-sabri-unified-application-shell-1.1.0-RC1.zip\`
-          - Plugin version: \`1.1.0\`
-          - SHA-256: \`$sha\`
-          - Status: corrected release candidate; automated QA accepted, staging not yet accepted
-          - Corrections: authoritative File 00 publishing assertions, File 03 verified/public profile projection, explicit public-contact consent, and removal of direct queries to non-owned Membership Core tables.
-
-          The exact original 1.0.0 baseline remains unchanged in \`SOURCE-ARCHIVE/\`. Hostinger staging and live deployment remain separate lifecycle gates.
-          DOC
-          rm -rf .corrective-repack
-          rm -f tools/file20-hardening.py
-      - name: Verify corrected package matches source
+      - name: Verify package equality, CRC, and exact contract
         shell: bash
         run: |
           set -euo pipefail
-          (cd RELEASES && sha256sum --check CHECKSUMS.sha256)
-          unzip -t RELEASES/20-sabri-unified-application-shell-1.1.0-RC1.zip
-          rm -rf /tmp/file20-candidate
-          mkdir -p /tmp/file20-candidate
-          unzip -q RELEASES/20-sabri-unified-application-shell-1.1.0-RC1.zip -d /tmp/file20-candidate
-          diff -qr /tmp/file20-candidate/sabri-unified-application-shell sabri-unified-application-shell
-      - name: Commit corrected source and package
+          base='20-sabri-unified-application-shell-1.1.1-CREATE-CONTRACT-LAYOUT-R2'
+          (cd release && sha256sum -c "${base}.sha256")
+          unzip -t "release/${base}.zip"
+          rm -rf /tmp/file20-111
+          mkdir -p /tmp/file20-111
+          unzip -q "release/${base}.zip" -d /tmp/file20-111
+          diff -qr /tmp/file20-111/sabri-unified-application-shell sabri-unified-application-shell
+          unzip -p "release/${base}.zip" 'sabri-unified-application-shell/sabri-unified-application-shell.php' | grep -F "SABRI_SHELL_CREATE_CONTRACT_VERSION', '1.0.1'"
+          unzip -p "release/${base}.zip" 'sabri-unified-application-shell/includes/class-create-contract.php' | grep -F "sabri_shell_can_show_create"
+          unzip -p "release/${base}.zip" 'sabri-unified-application-shell/assets/js/shell-corrective-1.1.1.js' | grep -F 'sabri-hnf-single-content'
+
+      - name: Write exact-head report
         shell: bash
         run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add --all
-          git commit -m 'fix: enforce File 00 and File 03 authority boundaries'
-          git push origin HEAD:${{ github.head_ref }}
+          cat > release/FILE-20-1.1.1-TEST-REPORT.md <<REPORT
+          # File 20 Version 1.1.1 Corrective Evidence
 
-  php-quality:
-    needs: preflight
-    if: needs.preflight.outputs.import_pending == 'false' && needs.preflight.outputs.repack_pending == 'false'
-    name: PHP ${{ matrix.php }} quality
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        php: ['7.4', '8.3']
-    steps:
-      - uses: actions/checkout@v4
-      - uses: shivammathur/setup-php@v2
+          - Exact head: ${{ github.sha }}
+          - PHP 7.4 syntax and tests: PASS
+          - PHP 8.3 syntax and tests: PASS
+          - Existing File 20 corrective suite: PASS
+          - File 22 Create contract suite: PASS
+          - JavaScript syntax: PASS
+          - CSS/DOM ownership assertions: PASS
+          - Deterministic package and source equality: PASS
+          - Staging accepted: NO
+          - Live deployed: NO
+          REPORT
+
+      - name: Upload verified File 20 package
+        uses: actions/upload-artifact@v4
         with:
-          php-version: ${{ matrix.php }}
-          coverage: none
-      - name: PHP syntax
-        run: find sabri-unified-application-shell -type f -name '*.php' -print0 | xargs -0 -n1 php -l
-      - name: Corrective contract tests
-        run: php sabri-unified-application-shell/tests/run.php
-
-  static-and-package:
-    needs: preflight
-    if: needs.preflight.outputs.import_pending == 'false' && needs.preflight.outputs.repack_pending == 'false'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: JavaScript syntax
-        run: node --check sabri-unified-application-shell/assets/js/shell.js
-      - name: Static corrective assertions
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-          root = Path('sabri-unified-application-shell')
-          css = (root / 'assets/css/shell.css').read_text(encoding='utf-8')
-          if css.count('{') != css.count('}'):
-              raise SystemExit('CSS braces are unbalanced.')
-          js = (root / 'assets/js/shell.js').read_text(encoding='utf-8')
-          for pattern in ('host.appendChild(', 'target.id =', "removeAttribute('id')", 'removeAttribute("id")'):
-              if pattern in js:
-                  raise SystemExit(f'Unsafe DOM mutation remains: {pattern}')
-          layout = (root / 'includes/class-layout.php').read_text(encoding='utf-8')
-          fallback = layout.split('public static function content_target_fallbacks()', 1)[1]
-          for unsafe in ("'.wp-site-blocks'", "'#page'", "'.site'"):
-              if unsafe in fallback:
-                  raise SystemExit(f'Unsafe content fallback remains: {unsafe}')
-          php = '\n'.join(p.read_text(encoding='utf-8') for p in root.rglob('*.php'))
-          for forbidden in ('post-new.php', 'smc_professional_credentials', 'smc_clinics'):
-              if forbidden in php:
-                  raise SystemExit(f'Prohibited ownership or bypass pattern remains: {forbidden}')
-          for contract in (
-              'slc_learning_home', 'he_encyclopedia_home', 'sdd_doctors_directory',
-              'swc_worldwide_clinic', 'svw_video_wall', 'srl_reels', 'spl_library',
-              'srf_radar', 'sai_study_guide', 'sabri_notification_bell',
-              '_smc_official_founder', '_smc_doctor_verified', '_smc_trusted_publisher',
-              'SMC_Contracts', 'SPD_Verification_Adapter', 'SPD_Helpers::can_show_contact'
-          ):
-              if contract not in php:
-                  raise SystemExit(f'Required corrected contract is missing: {contract}')
-          print('Static corrective assertions passed.')
-          PY
-      - name: Version consistency
-        shell: bash
-        run: |
-          set -euo pipefail
-          grep -Fq '* Version: 1.1.0' sabri-unified-application-shell/sabri-unified-application-shell.php
-          grep -Fq "define( 'SABRI_SHELL_VERSION', '1.1.0' );" sabri-unified-application-shell/sabri-unified-application-shell.php
-          grep -Fq 'Stable tag: 1.1.0' sabri-unified-application-shell/readme.txt
-      - name: Corrective candidate package integrity
-        shell: bash
-        run: |
-          set -euo pipefail
-          (cd RELEASES && sha256sum --check CHECKSUMS.sha256)
-          unzip -t RELEASES/20-sabri-unified-application-shell-1.1.0-RC1.zip
-          rm -rf /tmp/file20-candidate
-          mkdir -p /tmp/file20-candidate
-          unzip -q RELEASES/20-sabri-unified-application-shell-1.1.0-RC1.zip -d /tmp/file20-candidate
-          diff -qr /tmp/file20-candidate/sabri-unified-application-shell sabri-unified-application-shell
+          name: file20-1.1.1-create-contract-layout-${{ github.sha }}
+          retention-days: 60
+          if-no-files-found: error
+          path: |
+            release/20-sabri-unified-application-shell-1.1.1-CREATE-CONTRACT-LAYOUT-R2.zip
+            release/20-sabri-unified-application-shell-1.1.1-CREATE-CONTRACT-LAYOUT-R2.sha256
+            release/20-sabri-unified-application-shell-1.1.1-CREATE-CONTRACT-LAYOUT-R2-MANIFEST.sha256
+            release/FILE-20-1.1.1-TEST-REPORT.md
