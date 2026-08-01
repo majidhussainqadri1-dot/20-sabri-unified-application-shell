@@ -2,23 +2,26 @@
 
 ## Current State
 
-The original **Sabri Unified Application Shell 1.0.0 FINAL** package is being imported as an auditable baseline on `baseline/file-20-original-import`.
+The exact **Sabri Unified Application Shell 1.0.0 FINAL** package remains preserved in `SOURCE-ARCHIVE/`. The corrective branch contains **File 20 version 1.1.0 RC1**, produced after two separate review-and-correction rounds.
 
-This repository state is **not yet production-accepted**. Baseline import, code review, automated checks, staging installation, upgrade behavior, responsive acceptance, integration testing, Safe Mode, repair, emergency controls, snapshot/rollback, and founder acceptance remain distinct gates.
+## Corrective Evidence
 
-## Verified Before Import
+- authoritative File 00 membership, suspension, eligibility, current-2FA, Founder/Administrator, and publishing assertions are enforced;
+- File 03 owns verified/public doctor projections and explicit public phone/WhatsApp consent;
+- legacy role/meta values cannot substitute for unavailable authority contracts;
+- direct queries to non-owned Membership Core professional/clinic tables are absent;
+- File 17 Messages has a dedicated URL/page-map preference with Network URL compatibility fallback;
+- unsafe DOM movement and forced theme-ID replacement are absent;
+- PHP 7.4/8.3, behavioral tests, JavaScript syntax, static architecture, version consistency, ZIP integrity, checksum, and package/source equality are automated gates.
 
-- ZIP integrity passed.
-- No unsafe archive paths were detected.
-- PHP syntax: 16/16 files passed.
-- JavaScript syntax: passed.
-- Package SHA-256: `68ebf68f11f11911207867341ad6611eeaeeac577d1ecfc04f6bf9f623627160`.
+## Corrective Package
 
-## Required Before Merge or Release
+- Package: `RELEASES/20-sabri-unified-application-shell-1.1.0-RC1.zip`
+- SHA-256: `ccdb9809947477801e49ca82bc2cbea17bca8650b3cb7c6530b10dab2956f127`
+- Plugin version: `1.1.0`
 
-1. Reconstruct and verify the exact source package in CI.
-2. Review the imported source without changing the baseline.
-3. Run fresh-install and upgrade tests on WordPress staging.
-4. Verify navigation, layouts, drawers, bottom navigation, responsive behavior, accessibility, and integration boundaries.
-5. Test System Check, Repair, Safe Mode, emergency disable/re-enable, activation snapshot, and rollback.
-6. Complete founder acceptance before production deployment.
+This status update intentionally triggers final exact-head automated verification before repository merge.
+
+## Lifecycle Boundary
+
+Repository merge is not staging or production acceptance. Hostinger staging fresh-install and upgrade, real companion-module/database integration, browser and viewport testing, accessibility, Safe Mode, Repair, emergency controls, backup/restore, snapshot/rollback, and live deployment remain separate later gates. No staging or live website change is authorized by this repository status.
