@@ -22,6 +22,11 @@ final class CreateContract {
 	/** Prevent accidental recursion through third-party filter callbacks. */
 	private static $resolving = false;
 
+	/** Register presentation evidence for the exact current-user decision. */
+	public static function register() {
+		add_filter( 'body_class', array( __CLASS__, 'body_classes' ), 30 );
+	}
+
 	/** Whether the exact package-owned public contract is available. */
 	public static function available() {
 		return defined( 'SABRI_SHELL_CREATE_CONTRACT_VERSION' )
@@ -78,5 +83,16 @@ final class CreateContract {
 		} finally {
 			self::$resolving = false;
 		}
+	}
+
+	/** Add a stable class so actual shell output follows the official contract. */
+	public static function body_classes( $classes ) {
+		if ( ! is_array( $classes ) ) {
+			$classes = array();
+		}
+		$classes[] = self::visible_for_current_user()
+			? 'sabri-shell-create-contract-allowed'
+			: 'sabri-shell-create-contract-denied';
+		return array_values( array_unique( $classes ) );
 	}
 }
