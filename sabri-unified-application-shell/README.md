@@ -2,90 +2,77 @@
 
 Sabri Unified Application Shell is the independent, responsive WordPress application shell for the **Sabri Social Homeopathy Platform**.
 
-- Version: `1.1.0`
-- Status: corrective release candidate; staging acceptance required
+- Version: `1.1.1`
+- File 22 Create contract: `1.0.1`
+- Status: corrective candidate; Hostinger staging acceptance required
 - Plugin slug: `sabri-unified-application-shell`
 - Text domain: `sabri-unified-application-shell`
 - Author: Dr. Allamah Majid Hussain Sabri Muhaddith Mursheed
 
 ## Scope
 
-The plugin provides the shared presentation and routing layer only:
+File 20 owns the shared presentation and routing layer:
 
-- global header, platform identity, search, role-aware Create, Messages, one Notifications output, Help, language switcher, and profile/auth controls;
-- resolved primary navigation and persistent left navigation;
-- conditional right-side contextual panels for Home, Worldwide Clinic, and doctor/clinic contexts;
-- accessible mobile drawers and bottom navigation;
-- layout resolution for three-column, two-column, and minimal contexts;
-- companion-module page, shortcode, role, profile, clinic, appointment, notification, and publishing adapters;
-- `[sabri_shell_home_feed]` as a guarded chronological fallback feed;
-- settings, System Check, Complete Repair, Safe Mode, Emergency Disable/Re-enable, activation snapshot, and rollback.
+- global header, search, role-aware Create, Messages, Notifications, Help, language and account controls;
+- primary navigation, persistent left navigation, contextual right panels, mobile drawers and bottom navigation;
+- conservative layout resolution for three-column, two-column and minimal contexts;
+- companion page/shortcode/profile/clinic/appointment/notification/publishing adapters;
+- settings, System Check, Complete Repair, Safe Mode, snapshots and rollback.
 
-It does **not** create duplicate messaging, notifications, appointments, profiles, marketplace, publishing, clinic, or clinical databases.
+It does **not** create duplicate membership, publishing, profile, messaging, notification, appointment, marketplace, clinic or clinical databases.
 
-## Corrective Architecture in 1.1.0
+## Version 1.1.1 correction
 
-Version 1.1.0 replaces the unsafe broad theme-wrapper reparenting used in the original 1.0.0 baseline. The JavaScript now identifies a conservative content container, annotates it in place, preserves the theme's original ID and DOM hierarchy, and hides desktop sidebars when no safe content target can be resolved.
+Version 1.1.1 supplies the exact package-owned Create producer contract expected by File 22:
 
-The routing layer now prefers companion-owned page maps before shortcode, archive, slug, or validated URL fallback. Supported contracts include:
+- `SABRI_SHELL_CREATE_CONTRACT_VERSION = 1.0.1`;
+- `SABRI_SHELL_CREATE_CONTRACT_OWNER = sabri-unified-application-shell`;
+- `SABRI_SHELL_CREATE_FUNCTIONS_OWNED = true`;
+- `sabri_shell_create_contract_available()`;
+- `sabri_shell_create_visible_for_current_user()`.
 
-- `spf_page_map`, `spd_page_map`, `sdd_page_map`, `swc_page_map`;
-- `svw_page_map`, `srl_page_map`, `spl_page_map`;
-- `srf_page_map`, `sai_page_map`, `sa_page_map`, `snp_page_map`;
-- `sn_network_page_id`, `smp_marketplace_page_id`.
+The contract:
 
-The shell recognizes the actual current module shortcodes, including `slc_learning_home`, `he_encyclopedia_home`, `sdd_doctors_directory`, `swc_worldwide_clinic`, `svw_video_wall`, `srl_reels`, `spl_library`, `srf_radar`, `sai_study_guide`, and the appointment/authentication shortcodes.
+1. is declared only when the complete symbol family is unclaimed;
+2. proves the SafeMode and CreateContract classes originate from the exact package files;
+3. exposes producers from the canonical plugin bootstrap;
+4. accepts no foreign subject ID and resolves only the current logged-in user;
+5. rechecks Safe Mode, shell settings, File 00 publishing assertions, canonical Create URL and File 22 adapter availability;
+6. fails closed on recursion, exceptions, partial ownership or unavailable authority.
 
-## Identity and Publishing
+The same corrective release:
 
-The shell treats Sabri Membership Core as the authoritative identity and permission foundation when available. It recognizes current and legacy founder, trusted publisher, pending doctor, doctor, and verified doctor contracts.
+- applies the final Create decision to public presentation;
+- separates the account name and `Signed in` status;
+- wraps desktop navigation without creating a page-level horizontal scrollbar;
+- repairs the safe content column for File 21 managed single publications through bounded retries;
+- never reparents, replaces or deletes theme or companion DOM nodes;
+- contains article bodies, actions, comments, media, tables and long words within the available column.
 
-The Create action never falls back to `wp-admin/post-new.php`. It appears only when:
+## Version 1.1.0 foundation
 
-1. the user has authoritative publishing permission; and
-2. a real moderated platform composer is resolved.
+Version 1.1.0 replaced broad theme-wrapper reparenting with conservative in-place annotation, preserved theme IDs and hierarchy, corrected companion page-map/shortcode discovery, removed the WordPress admin editor as a Create fallback, prevented duplicate feeds and notification bells, and hardened File 00/File 03 authority boundaries.
 
-Login, signup, forgot-password, profile, and completion actions prefer platform-managed public pages. WordPress core login or password recovery is retained only as a safe access fallback when the corresponding public platform page is unavailable.
+## Identity and publishing
 
-## Navigation Resolution
-
-Resolution precedence is:
-
-1. configured published Page ID;
-2. authoritative companion page contract;
-3. published page containing an approved shortcode;
-4. existing public post-type archive;
-5. published slug candidate;
-6. validated URL override;
-7. homepage fallback for Home only.
-
-Unresolved destinations are hidden. News does not silently resolve to Home.
-
-Navigation is cached by locale and cache epoch. The cache is invalidated when shell settings, companion page maps, pages, post types, plugins, theme, permalinks, front-page settings, or language context change.
-
-## Notifications
-
-When File 19 is active, the shell uses the real notification bell shortcode and suppresses the companion floating duplicate for that request. Private Messages and Notifications actions are not rendered for logged-out visitors.
-
-## Doctor and Clinic Data
-
-Doctor panels read authoritative public data from existing profile helpers and Membership Core profile, professional credential, and approved clinic records. The shell does not create or own a doctor database. Public contact output remains subject to the source module's approved/public data contract and the shell's `sabri_shell_doctor_public_data` filter.
+Sabri Membership Core is authoritative for current membership and publishing assertions. File 20 does not invent a fallback publisher role. The Create action appears only when a real moderated composer is resolved and the current File 00/File 22 decision allows it.
 
 ## Home Feed
 
-`[sabri_shell_home_feed]` is a chronological fallback only. Automatic insertion is suppressed when the page already contains an authoritative platform, File 04, or File 21 feed shortcode. This prevents duplicate Home feeds.
+`[sabri_shell_home_feed]` is a chronological fallback only. Automatic insertion is suppressed when an authoritative platform or File 21 feed is already present.
 
-## Installation and Upgrade
+## Installation and staging acceptance
 
-1. Take a complete backup.
+1. Take a complete files and database backup.
 2. Install or upgrade on Hostinger staging only.
-3. Activate the companion modules required for the intended destinations.
-4. Open **Sabri Shell > System Check**.
-5. Resolve every required destination and review all warnings.
-6. Run the full checklist in `STAGING-ACCEPTANCE.md`.
-7. Do not deploy to production until founder acceptance and rollback proof are recorded.
+3. Activate the companion modules required by the intended destinations.
+4. Open **Sabri Shell → System Check**.
+5. Run **File 22 → Universal Composer Health** and verify both File 20 contract checks pass.
+6. Retest `/create/`, the controlled File 22 publication, and a long File 21 article.
+7. Test desktop, tablet, mobile, keyboard, RTL, Safe Mode and rollback.
+8. Do not promote to production until founder acceptance is recorded.
 
-See `MIGRATION.md` and `ROLLBACK.md`.
+See `STAGING-ACCEPTANCE.md`, `MIGRATION.md`, `ROLLBACK.md`, `CHANGELOG.md`, and the repository-level `FILE-20-CREATE-CONTRACT-LAYOUT-CORRECTION-1.1.1.md`.
 
 ## Safe Mode
 
@@ -101,30 +88,18 @@ A developer may also define:
 define( 'SABRI_SHELL_DISABLE', true );
 ```
 
-Both suppress shell rendering without deleting platform content or companion data.
+Both suppress shell rendering without deleting platform or companion data.
 
-## Automated Verification
-
-Run:
+## Automated verification
 
 ```bash
 find . -type f -name '*.php' -print0 | xargs -0 -n1 php -l
 node --check assets/js/shell.js
+node --check assets/js/shell-corrective-1.1.1.js
 php tests/run.php
+php tests/run-create-contract-layout.php
 ```
 
-The repository CI additionally verifies version consistency, CSS brace balance, prohibited DOM-reparenting patterns, prohibited core composer fallback, required corrected contracts, and candidate ZIP integrity when an artifact is present.
+Repository CI additionally verifies PHP 7.4/8.3 behavior, exact contract ownership, prohibited bypasses and DOM movement, CSS/JavaScript integrity, deterministic packaging, source equality, SHA-256 and ZIP CRC.
 
-Automated checks do not establish WordPress runtime compatibility, live database behavior, cross-browser behavior, accessibility conformance, companion-module end-to-end behavior, or Hostinger staging acceptance.
-
-## Production Limitations
-
-The plugin does not provide or claim:
-
-- a messaging backend, real calls, or audited end-to-end encryption;
-- live streaming;
-- AI diagnosis or prescription;
-- universal compatibility with every WordPress theme;
-- production acceptance without staging evidence.
-
-See `REVIEW-CORRECTIONS.md` for the corrective traceability record.
+Automated QA does not itself establish Hostinger staging, cross-browser, accessibility or production acceptance.
