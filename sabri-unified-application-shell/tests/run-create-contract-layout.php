@@ -107,7 +107,12 @@ namespace Sabri\UnifiedShell {
 	$assert( false !== strpos( $main, "SABRI_SHELL_CREATE_CONTRACT_VERSION', '1.0.1" ), 'Main package declares exact File 22 contract version.' );
 	$assert( false !== strpos( $main, "SABRI_SHELL_CREATE_CONTRACT_OWNER', 'sabri-unified-application-shell" ), 'Main package declares canonical owner.' );
 	$assert( false !== strpos( $main, 'SABRI_SHELL_CREATE_FUNCTIONS_OWNED' ), 'Main package declares function ownership.' );
-	$assert( false !== strpos( $main, "class_exists( 'Sabri\\\\UnifiedShell\\\\SafeMode' )" ), 'Canonical bootstrap eagerly resolves SafeMode before File 22 reflection.' );
+	$assert(
+		false !== strpos( $main, "'Sabri\\\\UnifiedShell\\\\SafeMode'       => realpath" ) &&
+		false !== strpos( $main, "'Sabri\\\\UnifiedShell\\\\CreateContract' => realpath" ) &&
+		false !== strpos( $main, 'new ReflectionClass' ),
+		'Canonical bootstrap proves SafeMode and CreateContract package files before File 22 reflection.'
+	);
 	$assert( false !== strpos( $main, 'CreateContract::register()' ) && false !== strpos( $main, 'LayoutCorrection::register()' ), 'Corrective services register from canonical bootstrap.' );
 	$assert( false !== strpos( $contract, 'ReflectionClass' ) && false !== strpos( $contract, 'ReflectionFunction' ), 'Contract verifies package-source ownership.' );
 	$assert( false !== strpos( $contract, 'catch ( \\Throwable $error )' ), 'Contract fails closed on adapter/filter exceptions.' );
