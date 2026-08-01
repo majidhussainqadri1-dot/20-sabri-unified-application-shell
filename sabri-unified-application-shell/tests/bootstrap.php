@@ -11,6 +11,12 @@ $GLOBALS['test_permalinks'] = array();
 $GLOBALS['test_shortcodes'] = array();
 $GLOBALS['test_user_meta'] = array();
 $GLOBALS['test_users'] = array();
+$GLOBALS['test_user_caps'] = array();
+$GLOBALS['test_membership_assertions'] = array();
+$GLOBALS['test_directory_eligible'] = array();
+$GLOBALS['test_approved_fields'] = array();
+$GLOBALS['test_public_contact'] = array();
+$GLOBALS['test_profiles'] = array();
 
 function __( $text ) { return $text; }
 function esc_html__( $text ) { return $text; }
@@ -61,9 +67,45 @@ function get_queried_object_id() { return 0; }
 function get_user_meta( $user_id, $key, $single = true ) { return $GLOBALS['test_user_meta'][ $user_id ][ $key ] ?? ''; }
 function get_userdata( $user_id ) { return $GLOBALS['test_users'][ $user_id ] ?? false; }
 function get_current_user_id() { return 0; }
-function user_can() { return false; }
+function user_can( $user, $cap = '' ) { $id = $user instanceof WP_User ? $user->ID : absint( $user ); return ! empty( $GLOBALS['test_user_caps'][ $id ][ $cap ] ); }
 function wp_roles() { return (object) array( 'roles' => array( 'administrator' => array(), 'sabri_doctor' => array(), 'sabri_verified_doctor' => array() ) ); }
 function current_time() { return '2026-07-30 00:00:00'; }
+
+
+class SMC_Contracts {
+	public static function assertions( $user_id ) {
+		return $GLOBALS['test_membership_assertions'][ absint( $user_id ) ] ?? array();
+	}
+}
+class SPD_Verification_Adapter {
+	public static function directory_eligible( $user_id ) {
+		return ! empty( $GLOBALS['test_directory_eligible'][ absint( $user_id ) ] );
+	}
+	public static function approved_fields( $user_id ) {
+		return $GLOBALS['test_approved_fields'][ absint( $user_id ) ] ?? array();
+	}
+}
+class SPD_Helpers {
+	public static function get( $user_id, $key, $default = '' ) {
+		$fields = $GLOBALS['test_approved_fields'][ absint( $user_id ) ] ?? array();
+		if ( array_key_exists( $key, $fields ) ) {
+			return $fields[ $key ];
+		}
+		$profile = $GLOBALS['test_profiles'][ absint( $user_id ) ] ?? array();
+		return array_key_exists( $key, $profile ) ? $profile[ $key ] : $default;
+	}
+	public static function can_show_contact( $user_id, $founder = false ) {
+		return ! empty( $GLOBALS['test_public_contact'][ absint( $user_id ) ] ) || ( $founder && smc_is_founder( $user_id ) );
+	}
+	public static function profile_url( $user_id ) {
+		return 'https://example.test/profile/?user=' . absint( $user_id );
+	}
+	public static function verification_status( $user_id ) {
+		return ! empty( $GLOBALS['test_directory_eligible'][ absint( $user_id ) ] ) ? 'verified' : 'pending';
+	}
+}
+function smc_get_profile( $user_id ) { return $GLOBALS['test_profiles'][ absint( $user_id ) ] ?? array(); }
+function smc_is_founder( $user_id ) { return 'founder' === ( $GLOBALS['test_membership_assertions'][ absint( $user_id ) ]['account_class'] ?? '' ); }
 
 class WP_User {
 	public $ID;

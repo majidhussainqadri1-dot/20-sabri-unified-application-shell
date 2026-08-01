@@ -258,7 +258,33 @@ final class Integrations {
 	}
 
 	/**
-	 * Whether a user is the authoritative Founder.
+	 * Return File 00 membership assertions without duplicating identity state.
+	 *
+	 * @param int $user_id User ID.
+	 * @return array<string,mixed>
+	 */
+	public static function membership_assertions( $user_id ) {
+		$user_id = absint( $user_id );
+		if ( ! $user_id ) {
+			return array();
+		}
+
+		if ( class_exists( 'SMC_Contracts' ) && is_callable( array( 'SMC_Contracts', 'assertions' ) ) ) {
+			try {
+				$assertions = \SMC_Contracts::assertions( $user_id );
+				return is_array( $assertions ) ? $assertions : array( '_contract_error' => true );
+			} catch ( \Throwable $error ) {
+				unset( $error );
+				return array( '_contract_error' => true );
+			}
+		}
+
+		$assertions = apply_filters( 'smc_assertions_v1', array(), $user_id );
+		return is_array( $assertions ) ? $assertions : array();
+	}
+
+	/**
+	 * Whether a user is the authoritative Founder identity.
 	 *
 	 * @param int $user_id User ID.
 	 * @return bool
@@ -267,6 +293,10 @@ final class Integrations {
 		$user_id = absint( $user_id );
 		if ( ! $user_id ) {
 			return false;
+		}
+		$assertions = self::membership_assertions( $user_id );
+		if ( ! empty( $assertions ) && 'founder' === ( $assertions['account_class'] ?? '' ) ) {
+			return true;
 		}
 		if ( function_exists( 'smc_is_founder' ) && smc_is_founder( $user_id ) ) {
 			return true;
@@ -278,13 +308,27 @@ final class Integrations {
 	}
 
 	/**
-	 * Whether a user has trusted publishing authority.
+	 * Whether File 00 currently grants trusted publishing authority.
 	 *
 	 * @param int $user_id User ID.
 	 * @return bool
 	 */
 	public static function is_trusted_publisher( $user_id ) {
-		$user_id = absint( $user_id );
+		$user_id    = absint( $user_id );
+		$assertions = self::membership_assertions( $user_id );
+		if ( ! empty( $assertions ) ) {
+			if ( ! empty( $assertions['_contract_error'] ) || ! empty( $assertions['suspended'] ) || empty( $assertions['approved'] ) || empty( $assertions['eligible'] ) || empty( $assertions['session_two_factor'] ) ) {
+				return false;
+			}
+			if ( ! empty( $assertions['can_publish'] ) ) {
+				return true;
+			}
+			if ( 'founder' === ( $assertions['account_class'] ?? '' ) ) {
+				return true;
+			}
+			return 'administrator' === ( $assertions['account_class'] ?? '' ) && user_can( $user_id, 'manage_options' );
+		}
+
 		if ( self::is_founder( $user_id ) ) {
 			return true;
 		}
@@ -295,7 +339,7 @@ final class Integrations {
 	}
 
 	/**
-	 * Whether a user is a verified doctor under current or legacy contracts.
+	 * Whether a doctor is verified and eligible for public shell discovery.
 	 *
 	 * @param int $user_id User ID.
 	 * @return bool
@@ -305,9 +349,21 @@ final class Integrations {
 		if ( ! $user_id ) {
 			return false;
 		}
-		if ( self::is_founder( $user_id ) ) {
-			return true;
+		if ( class_exists( 'SPD_Verification_Adapter' ) && is_callable( array( 'SPD_Verification_Adapter', 'directory_eligible' ) ) ) {
+			return (bool) \SPD_Verification_Adapter::directory_eligible( $user_id );
 		}
+
+		$assertions = self::membership_assertions( $user_id );
+		if ( ! empty( $assertions ) ) {
+			if ( ! empty( $assertions['_contract_error'] ) || ! empty( $assertions['suspended'] ) || empty( $assertions['approved'] ) || empty( $assertions['eligible'] ) || empty( $assertions['professional_verified'] ) ) {
+				return false;
+			}
+			if ( array_key_exists( 'public_profile_allowed', $assertions ) && empty( $assertions['public_profile_allowed'] ) ) {
+				return false;
+			}
+			return 'doctor' === ( $assertions['membership_type'] ?? '' ) && ( ! empty( $assertions['can_practice'] ) || ! empty( $assertions['can_publish'] ) );
+		}
+
 		if ( get_user_meta( $user_id, '_smc_doctor_verified', true ) ) {
 			return true;
 		}
@@ -329,6 +385,21 @@ final class Integrations {
 		if ( ! $user_id ) {
 			return false;
 		}
+
+		$assertions = self::membership_assertions( $user_id );
+		if ( ! empty( $assertions ) ) {
+			if ( ! empty( $assertions['_contract_error'] ) || ! empty( $assertions['suspended'] ) || empty( $assertions['approved'] ) || empty( $assertions['eligible'] ) || empty( $assertions['session_two_factor'] ) ) {
+				return false;
+			}
+			if ( ! empty( $assertions['can_publish'] ) ) {
+				return true;
+			}
+			if ( 'founder' === ( $assertions['account_class'] ?? '' ) ) {
+				return true;
+			}
+			return 'administrator' === ( $assertions['account_class'] ?? '' ) && user_can( $user_id, 'manage_options' );
+		}
+
 		if ( user_can( $user_id, 'manage_options' ) || self::is_trusted_publisher( $user_id ) ) {
 			return true;
 		}
@@ -336,7 +407,7 @@ final class Integrations {
 	}
 
 	/**
-	 * Public doctor data for shell panels without owning a duplicate database.
+	 * Public doctor data from File 03 approved projections only.
 	 *
 	 * @param int $user_id User ID.
 	 * @return array<string,string>
@@ -348,35 +419,54 @@ final class Integrations {
 			return array();
 		}
 
+		$founder          = self::is_founder( $user_id );
+		$approved_fields  = array();
+		$file03_available = class_exists( 'SPD_Verification_Adapter' ) && is_callable( array( 'SPD_Verification_Adapter', 'directory_eligible' ) );
+
+		if ( $file03_available ) {
+			if ( ! $founder && ! \SPD_Verification_Adapter::directory_eligible( $user_id ) ) {
+				return array();
+			}
+			if ( is_callable( array( 'SPD_Verification_Adapter', 'approved_fields' ) ) ) {
+				$approved_fields = \SPD_Verification_Adapter::approved_fields( $user_id );
+				$approved_fields = is_array( $approved_fields ) ? $approved_fields : array();
+			}
+		} else {
+			$assertions = self::membership_assertions( $user_id );
+			if ( ! $founder && ! empty( $assertions ) ) {
+				if ( ! empty( $assertions['_contract_error'] ) || ! empty( $assertions['suspended'] ) || empty( $assertions['approved'] ) || 'doctor' !== ( $assertions['membership_type'] ?? '' ) || empty( $assertions['public_profile_allowed'] ) ) {
+					return array();
+				}
+			}
+		}
+
 		$data = array(
-			'name'      => (string) $user->display_name,
+			'name'      => (string) ( $approved_fields['display_name'] ?? $user->display_name ),
 			'profile'   => self::profile_url( $user_id ),
-			'country'   => '',
-			'city'      => '',
-			'clinic'    => '',
-			'fee'       => '',
-			'currency'  => '',
-			'timings'   => '',
-			'languages' => '',
-			'specialty' => '',
+			'country'   => (string) ( $approved_fields['country'] ?? '' ),
+			'city'      => (string) ( $approved_fields['city'] ?? '' ),
+			'clinic'    => (string) ( $approved_fields['clinic'] ?? '' ),
+			'fee'       => (string) ( $approved_fields['fee'] ?? '' ),
+			'currency'  => (string) ( $approved_fields['currency'] ?? '' ),
+			'timings'   => (string) ( $approved_fields['timings'] ?? ( $approved_fields['hours'] ?? '' ) ),
+			'languages' => (string) ( $approved_fields['languages'] ?? '' ),
+			'specialty' => (string) ( $approved_fields['specialty'] ?? ( $approved_fields['specialization'] ?? '' ) ),
 			'phone'     => '',
 			'whatsapp'  => '',
 		);
 
 		if ( class_exists( 'SPD_Helpers' ) && is_callable( array( 'SPD_Helpers', 'get' ) ) ) {
-			$data['country']   = (string) \SPD_Helpers::get( $user_id, 'country' );
-			$data['city']      = (string) \SPD_Helpers::get( $user_id, 'city' );
-			$data['clinic']    = (string) \SPD_Helpers::get( $user_id, 'clinic' );
-			$data['languages'] = (string) \SPD_Helpers::get( $user_id, 'languages' );
-			$data['specialty'] = (string) \SPD_Helpers::get( $user_id, 'specialty' );
-			$data['phone']     = (string) \SPD_Helpers::get( $user_id, 'phone' );
-			$data['whatsapp']  = (string) \SPD_Helpers::get( $user_id, 'whatsapp' );
+			foreach ( array( 'country', 'city', 'clinic', 'languages', 'specialty' ) as $field ) {
+				if ( empty( $data[ $field ] ) ) {
+					$data[ $field ] = (string) \SPD_Helpers::get( $user_id, $field );
+				}
+			}
 		}
 
 		if ( function_exists( 'smc_get_profile' ) ) {
 			$profile = smc_get_profile( $user_id );
 			if ( is_array( $profile ) ) {
-				foreach ( array( 'country', 'city', 'phone', 'whatsapp' ) as $field ) {
+				foreach ( array( 'country', 'city' ) as $field ) {
 					if ( empty( $data[ $field ] ) && ! empty( $profile[ $field ] ) ) {
 						$data[ $field ] = (string) $profile[ $field ];
 					}
@@ -387,28 +477,32 @@ final class Integrations {
 			}
 		}
 
-		global $wpdb;
-		if ( ( function_exists( 'smc_get_profile' ) || defined( 'SMC_VERSION' ) ) && isset( $wpdb ) && is_object( $wpdb ) ) {
-			$credentials = $wpdb->get_row( $wpdb->prepare( "SELECT specialization, fee, currency, languages FROM {$wpdb->prefix}smc_professional_credentials WHERE user_id = %d LIMIT 1", $user_id ), ARRAY_A );
-			$clinic      = $wpdb->get_row( $wpdb->prepare( "SELECT name, phone, whatsapp, hours FROM {$wpdb->prefix}smc_clinics WHERE owner_user_id = %d AND status = 'approved' ORDER BY id DESC LIMIT 1", $user_id ), ARRAY_A );
-			if ( is_array( $credentials ) ) {
-				$data['specialty'] = $data['specialty'] ?: (string) ( $credentials['specialization'] ?? '' );
-				$data['fee']       = (string) ( $credentials['fee'] ?? '' );
-				$data['currency']  = (string) ( $credentials['currency'] ?? '' );
-				$data['languages'] = $data['languages'] ?: (string) ( $credentials['languages'] ?? '' );
-			}
-			if ( is_array( $clinic ) ) {
-				$data['clinic']   = $data['clinic'] ?: (string) ( $clinic['name'] ?? '' );
-				$data['phone']    = $data['phone'] ?: (string) ( $clinic['phone'] ?? '' );
-				$data['whatsapp'] = $data['whatsapp'] ?: (string) ( $clinic['whatsapp'] ?? '' );
-				$data['timings']  = (string) ( $clinic['hours'] ?? '' );
+		$contact_allowed = false;
+		if ( class_exists( 'SPD_Helpers' ) && is_callable( array( 'SPD_Helpers', 'can_show_contact' ) ) ) {
+			$contact_allowed = (bool) \SPD_Helpers::can_show_contact( $user_id, $founder );
+		}
+		$contact_allowed = (bool) apply_filters( 'sabri_shell_public_contact_allowed', $contact_allowed, $user_id, $data );
+		if ( $contact_allowed ) {
+			$data['phone']    = (string) ( $approved_fields['phone'] ?? '' );
+			$data['whatsapp'] = (string) ( $approved_fields['whatsapp'] ?? '' );
+			if ( class_exists( 'SPD_Helpers' ) && is_callable( array( 'SPD_Helpers', 'get' ) ) ) {
+				$data['phone']    = $data['phone'] ?: (string) \SPD_Helpers::get( $user_id, 'phone' );
+				$data['whatsapp'] = $data['whatsapp'] ?: (string) \SPD_Helpers::get( $user_id, 'whatsapp' );
 			}
 		}
 
+		$filtered = apply_filters( 'sabri_shell_doctor_public_data', $data, $user_id );
+		if ( is_array( $filtered ) ) {
+			$data = $filtered;
+		}
+		if ( ! $contact_allowed ) {
+			$data['phone']    = '';
+			$data['whatsapp'] = '';
+		}
 		foreach ( $data as $key => $value ) {
 			$data[ $key ] = is_scalar( $value ) ? (string) $value : '';
 		}
-		return apply_filters( 'sabri_shell_doctor_public_data', $data, $user_id );
+		return $data;
 	}
 
 	/**
