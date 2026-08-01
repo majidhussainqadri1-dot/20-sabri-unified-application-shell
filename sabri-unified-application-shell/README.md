@@ -1,179 +1,130 @@
 # Sabri Unified Application Shell
 
-Sabri Unified Application Shell is an independent WordPress plugin that adds a secure, responsive public application shell for the Sabri Social Homeopathy Platform.
+Sabri Unified Application Shell is the independent, responsive WordPress application shell for the **Sabri Social Homeopathy Platform**.
 
-Version: 1.0.0
-Plugin slug: `sabri-unified-application-shell`
-Text domain: `sabri-unified-application-shell`
-Author: Dr. Allama Majid Hussain Sabri
+- Version: `1.1.0`
+- Status: corrective release candidate; staging acceptance required
+- Plugin slug: `sabri-unified-application-shell`
+- Text domain: `sabri-unified-application-shell`
+- Author: Dr. Allamah Majid Hussain Sabri Muhaddith Mursheed
 
-## What It Provides
+## Scope
 
-- Global header with brand, search, role-aware Create, Messages, one Notifications output, Help, language integration only when detected, and profile/login controls.
-- Horizontal primary navigation with configurable labels, order, page IDs, shortcodes, slugs, and URL overrides.
-- Persistent left sidebar with grouped navigation, user/visitor cards, active state, remembered scroll position, and footer mappings.
-- Conditional right sidebar that renders only in three-column contexts.
-- Mobile bottom navigation, accessible drawers, focus trapping, Escape close, outside click close, focus restoration, and body scroll lock.
-- `[sabri_shell_home_feed]` shortcode plus optional static-front-page chronological Latest feed insertion.
-- Admin settings under **Sabri Shell** with Overview, Layout, Header, Navigation, Left Sidebar, Right Sidebar, Mobile, Integrations, Appearance, System Check, Repair, and Safe Mode tabs.
-- Safe Mode, Emergency Disable/Re-enable, activation snapshot, rollback, Complete Repair, and CI release packaging.
+The plugin provides the shared presentation and routing layer only:
 
-## Important Limitations
+- global header, platform identity, search, role-aware Create, Messages, one Notifications output, Help, language switcher, and profile/auth controls;
+- resolved primary navigation and persistent left navigation;
+- conditional right-side contextual panels for Home, Worldwide Clinic, and doctor/clinic contexts;
+- accessible mobile drawers and bottom navigation;
+- layout resolution for three-column, two-column, and minimal contexts;
+- companion-module page, shortcode, role, profile, clinic, appointment, notification, and publishing adapters;
+- `[sabri_shell_home_feed]` as a guarded chronological fallback feed;
+- settings, System Check, Complete Repair, Safe Mode, Emergency Disable/Re-enable, activation snapshot, and rollback.
 
-- messaging backend is not created by this plugin.
-- real calls are not created.
-- end-to-end encryption is not claimed.
-- live streaming is not created.
-- AI recommendations are not claimed.
-- full compatibility with every WordPress theme is not claimed.
-- Hostinger staging testing is required before production activation.
+It does **not** create duplicate messaging, notifications, appointments, profiles, marketplace, publishing, clinic, or clinical databases.
 
-The shell integrates only with existing public functions, shortcodes, roles, post types, pages, and validated URLs. It does not depend on, revive, or copy the cancelled `sabri-global-ui` plugin.
+## Corrective Architecture in 1.1.0
 
-## Installation
+Version 1.1.0 replaces the unsafe broad theme-wrapper reparenting used in the original 1.0.0 baseline. The JavaScript now identifies a conservative content container, annotates it in place, preserves the theme's original ID and DOM hierarchy, and hides desktop sidebars when no safe content target can be resolved.
 
-1. Upload `sabri-unified-application-shell` to `wp-content/plugins/`.
-2. Activate **Sabri Unified Application Shell** on a staging site first.
-3. Open **Sabri Shell** in wp-admin.
-4. Run **System Check** and review unresolved pages and missing integrations.
-5. Configure page mappings, clinic mapping, roles, appearance, and mobile behavior.
-6. Test the public site at the required viewport widths before production activation.
+The routing layer now prefers companion-owned page maps before shortcode, archive, slug, or validated URL fallback. Supported contracts include:
 
-## Initial Configuration
+- `spf_page_map`, `spd_page_map`, `sdd_page_map`, `swc_page_map`;
+- `svw_page_map`, `srl_page_map`, `spl_page_map`;
+- `srf_page_map`, `sai_page_map`, `sa_page_map`, `snp_page_map`;
+- `sn_network_page_id`, `smp_marketplace_page_id`.
 
-Open **Sabri Shell > Layout** and set:
+The shell recognizes the actual current module shortcodes, including `slc_learning_home`, `he_encyclopedia_home`, `sdd_doctors_directory`, `swc_worldwide_clinic`, `svw_video_wall`, `srl_reels`, `spl_library`, `srf_radar`, `sai_study_guide`, and the appointment/authentication shortcodes.
 
-- maximum shell width;
-- left and right sidebar widths;
-- gap;
-- sticky header preference;
-- Worldwide Clinic page ID;
-- doctor/clinic post type;
-- excluded pages;
-- per-page layout overrides;
-- optional validated theme content selector;
-- optional validated selectors to hide duplicate theme header/footer elements.
+## Identity and Publishing
 
-Per-page overrides use one entry per line:
+The shell treats Sabri Membership Core as the authoritative identity and permission foundation when available. It recognizes current and legacy founder, trusted publisher, pending doctor, doctor, and verified doctor contracts.
 
-```text
-42:three
-99:two
-100:minimal
-```
+The Create action never falls back to `wp-admin/post-new.php`. It appears only when:
 
-Supported override values are `default`, `three`, `two`, and `minimal`.
+1. the user has authoritative publishing permission; and
+2. a real moderated platform composer is resolved.
 
-## Page Mapping
+Login, signup, forgot-password, profile, and completion actions prefer platform-managed public pages. WordPress core login or password recovery is retained only as a safe access fallback when the corresponding public platform page is unavailable.
 
-Navigation resolution uses this precedence:
+## Navigation Resolution
 
-1. Configured published Page ID.
-2. Published page containing configured or detected shortcode.
-3. Existing post-type archive.
-4. Built-in slug candidate match.
-5. Validated configured URL override.
+Resolution precedence is:
 
-Unresolved destinations are hidden rather than rendered as dead `#` links.
+1. configured published Page ID;
+2. authoritative companion page contract;
+3. published page containing an approved shortcode;
+4. existing public post-type archive;
+5. published slug candidate;
+6. validated URL override;
+7. homepage fallback for Home only.
 
-## Worldwide Clinic Mapping
+Unresolved destinations are hidden. News does not silently resolve to Home.
 
-Set the Worldwide Clinic page ID in **Layout**. That page receives three-column layout. Set the doctor/clinic post type to the existing public post type used by the real clinic or doctor system. Single posts of that post type also receive three-column layout.
+Navigation is cached by locale and cache epoch. The cache is invalidated when shell settings, companion page maps, pages, post types, plugins, theme, permalinks, front-page settings, or language context change.
+
+## Notifications
+
+When File 19 is active, the shell uses the real notification bell shortcode and suppresses the companion floating duplicate for that request. Private Messages and Notifications actions are not rendered for logged-out visitors.
+
+## Doctor and Clinic Data
+
+Doctor panels read authoritative public data from existing profile helpers and Membership Core profile, professional credential, and approved clinic records. The shell does not create or own a doctor database. Public contact output remains subject to the source module's approved/public data contract and the shell's `sabri_shell_doctor_public_data` filter.
 
 ## Home Feed
 
-Use:
+`[sabri_shell_home_feed]` is a chronological fallback only. Automatic insertion is suppressed when the page already contains an authoritative platform, File 04, or File 21 feed shortcode. This prevents duplicate Home feeds.
 
-```text
-[sabri_shell_home_feed]
-```
+## Installation and Upgrade
 
-The feed is chronological and labeled **Latest**. On a static front page, the plugin can append the feed after existing page content when automatic insertion is enabled. It does not append when the shortcode already exists and does not duplicate the normal WordPress posts page loop.
+1. Take a complete backup.
+2. Install or upgrade on Hostinger staging only.
+3. Activate the companion modules required for the intended destinations.
+4. Open **Sabri Shell > System Check**.
+5. Resolve every required destination and review all warnings.
+6. Run the full checklist in `STAGING-ACCEPTANCE.md`.
+7. Do not deploy to production until founder acceptance and rollback proof are recorded.
+
+See `MIGRATION.md` and `ROLLBACK.md`.
 
 ## Safe Mode
 
-Administrators with `manage_options` can add this query string to a public URL:
+Administrators may append:
 
 ```text
 ?sabri_shell_safe=1
 ```
 
-Developers can also define:
+A developer may also define:
 
 ```php
 define( 'SABRI_SHELL_DISABLE', true );
 ```
 
-Both methods suppress the public shell without deleting content or companion-plugin data.
+Both suppress shell rendering without deleting platform content or companion data.
 
-## Emergency Disable and Re-enable
+## Automated Verification
 
-Use **Sabri Shell > Safe Mode** to toggle Emergency Disable or Re-enable. This only changes shell rendering. It does not remove posts, pages, users, media, comments, messages, appointments, marketplace data, clinic data, or companion-plugin tables.
+Run:
 
-## Rollback
-
-The plugin captures an activation snapshot before defaults or migrations mutate settings. Rollback restores only shell-owned settings and shell navigation/theme visibility configuration. It does not delete or modify WordPress content or companion-plugin data.
-
-See [ROLLBACK.md](ROLLBACK.md).
-
-## Complete Repair
-
-Complete Repair may merge missing defaults, migrate old shell settings, rebuild navigation mappings, clear shell navigation cache, schedule one rewrite-rule flush, clear shell-only transients, revalidate schema, and refresh integration detection.
-
-It must never delete or change posts, pages, users, media, comments, or companion-plugin data.
-
-## Companion Integrations
-
-The Integrations tab detects:
-
-- Notifications;
-- Network;
-- Messages;
-- Marketplace;
-- Appointments;
-- doctor roles;
-- verified doctor roles;
-- clinic post types;
-- configured functions;
-- configured shortcodes and URLs through navigation mappings.
-
-The plugin links to real detected systems only.
-
-## Permissions
-
-Admin settings require `manage_options`. The public Create button appears only when the logged-in user has `edit_posts` and belongs to a configured allowed role. Default allowed roles are `administrator` and `editor`. The shell never grants publishing capabilities.
-
-## Accessibility
-
-The implementation targets WCAG 2.2 AA as a design objective. It includes semantic landmarks, a skip link, visible focus, accessible drawers, focus trapping, Escape close, outside click close, focus restoration, logical CSS properties for RTL readiness, and minimum 44px mobile touch targets.
-
-## Performance
-
-The plugin uses scoped CSS, vanilla JavaScript, no external CDN, no remote fonts, no bundled font binaries, and no unsafe remote scripts. Assets load only on public shell requests. Navigation resolution is cached and invalidated when settings, pages, post types, permalinks, or Repair change.
-
-## Privacy
-
-The right sidebar uses only public content and explicitly public profile fields such as `sabri_public_phone` and `sabri_public_whatsapp`. It never displays CNIC, passport, private email, private phone, patient data, medical records, fabricated reviews, fake counts, or fake online status.
-
-## Known Limitations
-
-- Theme compatibility depends on how the active theme structures content.
-- Right sidebar modules require real content or real integrations.
-- Live Hostinger, live database, and cross-browser testing must be completed manually.
-- The plugin does not create duplicate backend databases for companion systems.
-
-## Tests and Release
-
-Local static checks:
-
-```powershell
-.\tools\run-local-static-checks.ps1
+```bash
+find . -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+node --check assets/js/shell.js
+php tests/run.php
 ```
 
-Local release build:
+The repository CI additionally verifies version consistency, CSS brace balance, prohibited DOM-reparenting patterns, prohibited core composer fallback, required corrected contracts, and candidate ZIP integrity when an artifact is present.
 
-```powershell
-.\tools\build-release.ps1
-```
+Automated checks do not establish WordPress runtime compatibility, live database behavior, cross-browser behavior, accessibility conformance, companion-module end-to-end behavior, or Hostinger staging acceptance.
 
-GitHub Actions runs PHP lint, WordPress stub/bootstrap tests, JavaScript syntax checks, CSS sanity checks, static scans, release ZIP validation, SHA-256 generation, and artifact upload.
+## Production Limitations
+
+The plugin does not provide or claim:
+
+- a messaging backend, real calls, or audited end-to-end encryption;
+- live streaming;
+- AI diagnosis or prescription;
+- universal compatibility with every WordPress theme;
+- production acceptance without staging evidence.
+
+See `REVIEW-CORRECTIONS.md` for the corrective traceability record.

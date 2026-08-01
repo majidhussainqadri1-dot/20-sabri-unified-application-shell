@@ -123,6 +123,7 @@ final class Settings {
 		$output                  = self::deep_merge( $defaults, $output );
 
 		Navigation::invalidate_cache();
+		Integrations::invalidate_cache();
 
 		return $output;
 	}
@@ -135,6 +136,10 @@ final class Settings {
 	 * @return array<string,mixed>
 	 */
 	public static function deep_merge( array $base, array $overrides ) {
+		if ( self::is_list( $base ) || ( array() !== $overrides && self::is_list( $overrides ) ) ) {
+			return array_values( $overrides );
+		}
+
 		foreach ( $overrides as $key => $value ) {
 			if ( is_array( $value ) && isset( $base[ $key ] ) && is_array( $base[ $key ] ) ) {
 				$base[ $key ] = self::deep_merge( $base[ $key ], $value );
@@ -144,6 +149,24 @@ final class Settings {
 		}
 
 		return $base;
+	}
+
+	/**
+	 * Determine whether an array is a sequential list.
+	 *
+	 * @param array<mixed> $value Array.
+	 * @return bool
+	 */
+	private static function is_list( array $value ) {
+		if ( function_exists( 'array_is_list' ) ) {
+			return array_is_list( $value );
+		}
+
+		if ( array() === $value ) {
+			return true;
+		}
+
+		return array_keys( $value ) === range( 0, count( $value ) - 1 );
 	}
 
 	/**
@@ -324,7 +347,7 @@ final class Settings {
 		$output                  = $existing;
 		$output['color_mode']    = in_array( isset( $input['color_mode'] ) ? $input['color_mode'] : 'system', array( 'light', 'dark', 'system' ), true ) ? $input['color_mode'] : 'system';
 		$output['density']       = in_array( isset( $input['density'] ) ? $input['density'] : 'comfortable', array( 'comfortable', 'compact' ), true ) ? $input['density'] : 'comfortable';
-		$output['primary_color'] = self::sanitize_hex_color( isset( $input['primary_color'] ) ? $input['primary_color'] : $existing['primary_color'], '#f26100' );
+		$output['primary_color'] = self::sanitize_hex_color( isset( $input['primary_color'] ) ? $input['primary_color'] : $existing['primary_color'], '#ff8a1f' );
 		$output['border_radius'] = self::int_range( $input, 'border_radius', 0, 20, $existing['border_radius'] );
 		$output['font_scale']    = self::float_range( $input, 'font_scale', 0.9, 1.2, $existing['font_scale'] );
 
