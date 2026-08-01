@@ -80,6 +80,7 @@ jobs:
           css = (root / 'assets/css/shell-corrective-1.1.1.css').read_text(encoding='utf-8')
           js = (root / 'assets/js/shell-corrective-1.1.1.js').read_text(encoding='utf-8')
           readme = (root / 'readme.txt').read_text(encoding='utf-8')
+          developer_readme = (root / 'README.md').read_text(encoding='utf-8')
 
           required_main = (
               '* Version: 1.1.1',
@@ -89,6 +90,9 @@ jobs:
               "define( 'SABRI_SHELL_CREATE_FUNCTIONS_OWNED', true )",
               'function sabri_shell_create_contract_available()',
               'function sabri_shell_create_visible_for_current_user()',
+              "'Sabri\\\\UnifiedShell\\\\SafeMode'       => realpath( SABRI_SHELL_PATH . 'includes/class-safe-mode.php' )",
+              "'Sabri\\\\UnifiedShell\\\\CreateContract' => realpath( SABRI_SHELL_PATH . 'includes/class-create-contract.php' )",
+              'new ReflectionClass',
               'CreateContract::register()',
               'LayoutCorrection::register()',
           )
@@ -101,6 +105,10 @@ jobs:
               'get_current_user_id()',
               'SafeMode::disabled()',
               'private static $resolving',
+              'private static function package_owned()',
+              'new \\ReflectionClass',
+              'new \\ReflectionFunction',
+              'catch ( \\Throwable $error )',
               'sabri-shell-create-contract-denied',
           ):
               if symbol not in contract:
@@ -114,7 +122,13 @@ jobs:
               if forbidden in js:
                   raise SystemExit(f'Unsafe corrective DOM movement remains: {forbidden}')
 
-          for required in ('MutationObserver', 'sabri-hnf-single-content', 'sabri-shell-managed-single-layout-repaired'):
+          for required in (
+              'MutationObserver',
+              'sabri-hnf-single-content',
+              'sabri-shell-managed-single-layout-repaired',
+              "element.querySelector('[data-sabri-shell-component]')",
+              'while (node && node !== document.body',
+          ):
               if required not in js:
                   raise SystemExit(f'Missing bounded layout recovery control: {required}')
 
@@ -126,6 +140,8 @@ jobs:
               raise SystemExit('Corrective CSS braces are unbalanced.')
           if 'Stable tag: 1.1.1' not in readme:
               raise SystemExit('WordPress stable tag is not 1.1.1.')
+          if '- Version: `1.1.1`' not in developer_readme or '- File 22 Create contract: `1.0.1`' not in developer_readme:
+              raise SystemExit('Developer README release identity is stale.')
           if 'wp_enqueue_style' not in correction or 'wp_enqueue_script' not in correction:
               raise SystemExit('Corrective asset bridge is incomplete.')
 
@@ -184,7 +200,8 @@ jobs:
           unzip -q "release/${base}.zip" -d /tmp/file20-111
           diff -qr /tmp/file20-111/sabri-unified-application-shell sabri-unified-application-shell
           unzip -p "release/${base}.zip" 'sabri-unified-application-shell/sabri-unified-application-shell.php' | grep -F "SABRI_SHELL_CREATE_CONTRACT_VERSION', '1.0.1'"
-          unzip -p "release/${base}.zip" 'sabri-unified-application-shell/includes/class-create-contract.php' | grep -F "sabri_shell_can_show_create"
+          unzip -p "release/${base}.zip" 'sabri-unified-application-shell/sabri-unified-application-shell.php' | grep -F 'new ReflectionClass'
+          unzip -p "release/${base}.zip" 'sabri-unified-application-shell/includes/class-create-contract.php' | grep -F 'new \ReflectionFunction'
           unzip -p "release/${base}.zip" 'sabri-unified-application-shell/assets/js/shell-corrective-1.1.1.js' | grep -F 'sabri-hnf-single-content'
 
       - name: Write exact-head report
@@ -198,7 +215,8 @@ jobs:
           - PHP 8.3 syntax and tests: PASS
           - Existing File 20 corrective suite: PASS
           - File 22 Create contract suite: PASS
-          - JavaScript syntax: PASS
+          - Package-source reflection checks: PASS
+          - JavaScript syntax and safe-target walk: PASS
           - CSS/DOM ownership assertions: PASS
           - Deterministic package and source equality: PASS
           - Staging accepted: NO
