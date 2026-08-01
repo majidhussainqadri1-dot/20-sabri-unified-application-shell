@@ -3,7 +3,7 @@
  * Plugin Name: Sabri Unified Application Shell
  * Plugin URI: https://github.com/majidhussainqadri1-dot/20-sabri-unified-application-shell
  * Description: Secure responsive public application shell for the Sabri Social Homeopathy Platform.
- * Version: 1.1.0
+ * Version: 1.1.1
  * Author: Dr. Allamah Majid Hussain Sabri Muhaddith Mursheed
  * Text Domain: sabri-unified-application-shell
  * Domain Path: /languages
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SABRI_SHELL_VERSION', '1.1.0' );
+define( 'SABRI_SHELL_VERSION', '1.1.1' );
 define( 'SABRI_SHELL_FILE', __FILE__ );
 define( 'SABRI_SHELL_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SABRI_SHELL_URL', plugin_dir_url( __FILE__ ) );
@@ -54,6 +54,39 @@ spl_autoload_register(
 		}
 	}
 );
+
+/*
+ * Exact optional File 20 Create producer contract consumed by File 22.
+ *
+ * The family is declared only when every marker and function name is wholly
+ * unclaimed. A partial or foreign preclaim is deliberately left incomplete so
+ * File 22's reflection-backed trust check fails closed instead of accepting a
+ * mixed-owner contract.
+ */
+$sabri_shell_create_contract_unclaimed = ! defined( 'SABRI_SHELL_CREATE_CONTRACT_VERSION' )
+	&& ! defined( 'SABRI_SHELL_CREATE_CONTRACT_OWNER' )
+	&& ! defined( 'SABRI_SHELL_CREATE_FUNCTIONS_OWNED' )
+	&& ! function_exists( 'sabri_shell_create_contract_available' )
+	&& ! function_exists( 'sabri_shell_create_visible_for_current_user' );
+
+if ( $sabri_shell_create_contract_unclaimed ) {
+	define( 'SABRI_SHELL_CREATE_CONTRACT_VERSION', '1.0.1' );
+	define( 'SABRI_SHELL_CREATE_CONTRACT_OWNER', 'sabri-unified-application-shell' );
+	define( 'SABRI_SHELL_CREATE_FUNCTIONS_OWNED', true );
+
+	/** Whether the exact package-owned File 20 Create contract is usable. */
+	function sabri_shell_create_contract_available() {
+		return class_exists( 'Sabri\\UnifiedShell\\CreateContract' )
+			&& Sabri\UnifiedShell\CreateContract::available();
+	}
+
+	/** Whether the current logged-in principal may see the global Create action. */
+	function sabri_shell_create_visible_for_current_user() {
+		return class_exists( 'Sabri\\UnifiedShell\\CreateContract' )
+			&& Sabri\UnifiedShell\CreateContract::visible_for_current_user();
+	}
+}
+unset( $sabri_shell_create_contract_unclaimed );
 
 register_activation_hook( __FILE__, array( 'Sabri\\UnifiedShell\\Plugin', 'activate' ) );
 register_deactivation_hook( __FILE__, array( 'Sabri\\UnifiedShell\\Plugin', 'deactivate' ) );
