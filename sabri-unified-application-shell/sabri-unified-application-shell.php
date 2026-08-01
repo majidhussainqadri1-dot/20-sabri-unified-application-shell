@@ -57,14 +57,16 @@ spl_autoload_register(
 
 /*
  * File 22 performs non-autoloading reflection checks for File 20's SafeMode
- * class and Create producers. Resolve both classes now and verify their exact
- * package files before advertising any contract markers. A foreign preclaim
- * therefore cannot cause File 20 to publish a mixed-owner contract family.
+ * class and Create producers. Resolve the corrective classes now and verify
+ * their exact package files before advertising markers or invoking methods. A
+ * foreign class preclaim therefore cannot create a mixed-owner contract or a
+ * fatal method call during plugins_loaded.
  */
-$sabri_shell_create_classes_owned = static function () {
+$sabri_shell_corrective_classes_owned = static function () {
 	$expected = array(
-		'Sabri\\UnifiedShell\\SafeMode'       => realpath( SABRI_SHELL_PATH . 'includes/class-safe-mode.php' ),
-		'Sabri\\UnifiedShell\\CreateContract' => realpath( SABRI_SHELL_PATH . 'includes/class-create-contract.php' ),
+		'Sabri\\UnifiedShell\\SafeMode'        => realpath( SABRI_SHELL_PATH . 'includes/class-safe-mode.php' ),
+		'Sabri\\UnifiedShell\\CreateContract'  => realpath( SABRI_SHELL_PATH . 'includes/class-create-contract.php' ),
+		'Sabri\\UnifiedShell\\LayoutCorrection' => realpath( SABRI_SHELL_PATH . 'includes/class-layout-correction.php' ),
 	);
 	try {
 		foreach ( $expected as $class_name => $expected_file ) {
@@ -83,16 +85,16 @@ $sabri_shell_create_classes_owned = static function () {
 	}
 	return true;
 };
+$sabri_shell_corrective_classes_are_owned = $sabri_shell_corrective_classes_owned();
 
 /*
  * Exact optional File 20 Create producer contract consumed by File 22.
  *
  * The family is declared only when every marker and function name is wholly
- * unclaimed and both required classes are proved to originate from this exact
- * package. A partial or foreign preclaim remains incomplete so File 22 fails
- * closed instead of accepting a mixed-owner contract.
+ * unclaimed and all corrective classes originate from this exact package. A
+ * partial or foreign preclaim remains incomplete so File 22 fails closed.
  */
-$sabri_shell_create_contract_unclaimed = $sabri_shell_create_classes_owned()
+$sabri_shell_create_contract_unclaimed = $sabri_shell_corrective_classes_are_owned
 	&& ! defined( 'SABRI_SHELL_CREATE_CONTRACT_VERSION' )
 	&& ! defined( 'SABRI_SHELL_CREATE_CONTRACT_OWNER' )
 	&& ! defined( 'SABRI_SHELL_CREATE_FUNCTIONS_OWNED' )
@@ -116,17 +118,19 @@ if ( $sabri_shell_create_contract_unclaimed ) {
 			&& Sabri\UnifiedShell\CreateContract::visible_for_current_user();
 	}
 }
-unset( $sabri_shell_create_classes_owned, $sabri_shell_create_contract_unclaimed );
 
 register_activation_hook( __FILE__, array( 'Sabri\\UnifiedShell\\Plugin', 'activate' ) );
 register_deactivation_hook( __FILE__, array( 'Sabri\\UnifiedShell\\Plugin', 'deactivate' ) );
 
 add_action(
 	'plugins_loaded',
-	static function () {
+	static function () use ( $sabri_shell_corrective_classes_are_owned ) {
 		load_plugin_textdomain( 'sabri-unified-application-shell', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 		Sabri\UnifiedShell\Plugin::instance()->register();
-		Sabri\UnifiedShell\CreateContract::register();
-		Sabri\UnifiedShell\LayoutCorrection::register();
+		if ( $sabri_shell_corrective_classes_are_owned ) {
+			Sabri\UnifiedShell\CreateContract::register();
+			Sabri\UnifiedShell\LayoutCorrection::register();
+		}
 	}
 );
+unset( $sabri_shell_corrective_classes_owned, $sabri_shell_corrective_classes_are_owned, $sabri_shell_create_contract_unclaimed );
