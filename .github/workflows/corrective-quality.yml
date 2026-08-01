@@ -3,6 +3,7 @@ name: File 20 Corrective Quality
 on:
   pull_request:
     branches:
+      - main
       - baseline/file-20-original-import
 
 permissions:
@@ -12,21 +13,27 @@ jobs:
   preflight:
     runs-on: ubuntu-latest
     outputs:
-      pending: ${{ steps.detect.outputs.pending }}
+      import_pending: ${{ steps.detect.outputs.import_pending }}
+      repack_pending: ${{ steps.detect.outputs.repack_pending }}
     steps:
       - uses: actions/checkout@v4
       - id: detect
         shell: bash
         run: |
           if test -f '.corrective-upload/READY'; then
-            echo 'pending=true' >> "$GITHUB_OUTPUT"
+            echo 'import_pending=true' >> "$GITHUB_OUTPUT"
           else
-            echo 'pending=false' >> "$GITHUB_OUTPUT"
+            echo 'import_pending=false' >> "$GITHUB_OUTPUT"
+          fi
+          if test -f '.corrective-repack/READY'; then
+            echo 'repack_pending=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'repack_pending=false' >> "$GITHUB_OUTPUT"
           fi
 
   import-corrective-candidate:
     needs: preflight
-    if: needs.preflight.outputs.pending == 'true'
+    if: needs.preflight.outputs.import_pending == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -88,9 +95,93 @@ jobs:
           git commit -m 'fix: harden File 20 integration and layout'
           git push origin HEAD:${{ github.head_ref }}
 
+  harden-and-repack-candidate:
+    needs: preflight
+    if: needs.preflight.outputs.import_pending == 'false' && needs.preflight.outputs.repack_pending == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+      - name: Apply adversarial privacy and authority correction
+        run: python3 tools/file20-hardening.py
+      - name: Validate corrected source
+        shell: bash
+        run: |
+          set -euo pipefail
+          find sabri-unified-application-shell -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+          node --check sabri-unified-application-shell/assets/js/shell.js
+          php sabri-unified-application-shell/tests/run.php
+          python3 - <<'PY'
+          from pathlib import Path
+          php = '\n'.join(p.read_text(encoding='utf-8') for p in Path('sabri-unified-application-shell').rglob('*.php'))
+          for forbidden in ('smc_professional_credentials', 'smc_clinics'):
+              if forbidden in php:
+                  raise SystemExit(f'File 20 still directly queries a non-owned table: {forbidden}')
+          for required in ('SMC_Contracts', 'SPD_Verification_Adapter', 'SPD_Helpers::can_show_contact'):
+              if required not in php:
+                  raise SystemExit(f'Missing authoritative integration contract: {required}')
+          print('Authority and privacy static assertions passed.')
+          PY
+      - name: Build deterministic corrected candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
+
+          root = Path('sabri-unified-application-shell')
+          out = Path('RELEASES/20-sabri-unified-application-shell-1.1.0-RC1.zip')
+          out.parent.mkdir(parents=True, exist_ok=True)
+          if out.exists():
+              out.unlink()
+          with ZipFile(out, 'w') as archive:
+              for path in sorted(p for p in root.rglob('*') if p.is_file()):
+                  info = ZipInfo(path.as_posix(), (2026, 8, 1, 0, 0, 0))
+                  info.compress_type = ZIP_DEFLATED
+                  info.external_attr = (0o100644 & 0xFFFF) << 16
+                  archive.writestr(info, path.read_bytes())
+          PY
+          sha="$(sha256sum RELEASES/20-sabri-unified-application-shell-1.1.0-RC1.zip | awk '{print $1}')"
+          printf '%s  %s\n' "$sha" '20-sabri-unified-application-shell-1.1.0-RC1.zip' > RELEASES/CHECKSUMS.sha256
+          cat > RELEASES/README.md <<DOC
+          # File 20 Corrective Candidate
+
+          - Package: \`20-sabri-unified-application-shell-1.1.0-RC1.zip\`
+          - Plugin version: \`1.1.0\`
+          - SHA-256: \`$sha\`
+          - Status: corrected release candidate; automated QA accepted, staging not yet accepted
+          - Corrections: authoritative File 00 publishing assertions, File 03 verified/public profile projection, explicit public-contact consent, and removal of direct queries to non-owned Membership Core tables.
+
+          The exact original 1.0.0 baseline remains unchanged in \`SOURCE-ARCHIVE/\`. Hostinger staging and live deployment remain separate lifecycle gates.
+          DOC
+          rm -rf .corrective-repack
+          rm -f tools/file20-hardening.py
+      - name: Verify corrected package matches source
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd RELEASES && sha256sum --check CHECKSUMS.sha256)
+          unzip -t RELEASES/20-sabri-unified-application-shell-1.1.0-RC1.zip
+          rm -rf /tmp/file20-candidate
+          mkdir -p /tmp/file20-candidate
+          unzip -q RELEASES/20-sabri-unified-application-shell-1.1.0-RC1.zip -d /tmp/file20-candidate
+          diff -qr /tmp/file20-candidate/sabri-unified-application-shell sabri-unified-application-shell
+      - name: Commit corrected source and package
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add --all
+          git commit -m 'fix: enforce File 00 and File 03 authority boundaries'
+          git push origin HEAD:${{ github.head_ref }}
+
   php-quality:
     needs: preflight
-    if: needs.preflight.outputs.pending == 'false'
+    if: needs.preflight.outputs.import_pending == 'false' && needs.preflight.outputs.repack_pending == 'false'
     name: PHP ${{ matrix.php }} quality
     runs-on: ubuntu-latest
     strategy:
@@ -110,7 +201,7 @@ jobs:
 
   static-and-package:
     needs: preflight
-    if: needs.preflight.outputs.pending == 'false'
+    if: needs.preflight.outputs.import_pending == 'false' && needs.preflight.outputs.repack_pending == 'false'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -136,13 +227,15 @@ jobs:
               if unsafe in fallback:
                   raise SystemExit(f'Unsafe content fallback remains: {unsafe}')
           php = '\n'.join(p.read_text(encoding='utf-8') for p in root.rglob('*.php'))
-          if 'post-new.php' in php:
-              raise SystemExit('Core admin composer fallback remains.')
+          for forbidden in ('post-new.php', 'smc_professional_credentials', 'smc_clinics'):
+              if forbidden in php:
+                  raise SystemExit(f'Prohibited ownership or bypass pattern remains: {forbidden}')
           for contract in (
               'slc_learning_home', 'he_encyclopedia_home', 'sdd_doctors_directory',
               'swc_worldwide_clinic', 'svw_video_wall', 'srl_reels', 'spl_library',
               'srf_radar', 'sai_study_guide', 'sabri_notification_bell',
-              '_smc_official_founder', '_smc_doctor_verified', '_smc_trusted_publisher'
+              '_smc_official_founder', '_smc_doctor_verified', '_smc_trusted_publisher',
+              'SMC_Contracts', 'SPD_Verification_Adapter', 'SPD_Helpers::can_show_contact'
           ):
               if contract not in php:
                   raise SystemExit(f'Required corrected contract is missing: {contract}')
