@@ -96,5 +96,7 @@ add_action(
 	static function () {
 		load_plugin_textdomain( 'sabri-unified-application-shell', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 		Sabri\UnifiedShell\Plugin::instance()->register();
+		Sabri\UnifiedShell\CreateContract::register();
+		Sabri\UnifiedShell\LayoutCorrection::register();
 	}
 );
