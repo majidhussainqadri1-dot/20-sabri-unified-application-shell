@@ -20,15 +20,17 @@ final class Layout {
 	const MINIMAL = 'minimal';
 
 	/**
-	 * Fallback selectors for the public content target.
+	 * Conservative content-level selectors. Site/root wrappers are excluded.
 	 *
 	 * @return array<int,string>
 	 */
 	public static function content_target_fallbacks() {
 		return array(
-			'.wp-site-blocks',
-			'#page',
-			'.site',
+			'main.site-main',
+			'main#main',
+			'.site-main',
+			'#primary',
+			'.content-area',
 			'main',
 			'#content',
 			'.site-content',
@@ -36,21 +38,17 @@ final class Layout {
 	}
 
 	/**
-	 * Return configured selector followed by fallback selectors.
+	 * Return configured selector followed by safe fallbacks.
 	 *
 	 * @param array<string,mixed>|null $settings Settings.
 	 * @return array<int,string>
 	 */
 	public static function content_target_candidates( $settings = null ) {
-		if ( null === $settings ) {
-			$settings = Settings::get();
-		}
-
+		$settings   = null === $settings ? Settings::get() : $settings;
 		$candidates = array();
 		if ( ! empty( $settings['layout']['theme_content_selector'] ) ) {
 			$candidates[] = $settings['layout']['theme_content_selector'];
 		}
-
 		return array_values( array_unique( array_merge( $candidates, self::content_target_fallbacks() ) ) );
 	}
 
@@ -61,21 +59,17 @@ final class Layout {
 	 * @return string
 	 */
 	public static function content_target_report( $settings = null ) {
-		if ( null === $settings ) {
-			$settings = Settings::get();
-		}
-
+		$settings = null === $settings ? Settings::get() : $settings;
 		if ( ! empty( $settings['layout']['theme_content_selector'] ) ) {
 			return sprintf(
 				/* translators: %s is a CSS selector. */
-				__( 'Configured selector preferred at runtime: %s', 'sabri-unified-application-shell' ),
+				__( 'Configured content-level selector preferred: %s', 'sabri-unified-application-shell' ),
 				$settings['layout']['theme_content_selector']
 			);
 		}
-
 		return sprintf(
 			/* translators: %s is a comma-separated selector list. */
-			__( 'Runtime fallback order: %s', 'sabri-unified-application-shell' ),
+			__( 'Safe annotation fallback order: %s', 'sabri-unified-application-shell' ),
 			implode( ', ', self::content_target_fallbacks() )
 		);
 	}
@@ -87,27 +81,23 @@ final class Layout {
 	 */
 	public static function current_mode() {
 		$settings = Settings::get();
-
 		if ( empty( $settings['enabled'] ) || SafeMode::disabled() || self::is_excluded_request() ) {
 			return self::MINIMAL;
 		}
 
 		$page_id = self::current_page_id();
-		if ( $page_id && in_array( $page_id, $settings['layout']['excluded_page_ids'], true ) ) {
+		if ( $page_id && in_array( $page_id, (array) $settings['layout']['excluded_page_ids'], true ) ) {
 			return self::MINIMAL;
 		}
-
 		if ( $page_id && ! empty( $settings['layout']['per_page_overrides'][ $page_id ] ) ) {
 			$override = $settings['layout']['per_page_overrides'][ $page_id ];
 			if ( 'default' !== $override && in_array( $override, array( self::THREE, self::TWO, self::MINIMAL ), true ) ) {
 				return apply_filters( 'sabri_shell_layout_mode', $override, $settings );
 			}
 		}
-
 		if ( self::is_three_column_context( $settings, $page_id ) ) {
 			return apply_filters( 'sabri_shell_layout_mode', self::THREE, $settings );
 		}
-
 		return apply_filters( 'sabri_shell_layout_mode', self::TWO, $settings );
 	}
 
@@ -133,16 +123,29 @@ final class Layout {
 			return true;
 		}
 
-		$clinic_page_id = isset( $settings['layout']['worldwide_clinic_page_id'] ) ? absint( $settings['layout']['worldwide_clinic_page_id'] ) : 0;
+		$clinic_page_id = ! empty( $settings['layout']['worldwide_clinic_page_id'] ) ? absint( $settings['layout']['worldwide_clinic_page_id'] ) : Integrations::page_id( 'clinic' );
 		if ( $clinic_page_id && $page_id && $clinic_page_id === $page_id ) {
 			return true;
 		}
 
-		$post_type = isset( $settings['layout']['clinic_post_type'] ) ? sanitize_key( $settings['layout']['clinic_post_type'] ) : '';
-		if ( $post_type && function_exists( 'is_singular' ) && is_singular( $post_type ) ) {
+		$profile_page_id = Integrations::page_id( 'profile' );
+		if ( $profile_page_id && $page_id === $profile_page_id && ! empty( $_GET['user'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only public routing.
 			return true;
 		}
 
+		$post_types = array_filter(
+			array_unique(
+				array_merge(
+					array( isset( $settings['layout']['clinic_post_type'] ) ? sanitize_key( $settings['layout']['clinic_post_type'] ) : '' ),
+					(array) Integrations::detect()['clinic_post_types']
+				)
+			)
+		);
+		foreach ( $post_types as $post_type ) {
+			if ( function_exists( 'is_singular' ) && is_singular( $post_type ) ) {
+				return true;
+			}
+		}
 		return false;
 	}
 
@@ -152,50 +155,38 @@ final class Layout {
 	 * @return bool
 	 */
 	public static function is_excluded_request() {
-		if ( is_admin() ) {
+		if ( is_admin() || ( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() ) || ( function_exists( 'wp_doing_cron' ) && wp_doing_cron() ) ) {
 			return true;
 		}
-
-		if ( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() ) {
+		if ( ( defined( 'REST_REQUEST' ) && REST_REQUEST ) || ( defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST ) ) {
 			return true;
 		}
-
-		if ( function_exists( 'wp_doing_cron' ) && wp_doing_cron() ) {
-			return true;
-		}
-
-		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
-			return true;
-		}
-
-		if ( defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST ) {
-			return true;
-		}
-
-		$conditional_checks = array( 'is_feed', 'is_embed', 'is_preview', 'is_customize_preview', 'is_robots', 'is_favicon', 'is_trackback' );
-		foreach ( $conditional_checks as $function ) {
+		foreach ( array( 'is_feed', 'is_embed', 'is_preview', 'is_customize_preview', 'is_robots', 'is_favicon', 'is_trackback' ) as $function ) {
 			if ( function_exists( $function ) && $function() ) {
 				return true;
 			}
 		}
-
 		if ( function_exists( 'is_singular' ) && is_singular() && function_exists( 'post_password_required' ) && post_password_required() ) {
 			return true;
 		}
-
-		if ( ! empty( $_GET['print'] ) || ! empty( $_GET['sabri_shell_maintenance'] ) ) {
+		if ( ! empty( $_GET['print'] ) || ! empty( $_GET['sabri_shell_maintenance'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only display mode.
 			return true;
 		}
 
-		$uri = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
-		if ( preg_match( '#/(wp-login\.php|login|signup|register|lostpassword|password-reset|account-verification)(/|\?|$)#i', $uri ) ) {
+		$request = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+		$path    = (string) wp_parse_url( $request, PHP_URL_PATH );
+		$auth_slugs = array(
+			'wp-login.php', 'login', 'signup', 'register', 'lostpassword', 'password-reset', 'account-verification',
+			'account-login', 'create-account', 'complete-profile', 'forgot-password', 'account-access-required',
+			'verification', 'verify-email', 'security-center', 'safe-mode', 'maintenance',
+		);
+		$segments = array_values( array_filter( explode( '/', trim( strtolower( $path ), '/' ) ) ) );
+		if ( array_intersect( $segments, $auth_slugs ) ) {
 			return true;
 		}
-
-		if ( preg_match( '#/(wp-json|feed|robots\.txt|sitemap[^/]*)#i', $uri ) ) {
+		if ( preg_match( '#/(wp-json|feed|robots\.txt|sitemap[^/]*)#i', $path ) ) {
 			return true;
 		}
-
 		return false;
 	}
 
@@ -205,10 +196,6 @@ final class Layout {
 	 * @return int
 	 */
 	public static function current_page_id() {
-		if ( function_exists( 'get_queried_object_id' ) ) {
-			return absint( get_queried_object_id() );
-		}
-
-		return 0;
+		return function_exists( 'get_queried_object_id' ) ? absint( get_queried_object_id() ) : 0;
 	}
 }

@@ -41,7 +41,8 @@ final class Plugin {
 	 * @return void
 	 */
 	public function register() {
-		Settings::register();
+		add_action( 'admin_init', array( Settings::class, 'register' ) );
+		add_action( 'init', array( __CLASS__, 'maybe_upgrade' ), 1 );
 		Navigation::register_cache_hooks();
 		HomeFeed::register();
 		Renderer::register();
@@ -50,6 +51,22 @@ final class Plugin {
 		if ( is_admin() ) {
 			Admin::register();
 		}
+	}
+
+	/**
+	 * Apply idempotent settings-schema upgrades.
+	 *
+	 * @return void
+	 */
+	public static function maybe_upgrade() {
+		$current = get_option( Defaults::OPTION_NAME, array() );
+		$schema  = is_array( $current ) && isset( $current['schema_version'] ) ? absint( $current['schema_version'] ) : 0;
+		if ( $schema >= Defaults::SCHEMA_VERSION ) {
+			return;
+		}
+		Settings::ensure_defaults();
+		Navigation::invalidate_cache();
+		Integrations::invalidate_cache();
 	}
 
 	/**
@@ -71,6 +88,7 @@ final class Plugin {
 	 */
 	public static function deactivate() {
 		Navigation::invalidate_cache();
+		Integrations::invalidate_cache();
 	}
 
 	/**

@@ -84,7 +84,11 @@ final class Assets {
 		}
 
 		if ( ! empty( $layout['custom_hide_selectors'] ) ) {
-			$selectors[] = $layout['custom_hide_selectors'];
+			foreach ( array_map( 'trim', explode( ',', $layout['custom_hide_selectors'] ) ) as $selector ) {
+				if ( '' !== $selector ) {
+					$selectors[] = $selector;
+				}
+			}
 		}
 
 		?>

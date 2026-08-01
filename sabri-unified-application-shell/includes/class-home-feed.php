@@ -72,13 +72,37 @@ final class HomeFeed {
 			return $content;
 		}
 
-		if ( has_shortcode( $content, 'sabri_shell_home_feed' ) ) {
+		if ( has_shortcode( $content, 'sabri_shell_home_feed' ) || self::authoritative_feed_present( $content ) ) {
 			return $content;
 		}
 
 		self::$auto_inserted = true;
 
 		return $content . self::render( absint( $settings['home_feed']['posts_count'] ) );
+	}
+
+	/**
+	 * Determine whether File 04/File 21 or another approved module already owns
+	 * the Home/News feed for this request.
+	 *
+	 * @param string $content Current page content.
+	 * @return bool
+	 */
+	public static function authoritative_feed_present( $content = '' ) {
+		$present = false;
+		foreach ( array( 'sabri_news_home', 'sabri_news_feed', 'sabri_platform_home', 'sabri_complete_home_feed' ) as $shortcode ) {
+			if ( has_shortcode( (string) $content, $shortcode ) ) {
+				$present = true;
+				break;
+			}
+		}
+		if ( ! $present && ( shortcode_exists( 'sabri_news_home' ) || shortcode_exists( 'sabri_complete_home_feed' ) ) ) {
+			$home_id = Integrations::page_id( 'home' );
+			if ( $home_id && Layout::current_page_id() === $home_id ) {
+				$present = true;
+			}
+		}
+		return (bool) apply_filters( 'sabri_shell_authoritative_home_feed_present', $present, $content );
 	}
 
 	/**

@@ -63,7 +63,22 @@ final class Snapshot {
 			}
 		}
 
+		if ( array_key_exists( 'front_page', $snapshot ) ) {
+			update_option( 'page_on_front', absint( $snapshot['front_page'] ), false );
+		}
+		if ( array_key_exists( 'show_on_front', $snapshot ) && in_array( $snapshot['show_on_front'], array( 'posts', 'page' ), true ) ) {
+			update_option( 'show_on_front', $snapshot['show_on_front'], false );
+		}
+		if ( array_key_exists( 'flush_scheduled', $snapshot ) ) {
+			if ( null === $snapshot['flush_scheduled'] ) {
+				delete_option( 'sabri_shell_flush_rewrite_rules' );
+			} else {
+				update_option( 'sabri_shell_flush_rewrite_rules', $snapshot['flush_scheduled'], false );
+			}
+		}
+
 		Navigation::invalidate_cache();
+		Integrations::invalidate_cache();
 		update_option( 'sabri_shell_flush_rewrite_rules', 1, false );
 
 		return true;
