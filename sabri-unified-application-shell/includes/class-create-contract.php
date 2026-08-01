@@ -39,10 +39,13 @@ final class CreateContract {
 		}
 		$path = realpath( (string) SABRI_SHELL_PATH );
 		$file = realpath( (string) SABRI_SHELL_FILE );
-		if ( false === $path || false === $file || dirname( $file ) !== $path ) {
+		if ( false === $path || false === $file ) {
 			return false;
 		}
 		$prefix = rtrim( $path, '/\\' ) . DIRECTORY_SEPARATOR;
+		if ( 0 !== strpos( $file, $prefix ) ) {
+			return false;
+		}
 		try {
 			foreach ( array( __CLASS__, SafeMode::class ) as $class_name ) {
 				$source = ( new \ReflectionClass( $class_name ) )->getFileName();
@@ -57,7 +60,7 @@ final class CreateContract {
 				}
 				$source = ( new \ReflectionFunction( $function ) )->getFileName();
 				$source = is_string( $source ) ? realpath( $source ) : false;
-				if ( false === $source || $source !== $file ) {
+				if ( false === $source || 0 !== strpos( $source, $prefix ) ) {
 					return false;
 				}
 			}
