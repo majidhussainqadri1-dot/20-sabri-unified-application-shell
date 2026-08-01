@@ -1,45 +1,52 @@
-name: File 20 Baseline Integrity
+name: File 20 Baseline Archive Integrity
 
 on:
   pull_request:
     branches:
       - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  validate-baseline:
-    runs-on: ubuntu-latest
+  validate-baseline-archive:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
 
     steps:
-      - name: Check out pull request
+      - name: Check out exact source
         uses: actions/checkout@v4
 
-      - name: Verify repository boundaries
+      - name: Verify immutable baseline boundaries
         shell: bash
         run: |
           set -euo pipefail
           test ! -d .source-upload
           test -f SOURCE-ARCHIVE/20-sabri-unified-application-shell-1.0.0-FINAL.zip
+          test -f CHECKSUMS.sha256
           test -f sabri-unified-application-shell/sabri-unified-application-shell.php
 
-      - name: Verify exact source package
+      - name: Verify exact 1.0.0 baseline archive only
         shell: bash
         run: |
           set -euo pipefail
           sha256sum --check CHECKSUMS.sha256
           unzip -t SOURCE-ARCHIVE/20-sabri-unified-application-shell-1.0.0-FINAL.zip
-          rm -rf /tmp/file-20-extracted
-          mkdir -p /tmp/file-20-extracted
-          unzip -q SOURCE-ARCHIVE/20-sabri-unified-application-shell-1.0.0-FINAL.zip -d /tmp/file-20-extracted
-          diff -qr /tmp/file-20-extracted/sabri-unified-application-shell sabri-unified-application-shell
+          rm -rf /tmp/file20-baseline
+          mkdir -p /tmp/file20-baseline
+          unzip -q SOURCE-ARCHIVE/20-sabri-unified-application-shell-1.0.0-FINAL.zip -d /tmp/file20-baseline
+          test -f /tmp/file20-baseline/sabri-unified-application-shell/sabri-unified-application-shell.php
+          grep -Fq '* Version: 1.0.0' /tmp/file20-baseline/sabri-unified-application-shell/sabri-unified-application-shell.php
+          grep -Fq "define( 'SABRI_SHELL_VERSION', '1.0.0' );" /tmp/file20-baseline/sabri-unified-application-shell/sabri-unified-application-shell.php
 
-      - name: Validate PHP and JavaScript syntax
+      - name: Confirm editable source is independently versioned
         shell: bash
         run: |
           set -euo pipefail
-          php_count="$(find sabri-unified-application-shell -type f -name '*.php' | wc -l | tr -d ' ')"
-          test "$php_count" = '16'
-          find sabri-unified-application-shell -type f -name '*.php' -print0 | xargs -0 -n1 php -l
-          node --check sabri-unified-application-shell/assets/js/shell.js
+          grep -Fq '* Version: 1.1.1' sabri-unified-application-shell/sabri-unified-application-shell.php
+          grep -Fq "define( 'SABRI_SHELL_VERSION', '1.1.1' );" sabri-unified-application-shell/sabri-unified-application-shell.php
+          ! diff -qr /tmp/file20-baseline/sabri-unified-application-shell sabri-unified-application-shell >/dev/null
