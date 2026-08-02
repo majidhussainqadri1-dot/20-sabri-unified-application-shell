@@ -21,31 +21,20 @@ jobs:
           ref: fix/file20-zero-known-defects-1.1.2
           fetch-depth: 0
 
-      - name: Apply reviewed corrective patch
+      - name: Apply reviewed corrective patch when pending
         shell: bash
         run: |
           set -euo pipefail
-          test -f .file20-correction/READY
+          if test ! -f .file20-correction/READY; then
+            echo 'File 20 corrective patch is already applied.'
+            exit 0
+          fi
           base64 --decode tools/file20-1.1.2.patch.gz.b64 | gzip -dc > /tmp/file20-1.1.2.patch
           git apply --check /tmp/file20-1.1.2.patch
           git apply /tmp/file20-1.1.2.patch
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('.github/workflows/corrective-quality.yml')
-          s = p.read_text(encoding='utf-8').replace('1.1.1', '1.1.2')
-          s = s.replace('shell-corrective-1.1.2.css', 'shell-corrective-1.1.1.css')
-          s = s.replace('shell-corrective-1.1.2.js', 'shell-corrective-1.1.1.js')
-          s = s.replace("File 20 Version 1.1.2 Corrective Quality", "File 20 Version 1.1.2 Zero-Known-Defects Quality")
-          p.write_text(s, encoding='utf-8')
-          PY
           rm -f .file20-correction/READY tools/file20-1.1.2.patch.gz.b64
           rmdir .file20-correction tools 2>/dev/null || true
-          rm -f .github/workflows/apply-file20-1.1.2-correction.yml
 
-      - name: Validate corrected source before commit
-        shell: bash
-        run: |
-          set -euo pipefail
           find sabri-unified-application-shell -type f -name '*.php' -print0 | xargs -0 -n1 php -l
           node --check sabri-unified-application-shell/assets/js/shell.js
           node --check sabri-unified-application-shell/assets/js/shell-corrective-1.1.1.js
@@ -55,10 +44,6 @@ jobs:
           grep -Fq "if ( ! \$base_allowed )" sabri-unified-application-shell/includes/class-create-contract.php
           grep -Fq "sabri_shell_create_visible_for_current_user()" sabri-unified-application-shell/includes/class-renderer.php
 
-      - name: Commit corrected File 20 source
-        shell: bash
-        run: |
-          set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add --all
