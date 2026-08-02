@@ -71,3 +71,7 @@ The following are deliberately not claimed by repository work:
 - backup/restore and rollback rehearsal;
 - production deployment and operational monitoring;
 - Founder acceptance.
+
+
+## Repository completion addendum — operational implementation
+The plan-v4 completion batch adds runtime context evidence, provider provenance/health, the File 01-B search boundary, settings concurrency, private cache/index controls, File 24 assurance events, bounded maintenance, privacy-safe audit evidence, dry-run repair and compatible rollback. Separate completion and fresh adversarial suites are mandatory. Staging, live and operational gates remain unclaimed.

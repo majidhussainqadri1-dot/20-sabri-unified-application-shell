@@ -30,3 +30,7 @@ The exact **Sabri Unified Application Shell 1.0.0 FINAL** archive remains preser
 ## Remaining gates
 
 Hostinger staging fresh install and upgrade, real File 00/21/22/24/25 contracts, responsive and RTL visual acceptance, keyboard/screen-reader testing, browser matrix, Safe Mode/Repair, backup/restore, rollback rehearsal, Founder acceptance and controlled production deployment remain mandatory. No staging or live website change is authorized by this repository status.
+
+
+## Plan-v4 repository completion batch
+The 1.2.0 branch now includes context evidence, contract health, settings concurrency, privacy/cache controls, assurance queuing, scheduled reconciliation, audit evidence, dry-run repair and compatible rollback. Hostinger staging and production gates remain pending.

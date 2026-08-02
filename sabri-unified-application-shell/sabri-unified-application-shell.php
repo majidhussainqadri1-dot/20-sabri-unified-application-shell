@@ -24,6 +24,17 @@ define( 'SABRI_SHELL_URL', plugin_dir_url( __FILE__ ) );
 define( 'SABRI_SHELL_SLUG', 'sabri-unified-application-shell' );
 define( 'SABRI_SHELL_TEXT_DOMAIN', 'sabri-unified-application-shell' );
 
+// File 20 v4 operational-completion services. Native domain ownership is preserved.
+require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-audit.php';
+require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-assurance.php';
+require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-contract-health.php';
+require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-context.php';
+require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-settings-concurrency.php';
+require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-privacy-cache.php';
+require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-jobs.php';
+require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-recovery.php';
+
+
 spl_autoload_register(
 	static function ( $class_name ) {
 		$prefix = 'Sabri\\UnifiedShell\\';
