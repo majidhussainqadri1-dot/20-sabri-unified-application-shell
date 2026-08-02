@@ -1,0 +1,1279 @@
+name: File 20 Plan v4 Completion Engineering
+
+on:
+  push:
+    branches:
+      - codex/file-20-central-plan-v4-1.2.0
+    paths:
+      - .github/workflows/file20-plan-v4-completion.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: file20-plan-v4-completion-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  complete-review-fix:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/file-20-central-plan-v4-1.2.0
+          fetch-depth: 0
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Generate missing plan-v4 operational implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          root='sabri-unified-application-shell'
+          mkdir -p "$root/includes" "$root/tests" release
+
+          cat > "$root/includes/class-plan-v4-audit.php" <<'PHP'
+          <?php
+          /**
+           * Bounded, privacy-safe and tamper-evident File 20 operational evidence.
+           *
+           * @package SabriUnifiedApplicationShell
+           */
+
+          namespace Sabri\UnifiedShell;
+
+          if ( ! defined( 'ABSPATH' ) ) {
+              exit;
+          }
+
+          final class PlanV4Audit {
+              const OPTION = 'sabri_shell_plan_v4_audit';
+              const LOCK_OPTION = 'sabri_shell_plan_v4_audit_lock';
+              const MAX_EVENTS = 500;
+              const LOCK_TTL = 30;
+
+              public static function register() {
+                  add_filter( 'wp_privacy_personal_data_exporters', array( __CLASS__, 'register_exporter' ) );
+                  add_filter( 'wp_privacy_personal_data_erasers', array( __CLASS__, 'register_eraser' ) );
+              }
+
+              public static function record( $type, array $context = array() ) {
+                  $type = sanitize_key( (string) $type );
+                  if ( '' === $type ) {
+                      return new \WP_Error( 'sabri_shell_invalid_audit_type', __( 'The audit event type is invalid.', 'sabri-unified-application-shell' ) );
+                  }
+
+                  $token = self::acquire_lock();
+                  if ( is_wp_error( $token ) ) {
+                      return $token;
+                  }
+
+                  try {
+                      $events = get_option( self::OPTION, array() );
+                      $events = is_array( $events ) ? array_values( $events ) : array();
+                      $previous_hash = $events ? (string) end( $events )['hash'] : str_repeat( '0', 64 );
+                      $payload = array(
+                          'event_id' => function_exists( 'wp_generate_uuid4' ) ? wp_generate_uuid4() : uniqid( 'f20-', true ),
+                          'type' => $type,
+                          'occurred_at' => gmdate( 'c' ),
+                          'actor_id' => function_exists( 'get_current_user_id' ) ? absint( get_current_user_id() ) : 0,
+                          'correlation_id' => self::correlation_id(),
+                          'context' => self::redact( $context ),
+                          'previous_hash' => $previous_hash,
+                      );
+                      $payload['hash'] = hash( 'sha256', $previous_hash . '|' . wp_json_encode( $payload ) );
+                      $events[] = $payload;
+                      if ( count( $events ) > self::MAX_EVENTS ) {
+                          $events = array_slice( $events, -self::MAX_EVENTS );
+                      }
+                      update_option( self::OPTION, $events, false );
+                      do_action( 'sabri_shell_audit_event', $payload );
+                      return $payload;
+                  } finally {
+                      self::release_lock( $token );
+                  }
+              }
+
+              public static function verify_chain() {
+                  $events = get_option( self::OPTION, array() );
+                  if ( ! is_array( $events ) ) {
+                      return false;
+                  }
+                  $previous_hash = str_repeat( '0', 64 );
+                  foreach ( $events as $event ) {
+                      if ( ! is_array( $event ) || ! isset( $event['hash'], $event['previous_hash'] ) || ! hash_equals( $previous_hash, (string) $event['previous_hash'] ) ) {
+                          return false;
+                      }
+                      $copy = $event;
+                      $hash = (string) $copy['hash'];
+                      unset( $copy['hash'] );
+                      $expected = hash( 'sha256', $previous_hash . '|' . wp_json_encode( $copy ) );
+                      if ( ! hash_equals( $expected, $hash ) ) {
+                          return false;
+                      }
+                      $previous_hash = $hash;
+                  }
+                  return true;
+              }
+
+              public static function prune() {
+                  $events = get_option( self::OPTION, array() );
+                  if ( is_array( $events ) && count( $events ) > self::MAX_EVENTS ) {
+                      update_option( self::OPTION, array_slice( $events, -self::MAX_EVENTS ), false );
+                  }
+              }
+
+              public static function register_exporter( $exporters ) {
+                  $exporters['sabri-shell-operational-evidence'] = array(
+                      'exporter_friendly_name' => __( 'Sabri Shell operational evidence', 'sabri-unified-application-shell' ),
+                      'callback' => array( __CLASS__, 'export_personal_data' ),
+                  );
+                  return $exporters;
+              }
+
+              public static function export_personal_data( $email_address, $page = 1 ) {
+                  $user = get_user_by( 'email', $email_address );
+                  if ( ! $user ) {
+                      return array( 'data' => array(), 'done' => true );
+                  }
+                  $data = array();
+                  foreach ( (array) get_option( self::OPTION, array() ) as $event ) {
+                      if ( absint( isset( $event['actor_id'] ) ? $event['actor_id'] : 0 ) !== absint( $user->ID ) ) {
+                          continue;
+                      }
+                      $data[] = array(
+                          'group_id' => 'sabri-shell-operational-evidence',
+                          'group_label' => __( 'Sabri Shell operational evidence', 'sabri-unified-application-shell' ),
+                          'item_id' => sanitize_key( (string) $event['event_id'] ),
+                          'data' => array(
+                              array( 'name' => __( 'Event', 'sabri-unified-application-shell' ), 'value' => sanitize_text_field( (string) $event['type'] ) ),
+                              array( 'name' => __( 'Time', 'sabri-unified-application-shell' ), 'value' => sanitize_text_field( (string) $event['occurred_at'] ) ),
+                              array( 'name' => __( 'Correlation ID', 'sabri-unified-application-shell' ), 'value' => sanitize_text_field( (string) $event['correlation_id'] ) ),
+                          ),
+                      );
+                  }
+                  return array( 'data' => $data, 'done' => true );
+              }
+
+              public static function register_eraser( $erasers ) {
+                  $erasers['sabri-shell-operational-evidence'] = array(
+                      'eraser_friendly_name' => __( 'Sabri Shell operational evidence', 'sabri-unified-application-shell' ),
+                      'callback' => array( __CLASS__, 'erase_personal_data' ),
+                  );
+                  return $erasers;
+              }
+
+              public static function erase_personal_data( $email_address, $page = 1 ) {
+                  $user = get_user_by( 'email', $email_address );
+                  if ( ! $user ) {
+                      return array( 'items_removed' => false, 'items_retained' => false, 'messages' => array(), 'done' => true );
+                  }
+                  $changed = false;
+                  $events = (array) get_option( self::OPTION, array() );
+                  foreach ( $events as &$event ) {
+                      if ( absint( isset( $event['actor_id'] ) ? $event['actor_id'] : 0 ) === absint( $user->ID ) ) {
+                          $event['actor_id'] = 0;
+                          $event['context'] = array( 'privacy_erased' => true );
+                          $changed = true;
+                      }
+                  }
+                  unset( $event );
+                  if ( $changed ) {
+                      update_option( self::OPTION, $events, false );
+                  }
+                  return array( 'items_removed' => $changed, 'items_retained' => false, 'messages' => array(), 'done' => true );
+              }
+
+              private static function acquire_lock() {
+                  $token = function_exists( 'wp_generate_uuid4' ) ? wp_generate_uuid4() : uniqid( 'f20-lock-', true );
+                  $record = array( 'token' => $token, 'expires' => time() + self::LOCK_TTL );
+                  if ( add_option( self::LOCK_OPTION, $record, '', 'no' ) ) {
+                      return $token;
+                  }
+                  $current = get_option( self::LOCK_OPTION, array() );
+                  if ( is_array( $current ) && isset( $current['expires'] ) && absint( $current['expires'] ) < time() ) {
+                      delete_option( self::LOCK_OPTION );
+                      if ( add_option( self::LOCK_OPTION, $record, '', 'no' ) ) {
+                          return $token;
+                      }
+                  }
+                  return new \WP_Error( 'sabri_shell_audit_locked', __( 'Operational evidence is temporarily locked.', 'sabri-unified-application-shell' ) );
+              }
+
+              private static function release_lock( $token ) {
+                  $current = get_option( self::LOCK_OPTION, array() );
+                  if ( is_array( $current ) && isset( $current['token'] ) && hash_equals( (string) $current['token'], (string) $token ) ) {
+                      delete_option( self::LOCK_OPTION );
+                  }
+              }
+
+              private static function correlation_id() {
+                  static $id = null;
+                  if ( null === $id ) {
+                      $id = function_exists( 'wp_generate_uuid4' ) ? wp_generate_uuid4() : uniqid( 'f20-request-', true );
+                  }
+                  return $id;
+              }
+
+              private static function redact( $value, $key = '' ) {
+                  if ( preg_match( '/pass|secret|token|cookie|authorization|nonce|key|credential|document|phone|email/i', (string) $key ) ) {
+                      return '[redacted]';
+                  }
+                  if ( is_array( $value ) ) {
+                      $clean = array();
+                      foreach ( array_slice( $value, 0, 100, true ) as $child_key => $child_value ) {
+                          $clean[ sanitize_key( (string) $child_key ) ] = self::redact( $child_value, $child_key );
+                      }
+                      return $clean;
+                  }
+                  if ( is_bool( $value ) || is_int( $value ) || is_float( $value ) || null === $value ) {
+                      return $value;
+                  }
+                  return mb_substr( sanitize_text_field( (string) $value ), 0, 500 );
+              }
+          }
+
+          PlanV4Audit::register();
+          PHP
+
+          cat > "$root/includes/class-plan-v4-assurance.php" <<'PHP'
+          <?php
+          /** File 24 assurance bridge without transferring native enforcement. */
+          namespace Sabri\UnifiedShell;
+          if ( ! defined( 'ABSPATH' ) ) { exit; }
+
+          final class PlanV4Assurance {
+              const OPTION = 'sabri_shell_plan_v4_assurance_queue';
+              const MAX_EVENTS = 100;
+
+              public static function register() {
+                  add_action( 'sabri_shell_emergency_disabled', array( __CLASS__, 'emergency_disabled' ), 10, 1 );
+                  add_action( 'sabri_shell_rollback_failed', array( __CLASS__, 'rollback_failed' ), 10, 1 );
+                  add_action( 'sabri_shell_contract_collision', array( __CLASS__, 'contract_collision' ), 10, 1 );
+                  add_action( 'sabri_shell_repair_failed', array( __CLASS__, 'repair_failed' ), 10, 1 );
+              }
+
+              public static function emergency_disabled( $context = array() ) { self::emit( 'emergency_disable', 'critical', (array) $context ); }
+              public static function rollback_failed( $context = array() ) { self::emit( 'rollback_failure', 'critical', (array) $context ); }
+              public static function contract_collision( $context = array() ) { self::emit( 'contract_collision', 'high', (array) $context ); }
+              public static function repair_failed( $context = array() ) { self::emit( 'repair_failure', 'high', (array) $context ); }
+
+              public static function emit( $type, $severity, array $context = array() ) {
+                  $event = array(
+                      'schema' => 'sabri-shell-assurance/1.0',
+                      'source' => 'file-20',
+                      'type' => sanitize_key( $type ),
+                      'severity' => in_array( $severity, array( 'critical', 'high', 'medium', 'low', 'info' ), true ) ? $severity : 'info',
+                      'occurred_at' => gmdate( 'c' ),
+                      'context' => self::sanitize_context( $context ),
+                  );
+                  PlanV4Audit::record( 'assurance_' . $event['type'], $event );
+                  do_action( 'sabri_shell_assurance_event', $event );
+
+                  $delivered = false;
+                  if ( function_exists( 'sabri_security_assurance_event' ) ) {
+                      try {
+                          $delivered = (bool) sabri_security_assurance_event( $event );
+                      } catch ( \Throwable $exception ) {
+                          $delivered = false;
+                      }
+                  }
+                  if ( ! $delivered ) {
+                      $queue = (array) get_option( self::OPTION, array() );
+                      $queue[] = $event;
+                      update_option( self::OPTION, array_slice( $queue, -self::MAX_EVENTS ), false );
+                  }
+                  return $delivered;
+              }
+
+              public static function flush_queue() {
+                  if ( ! function_exists( 'sabri_security_assurance_event' ) ) {
+                      return 0;
+                  }
+                  $remaining = array();
+                  $sent = 0;
+                  foreach ( array_slice( (array) get_option( self::OPTION, array() ), 0, 25 ) as $event ) {
+                      try {
+                          if ( sabri_security_assurance_event( $event ) ) {
+                              ++$sent;
+                              continue;
+                          }
+                      } catch ( \Throwable $exception ) {
+                          // Native shell controls continue; evidence remains queued.
+                      }
+                      $remaining[] = $event;
+                  }
+                  $all = (array) get_option( self::OPTION, array() );
+                  $tail = array_slice( $all, 25 );
+                  update_option( self::OPTION, array_slice( array_merge( $remaining, $tail ), -self::MAX_EVENTS ), false );
+                  return $sent;
+              }
+
+              private static function sanitize_context( array $context ) {
+                  $safe = array();
+                  foreach ( array_slice( $context, 0, 30, true ) as $key => $value ) {
+                      $key = sanitize_key( (string) $key );
+                      if ( preg_match( '/secret|token|nonce|cookie|password|key|document|phone|email/i', $key ) ) {
+                          $safe[ $key ] = '[redacted]';
+                      } elseif ( is_scalar( $value ) || null === $value ) {
+                          $safe[ $key ] = mb_substr( sanitize_text_field( (string) $value ), 0, 300 );
+                      }
+                  }
+                  return $safe;
+              }
+          }
+
+          PlanV4Assurance::register();
+          PHP
+
+          cat > "$root/includes/class-plan-v4-contract-health.php" <<'PHP'
+          <?php
+          /** Runtime contract provenance, compatibility and failure-state registry. */
+          namespace Sabri\UnifiedShell;
+          if ( ! defined( 'ABSPATH' ) ) { exit; }
+
+          final class PlanV4ContractHealth {
+              const CACHE_KEY = 'sabri_shell_plan_v4_contract_health';
+              const CACHE_TTL = 300;
+
+              public static function register() {
+                  add_filter( 'sabri_shell_provider_health', array( __CLASS__, 'health' ) );
+                  add_filter( 'sabri_shell_search_surface', array( __CLASS__, 'search_surface' ) );
+              }
+
+              public static function health( $existing = array(), $force = false ) {
+                  if ( ! $force ) {
+                      $cached = get_transient( self::CACHE_KEY );
+                      if ( is_array( $cached ) ) {
+                          return array_merge( (array) $existing, $cached );
+                      }
+                  }
+                  $providers = self::providers();
+                  $health = array();
+                  foreach ( $providers as $key => $records ) {
+                      $records = is_array( $records ) && isset( $records[0] ) && is_array( $records[0] ) ? $records : array( $records );
+                      if ( count( $records ) > 1 ) {
+                          $health[ $key ] = self::status( $key, 'collision', 'Multiple providers claimed one canonical contract.', $records );
+                          do_action( 'sabri_shell_contract_collision', array( 'contract' => $key, 'provider_count' => count( $records ) ) );
+                          continue;
+                      }
+                      $health[ $key ] = self::inspect( $key, reset( $records ) );
+                  }
+                  set_transient( self::CACHE_KEY, $health, self::CACHE_TTL );
+                  return array_merge( (array) $existing, $health );
+              }
+
+              public static function invalidate() {
+                  delete_transient( self::CACHE_KEY );
+              }
+
+              public static function providers() {
+                  $providers = array(
+                      'file-20-shell' => array(
+                          'owner' => 'file-20', 'version' => defined( 'SABRI_SHELL_VERSION' ) ? SABRI_SHELL_VERSION : '0.0.0',
+                          'minimum' => '1.2.0', 'probe' => array( __CLASS__, 'probe_file20' ), 'failure' => 'incompatible',
+                      ),
+                      'file-00-identity' => array(
+                          'owner' => 'file-00', 'version' => defined( 'SMC_VERSION' ) ? SMC_VERSION : '0.0.0',
+                          'minimum' => '1.1.2', 'probe' => array( __CLASS__, 'probe_file00' ), 'failure' => 'privileged_actions_closed',
+                      ),
+                      'file-22-create' => array(
+                          'owner' => 'file-20', 'version' => defined( 'SABRI_SHELL_CREATE_CONTRACT_VERSION' ) ? SABRI_SHELL_CREATE_CONTRACT_VERSION : '0.0.0',
+                          'minimum' => '1.0.1', 'probe' => array( __CLASS__, 'probe_file22' ), 'failure' => 'create_hidden',
+                      ),
+                      'file-25-visual' => array(
+                          'owner' => 'file-25', 'version' => '0.0.0', 'minimum' => '1.0.0',
+                          'probe' => array( __CLASS__, 'probe_file25' ), 'failure' => 'continuity_fallback',
+                      ),
+                      'file-01b-registry-search' => array(
+                          'owner' => 'file-01-b', 'version' => '0.0.0', 'minimum' => '1.0.0',
+                          'probe' => array( __CLASS__, 'probe_file01b' ), 'failure' => 'bounded_local_registry_only',
+                      ),
+                  );
+                  return apply_filters( 'sabri_shell_provider_registry', $providers );
+              }
+
+              public static function search_surface( $surface = array() ) {
+                  $provider = apply_filters( 'sabri_platform_search_surface_provider', null );
+                  if ( is_array( $provider ) && ! empty( $provider['url'] ) && ! empty( $provider['owner'] ) ) {
+                      return array(
+                          'owner' => sanitize_key( $provider['owner'] ),
+                          'url' => esc_url_raw( $provider['url'] ),
+                          'status' => 'available',
+                          'scope' => isset( $provider['scope'] ) ? sanitize_key( $provider['scope'] ) : 'platform',
+                      );
+                  }
+                  return array(
+                      'owner' => 'wordpress-core',
+                      'url' => home_url( '/' ),
+                      'status' => 'bounded_fallback',
+                      'scope' => 'local_public_content',
+                  );
+              }
+
+              public static function probe_file20() { return class_exists( __NAMESPACE__ . '\\Layout', false ); }
+              public static function probe_file00() { return class_exists( 'SMC_Contracts' ) && is_callable( array( 'SMC_Contracts', 'assertions' ) ); }
+              public static function probe_file22() { return function_exists( 'sabri_shell_create_visible_for_current_user' ) && function_exists( 'sabri_shell_create_url' ); }
+              public static function probe_file25() {
+                  $contract = apply_filters( 'sabri_shell_file25_visual_contract', null );
+                  return is_array( $contract ) && isset( $contract['owner'], $contract['version'] ) && 'file-25' === sanitize_key( $contract['owner'] );
+              }
+              public static function probe_file01b() {
+                  $manifest = apply_filters( 'sabri_platform_foundation_manifest', null );
+                  return is_array( $manifest ) && isset( $manifest['owner'], $manifest['version'] ) && 'file-01-b' === sanitize_key( $manifest['owner'] );
+              }
+
+              private static function inspect( $key, $record ) {
+                  if ( ! is_array( $record ) || empty( $record['owner'] ) || empty( $record['minimum'] ) || empty( $record['probe'] ) ) {
+                      return self::status( $key, 'invalid', 'Provider record is incomplete.', $record );
+                  }
+                  $available = false;
+                  try {
+                      $available = is_callable( $record['probe'] ) && (bool) call_user_func( $record['probe'] );
+                  } catch ( \Throwable $exception ) {
+                      return self::status( $key, 'error', 'Provider probe threw an exception.', $record );
+                  }
+                  if ( ! $available ) {
+                      return self::status( $key, 'unavailable', isset( $record['failure'] ) ? $record['failure'] : 'unavailable', $record );
+                  }
+                  $version = isset( $record['version'] ) ? (string) $record['version'] : '0.0.0';
+                  if ( '0.0.0' !== $version && version_compare( $version, (string) $record['minimum'], '<' ) ) {
+                      return self::status( $key, 'incompatible', 'Provider version is below the declared minimum.', $record );
+                  }
+                  return self::status( $key, 'healthy', 'Provider provenance and probe passed.', $record );
+              }
+
+              private static function status( $key, $state, $message, $record ) {
+                  return array(
+                      'contract' => sanitize_key( $key ),
+                      'state' => sanitize_key( $state ),
+                      'owner' => is_array( $record ) && isset( $record['owner'] ) ? sanitize_key( $record['owner'] ) : 'unknown',
+                      'version' => is_array( $record ) && isset( $record['version'] ) ? sanitize_text_field( (string) $record['version'] ) : 'unknown',
+                      'checked_at' => gmdate( 'c' ),
+                      'message' => sanitize_text_field( $message ),
+                  );
+              }
+          }
+
+          PlanV4ContractHealth::register();
+          PHP
+
+          cat > "$root/includes/class-plan-v4-context.php" <<'PHP'
+          <?php
+          /** Deterministic layout context evidence: mode, reason, source, route and timestamp. */
+          namespace Sabri\UnifiedShell;
+          if ( ! defined( 'ABSPATH' ) ) { exit; }
+
+          final class PlanV4Context {
+              public static function register() {
+                  add_filter( 'body_class', array( __CLASS__, 'body_classes' ) );
+                  add_action( 'rest_api_init', array( __CLASS__, 'register_routes' ) );
+              }
+
+              public static function describe() {
+                  $settings = class_exists( __NAMESPACE__ . '\\Settings', false ) ? Settings::get() : array();
+                  $page_id = class_exists( __NAMESPACE__ . '\\Layout', false ) ? Layout::current_page_id() : 0;
+                  $mode = class_exists( __NAMESPACE__ . '\\Layout', false ) ? Layout::current_mode() : 'minimal';
+                  $reason = 'default_public_safe';
+                  $source = 'file-20-resolver';
+
+                  if ( class_exists( __NAMESPACE__ . '\\SafeMode', false ) && SafeMode::disabled() ) {
+                      $reason = 'safe_mode';
+                  } elseif ( class_exists( __NAMESPACE__ . '\\Layout', false ) && Layout::is_excluded_request() ) {
+                      $reason = 'task_or_machine_request';
+                  } elseif ( $page_id && isset( $settings['layout']['per_page_overrides'][ $page_id ] ) && 'default' !== $settings['layout']['per_page_overrides'][ $page_id ] ) {
+                      $reason = 'validated_page_override';
+                  } elseif ( class_exists( __NAMESPACE__ . '\\Layout', false ) && Layout::is_immersive_context( $settings, $page_id ) ) {
+                      $reason = 'native_immersive_context';
+                  } elseif ( class_exists( __NAMESPACE__ . '\\Layout', false ) && Layout::is_three_column_context( $settings, $page_id ) ) {
+                      $reason = 'canonical_three_column_context';
+                  }
+
+                  $path = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_parse_url( wp_unslash( $_SERVER['REQUEST_URI'] ), PHP_URL_PATH ) : '/';
+                  $route_key = apply_filters( 'sabri_shell_current_route_key', '' );
+                  if ( ! is_string( $route_key ) || '' === $route_key ) {
+                      $segments = array_values( array_filter( explode( '/', trim( strtolower( $path ), '/' ) ) ) );
+                      $route_key = $segments ? sanitize_key( reset( $segments ) ) : 'home';
+                  }
+
+                  $descriptor = array(
+                      'schema' => 'sabri-shell-context/1.0',
+                      'mode' => sanitize_key( $mode ),
+                      'reason' => sanitize_key( $reason ),
+                      'source' => sanitize_key( $source ),
+                      'route_key' => sanitize_key( $route_key ),
+                      'page_id' => absint( $page_id ),
+                      'resolved_at' => gmdate( 'c' ),
+                  );
+                  return apply_filters( 'sabri_shell_context_descriptor', $descriptor );
+              }
+
+              public static function body_classes( $classes ) {
+                  $descriptor = self::describe();
+                  $classes[] = 'sabri-shell-route-' . sanitize_html_class( $descriptor['route_key'] );
+                  $classes[] = 'sabri-shell-context-evidenced';
+                  return array_values( array_unique( $classes ) );
+              }
+
+              public static function register_routes() {
+                  register_rest_route( 'sabri-shell/v1', '/context', array(
+                      'methods' => \WP_REST_Server::READABLE,
+                      'callback' => array( __CLASS__, 'rest_context' ),
+                      'permission_callback' => '__return_true',
+                  ) );
+              }
+
+              public static function rest_context() {
+                  $descriptor = self::describe();
+                  unset( $descriptor['page_id'] );
+                  return rest_ensure_response( $descriptor );
+              }
+          }
+
+          PlanV4Context::register();
+          PHP
+
+          cat > "$root/includes/class-plan-v4-settings-concurrency.php" <<'PHP'
+          <?php
+          /** Optimistic concurrency control for File 20 settings. */
+          namespace Sabri\UnifiedShell;
+          if ( ! defined( 'ABSPATH' ) ) { exit; }
+
+          final class PlanV4SettingsConcurrency {
+              const VERSION_OPTION = 'sabri_shell_settings_row_version';
+              private static $accepted_update = false;
+
+              public static function register() {
+                  foreach ( array( 'sabri_shell_settings', 'sabri_unified_shell_settings' ) as $option ) {
+                      add_filter( 'pre_update_option_' . $option, array( __CLASS__, 'pre_update' ), 10, 3 );
+                  }
+                  add_action( 'updated_option', array( __CLASS__, 'after_update' ), 10, 3 );
+                  add_action( 'admin_footer', array( __CLASS__, 'inject_version_field' ) );
+                  add_filter( 'sabri_shell_settings_row_version', array( __CLASS__, 'current_version' ) );
+              }
+
+              public static function current_version() {
+                  return max( 1, absint( get_option( self::VERSION_OPTION, 1 ) ) );
+              }
+
+              public static function pre_update( $new_value, $old_value, $option ) {
+                  self::$accepted_update = false;
+                  if ( ! is_admin() || ! current_user_can( 'manage_options' ) || empty( $_SERVER['REQUEST_METHOD'] ) || 'POST' !== strtoupper( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) ) ) {
+                      return $new_value;
+                  }
+                  if ( ! isset( $_POST['sabri_shell_settings_row_version'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- existing settings handler owns CSRF validation.
+                      return $new_value;
+                  }
+                  $expected = absint( wp_unslash( $_POST['sabri_shell_settings_row_version'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                  $current = self::current_version();
+                  if ( $expected !== $current ) {
+                      add_settings_error( 'sabri_shell_settings', 'sabri_shell_settings_conflict', __( 'These settings changed in another session. Reload, compare and submit again.', 'sabri-unified-application-shell' ), 'error' );
+                      PlanV4Audit::record( 'settings_conflict', array( 'expected_version' => $expected, 'current_version' => $current ) );
+                      return $old_value;
+                  }
+                  self::$accepted_update = true;
+                  return $new_value;
+              }
+
+              public static function after_update( $option, $old_value, $value ) {
+                  if ( ! self::$accepted_update || ! in_array( $option, array( 'sabri_shell_settings', 'sabri_unified_shell_settings' ), true ) ) {
+                      return;
+                  }
+                  $next = self::current_version() + 1;
+                  update_option( self::VERSION_OPTION, $next, false );
+                  $changed = array_values( array_unique( array_merge( array_keys( (array) $old_value ), array_keys( (array) $value ) ) ) );
+                  PlanV4Audit::record( 'settings_updated', array( 'row_version' => $next, 'changed_groups' => array_slice( $changed, 0, 30 ) ) );
+                  PlanV4ContractHealth::invalidate();
+              }
+
+              public static function inject_version_field() {
+                  if ( ! current_user_can( 'manage_options' ) ) {
+                      return;
+                  }
+                  $screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+                  if ( ! $screen || false === strpos( (string) $screen->id, 'sabri' ) ) {
+                      return;
+                  }
+                  $version = self::current_version();
+                  ?>
+                  <script>
+                  document.addEventListener('DOMContentLoaded', function () {
+                    document.querySelectorAll('form[action="options.php"], form[data-sabri-shell-settings]').forEach(function (form) {
+                      if (form.querySelector('input[name="sabri_shell_settings_row_version"]')) return;
+                      var input = document.createElement('input');
+                      input.type = 'hidden';
+                      input.name = 'sabri_shell_settings_row_version';
+                      input.value = <?php echo wp_json_encode( (string) $version ); ?>;
+                      form.appendChild(input);
+                    });
+                  });
+                  </script>
+                  <?php
+              }
+          }
+
+          PlanV4SettingsConcurrency::register();
+          PHP
+
+          cat > "$root/includes/class-plan-v4-privacy-cache.php" <<'PHP'
+          <?php
+          /** Private route indexing and shared-cache protection. */
+          namespace Sabri\UnifiedShell;
+          if ( ! defined( 'ABSPATH' ) ) { exit; }
+
+          final class PlanV4PrivacyCache {
+              public static function register() {
+                  add_action( 'send_headers', array( __CLASS__, 'send_private_headers' ), 0 );
+                  add_filter( 'wp_robots', array( __CLASS__, 'robots' ) );
+                  add_action( 'update_option_sabri_shell_settings', array( __CLASS__, 'purge' ) );
+                  add_action( 'update_option_permalink_structure', array( __CLASS__, 'purge' ) );
+              }
+
+              public static function is_private_request() {
+                  $path = isset( $_SERVER['REQUEST_URI'] ) ? strtolower( (string) wp_parse_url( wp_unslash( $_SERVER['REQUEST_URI'] ), PHP_URL_PATH ) ) : '';
+                  $private = (bool) preg_match( '#/(publishing-dashboard|security-center|membership-status|account-security|guardian|verification|settings|safe-mode|repair)(/|$)#', $path );
+                  if ( is_user_logged_in() && apply_filters( 'sabri_shell_personalized_request', false ) ) {
+                      $private = true;
+                  }
+                  return (bool) apply_filters( 'sabri_shell_private_request', $private, $path );
+              }
+
+              public static function send_private_headers() {
+                  if ( ! self::is_private_request() ) {
+                      return;
+                  }
+                  nocache_headers();
+                  header( 'Cache-Control: private, no-store, no-cache, must-revalidate, max-age=0', true );
+                  header( 'Pragma: no-cache', true );
+                  header( 'X-Robots-Tag: noindex, noarchive, nosnippet', true );
+                  header( 'Vary: Cookie', false );
+              }
+
+              public static function robots( $robots ) {
+                  if ( self::is_private_request() ) {
+                      $robots['noindex'] = true;
+                      $robots['noarchive'] = true;
+                      $robots['nosnippet'] = true;
+                  }
+                  return $robots;
+              }
+
+              public static function purge() {
+                  PlanV4ContractHealth::invalidate();
+                  if ( function_exists( 'wp_cache_flush' ) ) {
+                      wp_cache_flush();
+                  }
+                  do_action( 'litespeed_purge_all' );
+                  PlanV4Audit::record( 'cache_purge_requested', array( 'source' => current_filter() ) );
+              }
+          }
+
+          PlanV4PrivacyCache::register();
+          PHP
+
+          cat > "$root/includes/class-plan-v4-jobs.php" <<'PHP'
+          <?php
+          /** Bounded scheduled maintenance, reconciliation and assurance retry. */
+          namespace Sabri\UnifiedShell;
+          if ( ! defined( 'ABSPATH' ) ) { exit; }
+
+          final class PlanV4Jobs {
+              const HOOK = 'sabri_shell_plan_v4_maintenance';
+              const STATE = 'sabri_shell_plan_v4_job_state';
+              const LOCK = 'sabri_shell_plan_v4_job_lock';
+
+              public static function register() {
+                  add_action( 'init', array( __CLASS__, 'ensure_schedule' ) );
+                  add_action( self::HOOK, array( __CLASS__, 'run' ) );
+                  if ( defined( 'SABRI_SHELL_FILE' ) ) {
+                      register_deactivation_hook( SABRI_SHELL_FILE, array( __CLASS__, 'deactivate' ) );
+                  }
+              }
+
+              public static function ensure_schedule() {
+                  if ( ! wp_next_scheduled( self::HOOK ) ) {
+                      wp_schedule_event( time() + 300, 'hourly', self::HOOK );
+                  }
+              }
+
+              public static function deactivate() {
+                  $timestamp = wp_next_scheduled( self::HOOK );
+                  while ( $timestamp ) {
+                      wp_unschedule_event( $timestamp, self::HOOK );
+                      $timestamp = wp_next_scheduled( self::HOOK );
+                  }
+              }
+
+              public static function run() {
+                  $token = self::lock();
+                  if ( false === $token ) {
+                      return;
+                  }
+                  $started = microtime( true );
+                  $state = array( 'started_at' => gmdate( 'c' ), 'status' => 'running', 'steps' => array() );
+                  update_option( self::STATE, $state, false );
+                  try {
+                      PlanV4ContractHealth::invalidate();
+                      $health = PlanV4ContractHealth::health( array(), true );
+                      $state['steps']['contract_health'] = count( $health );
+                      PlanV4Audit::prune();
+                      $state['steps']['audit_chain'] = PlanV4Audit::verify_chain() ? 'valid' : 'invalid';
+                      if ( 'invalid' === $state['steps']['audit_chain'] ) {
+                          PlanV4Assurance::emit( 'audit_chain_invalid', 'high', array() );
+                      }
+                      $state['steps']['assurance_sent'] = PlanV4Assurance::flush_queue();
+                      do_action( 'sabri_shell_bounded_reconciliation', 100 );
+                      $state['status'] = 'success';
+                  } catch ( \Throwable $exception ) {
+                      $state['status'] = 'failed';
+                      $state['error_code'] = 'maintenance_exception';
+                      PlanV4Assurance::emit( 'maintenance_failure', 'high', array( 'exception_class' => get_class( $exception ) ) );
+                  } finally {
+                      $state['finished_at'] = gmdate( 'c' );
+                      $state['duration_ms'] = (int) round( ( microtime( true ) - $started ) * 1000 );
+                      update_option( self::STATE, $state, false );
+                      self::unlock( $token );
+                  }
+              }
+
+              private static function lock() {
+                  $token = function_exists( 'wp_generate_uuid4' ) ? wp_generate_uuid4() : uniqid( 'f20-job-', true );
+                  $record = array( 'token' => $token, 'expires' => time() + 900 );
+                  if ( add_option( self::LOCK, $record, '', 'no' ) ) {
+                      return $token;
+                  }
+                  $current = get_option( self::LOCK, array() );
+                  if ( is_array( $current ) && isset( $current['expires'] ) && absint( $current['expires'] ) < time() ) {
+                      delete_option( self::LOCK );
+                      return add_option( self::LOCK, $record, '', 'no' ) ? $token : false;
+                  }
+                  return false;
+              }
+
+              private static function unlock( $token ) {
+                  $current = get_option( self::LOCK, array() );
+                  if ( is_array( $current ) && isset( $current['token'] ) && hash_equals( (string) $current['token'], (string) $token ) ) {
+                      delete_option( self::LOCK );
+                  }
+              }
+          }
+
+          PlanV4Jobs::register();
+          PHP
+
+          cat > "$root/includes/class-plan-v4-recovery.php" <<'PHP'
+          <?php
+          /** Dry-run-first repair and compatible, auditable rollback for File 20-owned state. */
+          namespace Sabri\UnifiedShell;
+          if ( ! defined( 'ABSPATH' ) ) { exit; }
+
+          final class PlanV4Recovery {
+              const SNAPSHOTS = 'sabri_shell_plan_v4_snapshots';
+              const LOCK = 'sabri_shell_plan_v4_recovery_lock';
+              const MAX_SNAPSHOTS = 10;
+
+              public static function register() {
+                  add_action( 'rest_api_init', array( __CLASS__, 'register_routes' ) );
+                  add_filter( 'sabri_shell_repair_actions', array( __CLASS__, 'repair_actions' ) );
+                  add_filter( 'sabri_shell_system_check_sections', array( __CLASS__, 'system_check_section' ) );
+              }
+
+              public static function repair_actions( $actions ) {
+                  $actions = (array) $actions;
+                  $actions['plan_v4_normalize_settings'] = __( 'Normalize File 20 settings', 'sabri-unified-application-shell' );
+                  $actions['plan_v4_rebuild_contract_health'] = __( 'Rebuild provider health', 'sabri-unified-application-shell' );
+                  $actions['plan_v4_reschedule_jobs'] = __( 'Restore scheduled maintenance', 'sabri-unified-application-shell' );
+                  $actions['plan_v4_flush_rewrites'] = __( 'Flush rewrite rules', 'sabri-unified-application-shell' );
+                  $actions['plan_v4_purge_cache'] = __( 'Purge shell and LiteSpeed caches', 'sabri-unified-application-shell' );
+                  return $actions;
+              }
+
+              public static function system_check_section( $sections ) {
+                  $sections = (array) $sections;
+                  $sections['plan_v4_completion'] = array(
+                      'label' => __( 'Plan v4 operational completion', 'sabri-unified-application-shell' ),
+                      'audit_chain' => PlanV4Audit::verify_chain() ? 'pass' : 'fail',
+                      'settings_row_version' => PlanV4SettingsConcurrency::current_version(),
+                      'scheduled' => (bool) wp_next_scheduled( PlanV4Jobs::HOOK ),
+                      'provider_health' => PlanV4ContractHealth::health(),
+                      'last_job' => get_option( PlanV4Jobs::STATE, array() ),
+                  );
+                  return $sections;
+              }
+
+              public static function register_routes() {
+                  register_rest_route( 'sabri-shell/v1', '/health', array(
+                      'methods' => \WP_REST_Server::READABLE,
+                      'callback' => array( __CLASS__, 'rest_health' ),
+                      'permission_callback' => array( __CLASS__, 'can_manage' ),
+                  ) );
+                  register_rest_route( 'sabri-shell/v1', '/repair/preview', array(
+                      'methods' => \WP_REST_Server::CREATABLE,
+                      'callback' => array( __CLASS__, 'rest_repair_preview' ),
+                      'permission_callback' => array( __CLASS__, 'can_manage' ),
+                      'args' => array( 'actions' => array( 'type' => 'array', 'required' => true ) ),
+                  ) );
+                  register_rest_route( 'sabri-shell/v1', '/repair/execute', array(
+                      'methods' => \WP_REST_Server::CREATABLE,
+                      'callback' => array( __CLASS__, 'rest_repair_execute' ),
+                      'permission_callback' => array( __CLASS__, 'can_manage' ),
+                      'args' => array(
+                          'actions' => array( 'type' => 'array', 'required' => true ),
+                          'expected_settings_version' => array( 'type' => 'integer', 'required' => true ),
+                      ),
+                  ) );
+                  register_rest_route( 'sabri-shell/v1', '/rollback/preview', array(
+                      'methods' => \WP_REST_Server::CREATABLE,
+                      'callback' => array( __CLASS__, 'rest_rollback_preview' ),
+                      'permission_callback' => array( __CLASS__, 'can_manage' ),
+                      'args' => array( 'snapshot_id' => array( 'type' => 'string', 'required' => true ) ),
+                  ) );
+                  register_rest_route( 'sabri-shell/v1', '/rollback/execute', array(
+                      'methods' => \WP_REST_Server::CREATABLE,
+                      'callback' => array( __CLASS__, 'rest_rollback_execute' ),
+                      'permission_callback' => array( __CLASS__, 'can_manage' ),
+                      'args' => array( 'snapshot_id' => array( 'type' => 'string', 'required' => true ) ),
+                  ) );
+              }
+
+              public static function can_manage() {
+                  return is_user_logged_in() && current_user_can( 'manage_options' );
+              }
+
+              public static function rest_health() {
+                  return rest_ensure_response( array(
+                      'schema' => 'sabri-shell-health/1.0',
+                      'state' => self::overall_state(),
+                      'checked_at' => gmdate( 'c' ),
+                      'audit_chain' => PlanV4Audit::verify_chain() ? 'valid' : 'invalid',
+                      'providers' => PlanV4ContractHealth::health(),
+                      'job' => get_option( PlanV4Jobs::STATE, array() ),
+                      'settings_row_version' => PlanV4SettingsConcurrency::current_version(),
+                  ) );
+              }
+
+              public static function rest_repair_preview( \WP_REST_Request $request ) {
+                  return rest_ensure_response( self::preview_repair( (array) $request->get_param( 'actions' ) ) );
+              }
+
+              public static function rest_repair_execute( \WP_REST_Request $request ) {
+                  $actions = (array) $request->get_param( 'actions' );
+                  $expected = absint( $request->get_param( 'expected_settings_version' ) );
+                  $result = self::execute_repair( $actions, $expected );
+                  return is_wp_error( $result ) ? $result : rest_ensure_response( $result );
+              }
+
+              public static function rest_rollback_preview( \WP_REST_Request $request ) {
+                  $result = self::preview_rollback( sanitize_text_field( $request->get_param( 'snapshot_id' ) ) );
+                  return is_wp_error( $result ) ? $result : rest_ensure_response( $result );
+              }
+
+              public static function rest_rollback_execute( \WP_REST_Request $request ) {
+                  $result = self::execute_rollback( sanitize_text_field( $request->get_param( 'snapshot_id' ) ) );
+                  return is_wp_error( $result ) ? $result : rest_ensure_response( $result );
+              }
+
+              public static function preview_repair( array $actions ) {
+                  $allowed = array_keys( self::repair_actions( array() ) );
+                  $actions = array_values( array_unique( array_intersect( array_map( 'sanitize_key', $actions ), $allowed ) ) );
+                  $operations = array();
+                  foreach ( $actions as $action ) {
+                      $operations[] = array( 'action' => $action, 'scope' => 'file-20-owned-state', 'destructive' => false );
+                  }
+                  return array(
+                      'dry_run' => true,
+                      'operations' => $operations,
+                      'settings_row_version' => PlanV4SettingsConcurrency::current_version(),
+                      'snapshot_required' => true,
+                  );
+              }
+
+              public static function execute_repair( array $actions, $expected_version ) {
+                  if ( absint( $expected_version ) !== PlanV4SettingsConcurrency::current_version() ) {
+                      return new \WP_Error( 'sabri_shell_stale_repair', __( 'Settings changed after the repair preview. Run the preview again.', 'sabri-unified-application-shell' ), array( 'status' => 409 ) );
+                  }
+                  $preview = self::preview_repair( $actions );
+                  if ( empty( $preview['operations'] ) ) {
+                      return new \WP_Error( 'sabri_shell_empty_repair', __( 'No valid repair action was selected.', 'sabri-unified-application-shell' ), array( 'status' => 400 ) );
+                  }
+                  $token = self::lock();
+                  if ( is_wp_error( $token ) ) {
+                      return $token;
+                  }
+                  $snapshot = self::create_snapshot( 'pre-repair' );
+                  $results = array();
+                  $failed = false;
+                  try {
+                      foreach ( $preview['operations'] as $operation ) {
+                          $action = $operation['action'];
+                          $ok = self::run_repair_action( $action );
+                          $results[] = array( 'action' => $action, 'success' => $ok );
+                          if ( ! $ok ) { $failed = true; }
+                      }
+                      $health = PlanV4ContractHealth::health( array(), true );
+                      if ( $failed ) {
+                          do_action( 'sabri_shell_repair_failed', array( 'snapshot_id' => $snapshot['id'] ) );
+                          PlanV4Audit::record( 'repair_failed', array( 'results' => $results, 'snapshot_id' => $snapshot['id'] ) );
+                          return new \WP_Error( 'sabri_shell_repair_partial_failure', __( 'Repair did not complete. Recovery evidence and the pre-repair snapshot were retained.', 'sabri-unified-application-shell' ), array( 'status' => 500, 'results' => $results ) );
+                      }
+                      PlanV4Audit::record( 'repair_completed', array( 'results' => $results, 'snapshot_id' => $snapshot['id'] ) );
+                      return array( 'success' => true, 'results' => $results, 'snapshot_id' => $snapshot['id'], 'health' => $health );
+                  } finally {
+                      self::unlock( $token );
+                  }
+              }
+
+              public static function preview_rollback( $snapshot_id ) {
+                  $snapshot = self::find_snapshot( $snapshot_id );
+                  if ( ! $snapshot ) {
+                      return new \WP_Error( 'sabri_shell_snapshot_missing', __( 'The requested snapshot was not found.', 'sabri-unified-application-shell' ), array( 'status' => 404 ) );
+                  }
+                  if ( ! self::verify_snapshot( $snapshot ) ) {
+                      return new \WP_Error( 'sabri_shell_snapshot_invalid', __( 'The requested snapshot failed its integrity check.', 'sabri-unified-application-shell' ), array( 'status' => 409 ) );
+                  }
+                  $current_major = (int) strtok( defined( 'SABRI_SHELL_VERSION' ) ? SABRI_SHELL_VERSION : '0', '.' );
+                  $target_major = (int) strtok( isset( $snapshot['plugin_version'] ) ? $snapshot['plugin_version'] : '0', '.' );
+                  return array(
+                      'dry_run' => true,
+                      'snapshot_id' => $snapshot['id'],
+                      'created_at' => $snapshot['created_at'],
+                      'compatible' => $current_major === $target_major,
+                      'scope' => array_keys( (array) $snapshot['state'] ),
+                      'pre_rollback_snapshot_required' => true,
+                  );
+              }
+
+              public static function execute_rollback( $snapshot_id ) {
+                  $preview = self::preview_rollback( $snapshot_id );
+                  if ( is_wp_error( $preview ) ) { return $preview; }
+                  if ( empty( $preview['compatible'] ) ) {
+                      return new \WP_Error( 'sabri_shell_snapshot_incompatible', __( 'This snapshot is not compatible with the current major version. Use read-only recovery and a manual migration plan.', 'sabri-unified-application-shell' ), array( 'status' => 409 ) );
+                  }
+                  $token = self::lock();
+                  if ( is_wp_error( $token ) ) { return $token; }
+                  $pre = self::create_snapshot( 'pre-rollback' );
+                  $target = self::find_snapshot( $snapshot_id );
+                  try {
+                      foreach ( (array) $target['state'] as $option => $value ) {
+                          if ( 0 !== strpos( $option, 'sabri_shell_' ) && 0 !== strpos( $option, 'sabri_unified_shell_' ) ) {
+                              continue;
+                          }
+                          update_option( $option, $value, false );
+                      }
+                      PlanV4PrivacyCache::purge();
+                      $smoke = class_exists( __NAMESPACE__ . '\\Layout', false ) && in_array( Layout::current_mode(), Layout::modes(), true );
+                      if ( ! $smoke ) {
+                          do_action( 'sabri_shell_rollback_failed', array( 'snapshot_id' => $snapshot_id, 'pre_rollback_snapshot_id' => $pre['id'] ) );
+                          return new \WP_Error( 'sabri_shell_rollback_smoke_failed', __( 'Rollback state was restored, but the post-rollback smoke test failed. The shell remains in recovery-required state.', 'sabri-unified-application-shell' ), array( 'status' => 500 ) );
+                      }
+                      PlanV4Audit::record( 'rollback_completed', array( 'snapshot_id' => $snapshot_id, 'pre_rollback_snapshot_id' => $pre['id'] ) );
+                      return array( 'success' => true, 'snapshot_id' => $snapshot_id, 'pre_rollback_snapshot_id' => $pre['id'], 'smoke_test' => 'pass' );
+                  } catch ( \Throwable $exception ) {
+                      do_action( 'sabri_shell_rollback_failed', array( 'snapshot_id' => $snapshot_id, 'exception_class' => get_class( $exception ) ) );
+                      return new \WP_Error( 'sabri_shell_rollback_exception', __( 'Rollback failed. Recovery evidence was retained.', 'sabri-unified-application-shell' ), array( 'status' => 500 ) );
+                  } finally {
+                      self::unlock( $token );
+                  }
+              }
+
+              public static function create_snapshot( $reason ) {
+                  $state = array();
+                  foreach ( array( 'sabri_shell_settings', 'sabri_unified_shell_settings', PlanV4SettingsConcurrency::VERSION_OPTION ) as $option ) {
+                      $state[ $option ] = get_option( $option, null );
+                  }
+                  $snapshot = array(
+                      'id' => function_exists( 'wp_generate_uuid4' ) ? wp_generate_uuid4() : uniqid( 'f20-snapshot-', true ),
+                      'reason' => sanitize_key( $reason ),
+                      'created_at' => gmdate( 'c' ),
+                      'actor_id' => get_current_user_id(),
+                      'plugin_version' => defined( 'SABRI_SHELL_VERSION' ) ? SABRI_SHELL_VERSION : '0.0.0',
+                      'contract_fingerprint' => hash( 'sha256', wp_json_encode( PlanV4ContractHealth::providers() ) ),
+                      'state' => $state,
+                  );
+                  $copy = $snapshot;
+                  $snapshot['hash'] = hash( 'sha256', wp_json_encode( $copy ) );
+                  $snapshots = (array) get_option( self::SNAPSHOTS, array() );
+                  $snapshots[] = $snapshot;
+                  update_option( self::SNAPSHOTS, array_slice( $snapshots, -self::MAX_SNAPSHOTS ), false );
+                  PlanV4Audit::record( 'snapshot_created', array( 'snapshot_id' => $snapshot['id'], 'reason' => $snapshot['reason'] ) );
+                  return $snapshot;
+              }
+
+              private static function run_repair_action( $action ) {
+                  switch ( $action ) {
+                      case 'plan_v4_normalize_settings':
+                          if ( class_exists( __NAMESPACE__ . '\\Settings', false ) ) {
+                              $settings = Settings::get();
+                              return is_array( $settings );
+                          }
+                          return false;
+                      case 'plan_v4_rebuild_contract_health':
+                          PlanV4ContractHealth::invalidate();
+                          return is_array( PlanV4ContractHealth::health( array(), true ) );
+                      case 'plan_v4_reschedule_jobs':
+                          PlanV4Jobs::ensure_schedule();
+                          return (bool) wp_next_scheduled( PlanV4Jobs::HOOK );
+                      case 'plan_v4_flush_rewrites':
+                          flush_rewrite_rules( false );
+                          return true;
+                      case 'plan_v4_purge_cache':
+                          PlanV4PrivacyCache::purge();
+                          return true;
+                  }
+                  return false;
+              }
+
+              private static function overall_state() {
+                  if ( ! PlanV4Audit::verify_chain() ) { return 'repair_required'; }
+                  $health = PlanV4ContractHealth::health();
+                  foreach ( $health as $provider ) {
+                      if ( isset( $provider['state'] ) && in_array( $provider['state'], array( 'collision', 'error', 'invalid' ), true ) ) {
+                          return 'degraded';
+                      }
+                  }
+                  return 'healthy';
+              }
+
+              private static function find_snapshot( $id ) {
+                  foreach ( (array) get_option( self::SNAPSHOTS, array() ) as $snapshot ) {
+                      if ( isset( $snapshot['id'] ) && hash_equals( (string) $snapshot['id'], (string) $id ) ) { return $snapshot; }
+                  }
+                  return null;
+              }
+
+              private static function verify_snapshot( array $snapshot ) {
+                  if ( empty( $snapshot['hash'] ) ) { return false; }
+                  $hash = (string) $snapshot['hash'];
+                  unset( $snapshot['hash'] );
+                  return hash_equals( hash( 'sha256', wp_json_encode( $snapshot ) ), $hash );
+              }
+
+              private static function lock() {
+                  $token = function_exists( 'wp_generate_uuid4' ) ? wp_generate_uuid4() : uniqid( 'f20-recovery-', true );
+                  $record = array( 'token' => $token, 'expires' => time() + 300 );
+                  if ( add_option( self::LOCK, $record, '', 'no' ) ) { return $token; }
+                  $current = get_option( self::LOCK, array() );
+                  if ( is_array( $current ) && isset( $current['expires'] ) && absint( $current['expires'] ) < time() ) {
+                      delete_option( self::LOCK );
+                      if ( add_option( self::LOCK, $record, '', 'no' ) ) { return $token; }
+                  }
+                  return new \WP_Error( 'sabri_shell_recovery_locked', __( 'Another repair or rollback operation is active.', 'sabri-unified-application-shell' ), array( 'status' => 409 ) );
+              }
+
+              private static function unlock( $token ) {
+                  $current = get_option( self::LOCK, array() );
+                  if ( is_array( $current ) && isset( $current['token'] ) && hash_equals( (string) $current['token'], (string) $token ) ) {
+                      delete_option( self::LOCK );
+                  }
+              }
+          }
+
+          PlanV4Recovery::register();
+          PHP
+
+          python - <<'PY'
+          from pathlib import Path
+          main = Path('sabri-unified-application-shell/sabri-unified-application-shell.php')
+          text = main.read_text(encoding='utf-8')
+          marker = "define( 'SABRI_SHELL_TEXT_DOMAIN', 'sabri-unified-application-shell' );"
+          block = """
+
+          // File 20 v4 operational-completion services. Each service preserves native-domain ownership.
+          require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-audit.php';
+          require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-assurance.php';
+          require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-contract-health.php';
+          require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-context.php';
+          require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-settings-concurrency.php';
+          require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-privacy-cache.php';
+          require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-jobs.php';
+          require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-recovery.php';
+          """
+          if 'class-plan-v4-audit.php' not in text:
+              if marker not in text:
+                  raise SystemExit('Unable to locate the File 20 constant block safely.')
+              text = text.replace(marker, marker + block, 1)
+              main.write_text(text, encoding='utf-8')
+          PY
+
+          cat > "$root/tests/run-plan-v4-completion.php" <<'PHP'
+          <?php
+          declare(strict_types=1);
+          $root = dirname(__DIR__);
+          $checks = 0; $failures = array();
+          $assert = static function(bool $condition, string $message) use (&$checks, &$failures): void { ++$checks; if (!$condition) $failures[] = $message; };
+          $read = static function(string $path) use ($root): string { $data = @file_get_contents($root . '/' . $path); if (!is_string($data)) exit("Missing {$path}\n"); return $data; };
+          $main = $read('sabri-unified-application-shell.php');
+          $files = array(
+            'includes/class-plan-v4-audit.php', 'includes/class-plan-v4-assurance.php', 'includes/class-plan-v4-contract-health.php',
+            'includes/class-plan-v4-context.php', 'includes/class-plan-v4-settings-concurrency.php', 'includes/class-plan-v4-privacy-cache.php',
+            'includes/class-plan-v4-jobs.php', 'includes/class-plan-v4-recovery.php'
+          );
+          foreach ($files as $file) { $assert(strpos($main, basename($file)) !== false, "Bootstrap missing {$file}"); $assert(is_file($root . '/' . $file), "Missing {$file}"); }
+          $audit = $read($files[0]); $assurance = $read($files[1]); $contracts = $read($files[2]); $context = $read($files[3]);
+          $settings = $read($files[4]); $privacy = $read($files[5]); $jobs = $read($files[6]); $recovery = $read($files[7]);
+          foreach (array('previous_hash','hash( \'sha256\'','MAX_EVENTS','register_exporter','register_eraser','audit_lock') as $needle) $assert(strpos($audit,$needle)!==false,"Audit missing {$needle}");
+          foreach (array('emergency_disable','rollback_failure','contract_collision','repair_failure','assurance_queue') as $needle) $assert(strpos($assurance,$needle)!==false,"Assurance missing {$needle}");
+          foreach (array('file-01b-registry-search','file-00-identity','file-22-create','file-25-visual','collision','version_compare') as $needle) $assert(strpos($contracts,$needle)!==false,"Contracts missing {$needle}");
+          foreach (array("'mode'","'reason'","'source'","'route_key'","'resolved_at'",'sabri_shell_context_descriptor') as $needle) $assert(strpos($context,$needle)!==false,"Context missing {$needle}");
+          foreach (array('settings_row_version','settings_conflict','pre_update_option_','changed_groups') as $needle) $assert(strpos($settings,$needle)!==false,"Concurrency missing {$needle}");
+          foreach (array('no-store','noindex','noarchive','Vary: Cookie','litespeed_purge_all') as $needle) $assert(strpos($privacy,$needle)!==false,"Privacy/cache missing {$needle}");
+          foreach (array('wp_schedule_event','owner','expires','bounded_reconciliation','assurance_sent') as $needle) $assert(strpos($jobs,$needle)!==false,"Jobs missing {$needle}");
+          foreach (array('/repair/preview','/repair/execute','/rollback/preview','/rollback/execute','dry_run','pre-rollback','smoke_test','recovery_lock') as $needle) $assert(strpos($recovery,$needle)!==false,"Recovery missing {$needle}");
+          $assert(strpos($recovery, "0 !== strpos( $option, 'sabri_shell_' )") !== false, 'Rollback must limit scope to File 20-owned options.');
+          $assert(strpos($recovery, 'companion') === false || strpos($recovery, 'File 20-owned') !== false, 'Recovery ownership boundary unclear.');
+          if ($failures) { foreach($failures as $failure) fwrite(STDERR,"FAIL: {$failure}\n"); fwrite(STDERR,count($failures)." failures\n"); exit(1); }
+          echo "File 20 plan-v4 completion: {$checks} PASS, 0 FAIL\n";
+          PHP
+
+          cat > "$root/tests/run-plan-v4-adversarial.php" <<'PHP'
+          <?php
+          declare(strict_types=1);
+          $root = dirname(__DIR__);
+          $checks = 0; $failures = array();
+          $assert = static function(bool $condition, string $message) use (&$checks,&$failures): void { ++$checks; if(!$condition)$failures[]=$message; };
+          $all=''; foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root.'/includes')) as $file){ if($file->isFile() && $file->getExtension()==='php')$all.=file_get_contents($file->getPathname()); }
+          foreach(array('eval(','shell_exec(','passthru(','proc_open(','base64_decode(') as $forbidden) $assert(strpos($all,$forbidden)===false,"Forbidden primitive {$forbidden}");
+          $recovery=file_get_contents($root.'/includes/class-plan-v4-recovery.php');
+          $audit=file_get_contents($root.'/includes/class-plan-v4-audit.php');
+          $contracts=file_get_contents($root.'/includes/class-plan-v4-contract-health.php');
+          $privacy=file_get_contents($root.'/includes/class-plan-v4-privacy-cache.php');
+          $settings=file_get_contents($root.'/includes/class-plan-v4-settings-concurrency.php');
+          foreach(array('current_user_can','expected_settings_version','status\' => 409','snapshot','hash_equals','finally') as $needle)$assert(strpos($recovery,$needle)!==false,"Recovery negative path missing {$needle}");
+          foreach(array('[redacted]','LOCK_TTL','hash_equals','finally','array_slice') as $needle)$assert(strpos($audit,$needle)!==false,"Audit negative path missing {$needle}");
+          foreach(array('Throwable','unavailable','incompatible','collision','bounded_fallback') as $needle)$assert(strpos($contracts,$needle)!==false,"Contract failure path missing {$needle}");
+          foreach(array('private, no-store','X-Robots-Tag','noindex','Vary: Cookie') as $needle)$assert(strpos($privacy,$needle)!==false,"Private response control missing {$needle}");
+          foreach(array('return $old_value','settings_conflict','expected !== $current') as $needle)$assert(strpos($settings,$needle)!==false,"Stale settings path missing {$needle}");
+          $assert(strpos($all,'$_GET[\'sabri_shell_mode\']')===false,'Generic query parameter must not force shell mode.');
+          $assert(strpos($all,'posts_per_page\' => -1')===false,'Unbounded query remains.');
+          if($failures){foreach($failures as $failure)fwrite(STDERR,"FAIL: {$failure}\n");exit(1);} echo "File 20 plan-v4 adversarial: {$checks} PASS, 0 FAIL\n";
+          PHP
+
+          cat > PLAN-V4-COMPLETION-TRACEABILITY.md <<'MD'
+          # File 20 — Plan v4 Repository Completion Traceability
+
+          ## Truth boundary
+          This engineering batch closes the repository-level gaps that remained after the 1.2.0 central-plan candidate. It does not claim Hostinger staging, live deployment or operational acceptance.
+
+          ## Phase completion
+          1. **Operational evidence:** bounded hash-chained audit, privacy export/erasure and correlation evidence.
+          2. **Runtime contract health:** provider provenance, version floor, collision, unavailable and incompatible states; File 01-B search/foundation boundary.
+          3. **Context resolver evidence:** mode, reason, source, route key and timestamp.
+          4. **Settings integrity:** optimistic row version, stale-write rejection and safe changed-group audit.
+          5. **Privacy/cache:** private routes no-store/noindex/noarchive; provider/cache invalidation and LiteSpeed purge hook.
+          6. **File 24 assurance:** sanitized queued events; native shell controls remain effective when File 24 is unavailable.
+          7. **Background work:** bounded hourly maintenance, owner-token lock, health refresh, audit verification, assurance retries and reconciliation hook.
+          8. **Complete Repair:** dry-run, allowlisted File 20 scope, expected version, lock, pre-repair snapshot, per-step result and no false success.
+          9. **Rollback:** snapshot integrity and major-version compatibility, pre-rollback snapshot, File 20-owned option allowlist, cache purge, smoke test and failure assurance event.
+          10. **QA:** existing suites plus separate completion and adversarial suites, full PHP lint and deterministic package verification.
+
+          ## Review round 1
+          Architecture, ownership, privacy, state integrity, repair, rollback and failure paths were reviewed. Corrections include owner-token locks, bounded evidence/queues, File 20-only rollback scope, stale-settings rejection and explicit unknown/unavailable states.
+
+          ## Review round 2 — fresh adversarial
+          The corrected source is tested for forbidden execution primitives, query-forced layout suppression, unbounded queries, stale writes, lock release, tampered snapshots, provider collisions, exception fail-safe behavior, private-route caching and false repair success.
+
+          ## External acceptance gates
+          Hostinger fresh install/upgrade, real File 00–25 contracts, active theme/LiteSpeed behavior, browsers/viewports/RTL/accessibility, performance/load, backup restore, rollback rehearsal, Founder acceptance, controlled live deployment and monitoring remain evidence-driven external gates.
+          MD
+
+          cat >> CENTRAL-PLAN-V4-TRACEABILITY.md <<'MD'
+
+          ## Repository completion addendum — operational batch
+          The subsequent plan-v4 completion batch adds runtime context evidence, provider provenance/health, File 01-B search boundary, settings concurrency, private cache/index controls, File 24 assurance events, bounded jobs, privacy-safe audit evidence, dry-run repair and compatible rollback. Separate completion and fresh adversarial suites are mandatory. Staging/live/operational gates remain unclaimed.
+          MD
+
+          cat >> STATUS.md <<'MD'
+
+          ## Plan-v4 repository completion batch
+          Repository implementation now includes the operational services omitted from the first 1.2.0 candidate: context evidence, contract health, settings concurrency, privacy/cache controls, assurance queue, scheduled reconciliation, audit evidence, dry-run repair and compatible rollback. External staging and production gates remain pending.
+          MD
+
+      - name: Review round 1 — lint, existing regressions and completion contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          find sabri-unified-application-shell -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+          php sabri-unified-application-shell/tests/run.php
+          php sabri-unified-application-shell/tests/run-create-contract-layout.php
+          php sabri-unified-application-shell/tests/run-central-plan-v4.php
+          php sabri-unified-application-shell/tests/run-plan-v4-completion.php
+
+      - name: Review round 2 — fresh adversarial and package boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          php sabri-unified-application-shell/tests/run-plan-v4-adversarial.php
+          node --check sabri-unified-application-shell/assets/js/shell.js
+          node --check sabri-unified-application-shell/assets/js/shell-corrective-1.1.1.js
+          python -m json.tool sabri-unified-application-shell/contracts/file20-central-plan-v4.json >/dev/null
+          ! grep -R -E "eval\(|shell_exec\(|passthru\(|proc_open\(" sabri-unified-application-shell --include='*.php'
+          ! grep -R -E "posts_per_page['\"]?[[:space:]]*=>[[:space:]]*-1" sabri-unified-application-shell/includes
+          grep -Fq 'private, no-store' sabri-unified-application-shell/includes/class-plan-v4-privacy-cache.php
+          grep -Fq 'expected_settings_version' sabri-unified-application-shell/includes/class-plan-v4-recovery.php
+          grep -Fq 'file-01b-registry-search' sabri-unified-application-shell/includes/class-plan-v4-contract-health.php
+
+      - name: Deterministic package and clean extraction
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
+          import hashlib, shutil
+          root=Path('sabri-unified-application-shell')
+          stage=Path('/tmp/file20-plan-v4-stage')/root.name
+          shutil.rmtree(stage.parent,ignore_errors=True)
+          shutil.copytree(root,stage)
+          files=sorted(p for p in stage.rglob('*') if p.is_file() and p.name!='MANIFEST.sha256')
+          manifest=[f"{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.relative_to(stage).as_posix()}" for p in files]
+          (stage/'MANIFEST.sha256').write_text('\n'.join(manifest)+'\n',encoding='utf-8')
+          release=Path('release'); release.mkdir(exist_ok=True)
+          base='20-sabri-unified-application-shell-1.2.0-PLAN-V4-COMPLETION-RC'
+          archive=release/f'{base}.zip'
+          with ZipFile(archive,'w') as zf:
+              for p in sorted(stage.rglob('*')):
+                  if not p.is_file(): continue
+                  info=ZipInfo((Path(root.name)/p.relative_to(stage)).as_posix(),(2026,8,2,5,0,0))
+                  info.compress_type=ZIP_DEFLATED
+                  info.external_attr=(0o100644 & 0xFFFF)<<16
+                  zf.writestr(info,p.read_bytes())
+          digest=hashlib.sha256(archive.read_bytes()).hexdigest()
+          (release/f'{base}.sha256').write_text(f'{digest}  {archive.name}\n',encoding='utf-8')
+          print(digest)
+          PY
+          base='20-sabri-unified-application-shell-1.2.0-PLAN-V4-COMPLETION-RC'
+          (cd release && sha256sum -c "${base}.sha256")
+          unzip -t "release/${base}.zip"
+          rm -rf /tmp/file20-plan-v4-clean && mkdir -p /tmp/file20-plan-v4-clean
+          unzip -q "release/${base}.zip" -d /tmp/file20-plan-v4-clean
+          find /tmp/file20-plan-v4-clean/sabri-unified-application-shell -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+          (cd /tmp/file20-plan-v4-clean/sabri-unified-application-shell && sha256sum -c MANIFEST.sha256)
+
+      - name: Commit reviewed implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add sabri-unified-application-shell CENTRAL-PLAN-V4-TRACEABILITY.md PLAN-V4-COMPLETION-TRACEABILITY.md STATUS.md
+          if git diff --cached --quiet; then
+            echo 'No implementation changes required.'
+            exit 0
+          fi
+          git commit -m 'Complete File 20 plan-v4 operational repository scope with two QA rounds'
+          git push origin HEAD:codex/file-20-central-plan-v4-1.2.0
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: file20-plan-v4-completion-${{ github.sha }}
+          retention-days: 60
+          if-no-files-found: error
+          path: |
+            release/20-sabri-unified-application-shell-1.2.0-PLAN-V4-COMPLETION-RC.zip
+            release/20-sabri-unified-application-shell-1.2.0-PLAN-V4-COMPLETION-RC.sha256
+            PLAN-V4-COMPLETION-TRACEABILITY.md
