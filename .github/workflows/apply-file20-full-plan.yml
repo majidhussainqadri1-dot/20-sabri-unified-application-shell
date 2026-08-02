@@ -37,7 +37,7 @@ jobs:
           set -euo pipefail
           test -f .github/file20-full-plan-payload.ready
           mapfile -t parts < <(find .github -maxdepth 1 -type f -name 'file20-full-plan-payload.part-*' | sort)
-          test "${#parts[@]}" -eq 18
+          test "${#parts[@]}" -eq 10
           cat "${parts[@]}" | base64 --decode > /tmp/file20-full-plan.tar.gz
           echo '134ac29f38f00482a8bbc4a1ae462be79c4166645ce4cbc3214ac48c8554b420  /tmp/file20-full-plan.tar.gz' | sha256sum -c -
           tar -tzf /tmp/file20-full-plan.tar.gz | grep -Fqx 'sabri-unified-application-shell/sabri-unified-application-shell.php'
