@@ -1,0 +1,84 @@
+name: File 20 Central Plan v4 Quality
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  php-and-contracts:
+    name: PHP ${{ matrix.php }} and central-plan contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.3']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+      - name: PHP syntax
+        run: find sabri-unified-application-shell -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Existing behavioral suite
+        run: php sabri-unified-application-shell/tests/run.php
+      - name: Existing Create and layout suite
+        run: php sabri-unified-application-shell/tests/run-create-contract-layout.php
+      - name: Central-plan v4 regression
+        run: php sabri-unified-application-shell/tests/run-central-plan-v4.php
+
+  static-and-package:
+    name: Static boundaries and deterministic package
+    needs: php-and-contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax
+        run: |
+          node --check sabri-unified-application-shell/assets/js/shell.js
+          node --check sabri-unified-application-shell/assets/js/shell-corrective-1.1.1.js
+      - name: JSON and CSS integrity
+        run: |
+          python -m json.tool sabri-unified-application-shell/contracts/file20-central-plan-v4.json >/dev/null
+          python - <<'PY'
+          from pathlib import Path
+          css = Path('sabri-unified-application-shell/assets/css/shell-central-plan-v4.css').read_text(encoding='utf-8')
+          assert css.count('{') == css.count('}')
+          assert 'flex-wrap: nowrap !important' in css
+          assert 'sabri-shell-layout-immersive' in css
+          PY
+      - name: Build deterministic package and checksum
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
+          import hashlib
+          root = Path('sabri-unified-application-shell')
+          out = Path('release/20-sabri-unified-application-shell-1.2.0-central-plan-v4.zip')
+          out.parent.mkdir(exist_ok=True)
+          files = sorted(p for p in root.rglob('*') if p.is_file())
+          with ZipFile(out, 'w') as archive:
+              for path in files:
+                  info = ZipInfo(path.as_posix(), (2026, 8, 2, 0, 0, 0))
+                  info.compress_type = ZIP_DEFLATED
+                  info.external_attr = (0o100644 & 0xFFFF) << 16
+                  archive.writestr(info, path.read_bytes())
+          digest = hashlib.sha256(out.read_bytes()).hexdigest()
+          Path(str(out) + '.sha256').write_text(f'{digest}  {out.name}\n', encoding='utf-8')
+          PY
+          unzip -t release/20-sabri-unified-application-shell-1.2.0-central-plan-v4.zip
+          (cd release && sha256sum --check 20-sabri-unified-application-shell-1.2.0-central-plan-v4.zip.sha256)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: file20-1.2.0-central-plan-v4
+          path: |
+            release/20-sabri-unified-application-shell-1.2.0-central-plan-v4.zip
+            release/20-sabri-unified-application-shell-1.2.0-central-plan-v4.zip.sha256
