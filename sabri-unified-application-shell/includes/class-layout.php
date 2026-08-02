@@ -141,12 +141,11 @@ final class Layout {
 			return $filtered;
 		}
 
-		foreach ( array( 'sabri_immersive', 'immersive', 'reader', 'full_screen' ) as $query_key ) {
-			if ( ! empty( $_GET[ $query_key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only display context.
-				return true;
-			}
-		}
-
+		/*
+		 * Do not accept a generic query-string switch: a crafted public URL must
+		 * not be able to hide ordinary navigation. Native owners opt in through
+		 * the contract filter, canonical routes or registered post types.
+		 */
 		$request = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
 		$path    = strtolower( (string) wp_parse_url( $request, PHP_URL_PATH ) );
 		if ( preg_match( '#/(reels?|video-wall/(watch|live)|live-broadcast|pdf-reader|read-pdf)(/|$)#', $path ) ) {
@@ -186,7 +185,7 @@ final class Layout {
 		$task_slugs = array(
 			'wp-login.php', 'login', 'signup', 'register', 'lostpassword', 'password-reset', 'account-verification',
 			'account-login', 'create-account', 'complete-profile', 'forgot-password', 'account-access-required',
-			'verification', 'verify-email', 'doctor-verification', 'security-center',
+			'verification', 'verify-email', 'doctor-verification',
 			'safe-mode', 'repair', 'maintenance',
 		);
 		$segments = array_values( array_filter( explode( '/', trim( strtolower( $path ), '/' ) ) ) );
