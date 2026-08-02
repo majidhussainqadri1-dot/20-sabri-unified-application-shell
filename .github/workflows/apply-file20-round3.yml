@@ -31,23 +31,44 @@ jobs:
           python3 tools/apply-file20-round3.py
           python3 - <<'PY'
           from pathlib import Path
-          path = Path('sabri-unified-application-shell/includes/class-integrations.php')
-          text = path.read_text(encoding='utf-8')
-          old = """\t\tif ( ! empty( $assertions ) ) {
+
+          integrations = Path('sabri-unified-application-shell/includes/class-integrations.php')
+          text = integrations.read_text(encoding='utf-8')
+          old_gate = """\t\tif ( ! empty( $assertions ) ) {
           \t\t\tif ( ! empty( $assertions['_contract_error'] ) || ! empty( $assertions['suspended'] ) || empty( $assertions['approved'] ) || empty( $assertions['eligible'] ) || empty( $assertions['session_two_factor'] ) ) {
           \t\t\t\treturn false;
           \t\t\t}
           """
-          new = """\t\tif ( ! empty( $assertions ) ) {
+          new_gate = """\t\tif ( ! empty( $assertions ) ) {
           \t\t\tif ( ! self::assertions_allow_privileged_action( $assertions ) ) {
           \t\t\t\treturn false;
           \t\t\t}
           """
-          if old in text:
-              text = text.replace(old, new)
-              path.write_text(text, encoding='utf-8')
-          if old in path.read_text(encoding='utf-8'):
+          text = text.replace(old_gate, new_gate)
+          integrations.write_text(text, encoding='utf-8')
+          if old_gate in integrations.read_text(encoding='utf-8'):
               raise SystemExit('A legacy privileged-action gate remains.')
+
+          tests = Path('sabri-unified-application-shell/tests/run.php')
+          test_text = tests.read_text(encoding='utf-8')
+          admin_old = """\t'institutional_account' => true,
+          \t'approved'           => true,
+          \t'eligible'           => true,
+          \t'session_two_factor' => true,
+          """
+          admin_new = """\t'institutional_account' => true,
+          \t'approved'           => true,
+          \t'eligible'           => true,
+          \t'identity_evidence_current' => true,
+          \t'two_factor_ready'   => true,
+          \t'session_two_factor' => true,
+          \t'sensitive_action_ready' => true,
+          """
+          if admin_new not in test_text:
+              if admin_old not in test_text:
+                  raise SystemExit('Administrator assertion fixture not found.')
+              test_text = test_text.replace(admin_old, admin_new, 1)
+              tests.write_text(test_text, encoding='utf-8')
           PY
           rm -f tools/apply-file20-round3.py tools/file20-round3.patch.gz.b64
           rmdir tools 2>/dev/null || true
