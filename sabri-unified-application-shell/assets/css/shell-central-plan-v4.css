@@ -1,0 +1,83 @@
+/* File 20 v1.2.0 — Definitive Master Plan v3.0 / File 20 v4.0 structural corrections. */
+
+/* Desktop primary navigation is one sticky, horizontal, no-wrap line. */
+@media (min-width: 1024px) {
+	.sabri-shell-primary-nav {
+		overflow-x: auto !important;
+		overflow-y: hidden !important;
+		overscroll-behavior-inline: contain;
+		scrollbar-gutter: stable;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.sabri-shell-primary-nav ul {
+		flex-wrap: nowrap !important;
+		inline-size: max-content;
+		min-inline-size: min(100%, var(--sabri-shell-max-width, 1600px));
+		max-inline-size: none !important;
+		white-space: nowrap !important;
+	}
+
+	.sabri-shell-primary-nav li,
+	.sabri-shell-primary-nav a {
+		flex: 0 0 auto;
+	}
+}
+
+/* File 25 owns appearance. File 20 only consumes its validated variables. */
+body.sabri-shell-visual-file25 {
+	color-scheme: light;
+}
+
+/* Immersive is a fourth, explicit mode: keep an accessible home/exit brand only. */
+body.sabri-shell-layout-immersive {
+	--sabri-shell-chrome-height: 64px;
+}
+
+body.sabri-shell-layout-immersive .sabri-shell-primary-nav,
+body.sabri-shell-layout-immersive .sabri-shell-search,
+body.sabri-shell-layout-immersive .sabri-shell-header-actions,
+body.sabri-shell-layout-immersive .sabri-shell-menu-button,
+body.sabri-shell-layout-immersive .sabri-shell-context-button,
+body.sabri-shell-layout-immersive .sabri-shell-left-sidebar,
+body.sabri-shell-layout-immersive .sabri-shell-right-sidebar,
+body.sabri-shell-layout-immersive .sabri-shell-drawer,
+body.sabri-shell-layout-immersive .sabri-shell-drawer-overlay,
+body.sabri-shell-layout-immersive .sabri-shell-bottom-nav {
+	display: none !important;
+}
+
+body.sabri-shell-layout-immersive .sabri-shell-header {
+	position: sticky;
+	inset-block-start: var(--sabri-shell-admin-bar, 0px);
+	min-block-size: 64px;
+}
+
+body.sabri-shell-layout-immersive .sabri-shell-header-inner {
+	min-block-size: 64px;
+	justify-content: flex-start;
+}
+
+body.sabri-shell-layout-immersive .sabri-shell-brand {
+	min-inline-size: 0;
+}
+
+body.sabri-shell-layout-immersive .sabri-shell-content-column,
+body.sabri-shell-layout-immersive.sabri-shell-layout-ready .sabri-shell-content-column {
+	inline-size: 100% !important;
+	max-inline-size: 100% !important;
+	margin-inline: 0 !important;
+}
+
+/* A visible keyboard focus is required even when a theme suppresses outlines. */
+body.sabri-shell-enabled :where(a, button, input, select, textarea, summary):focus-visible {
+	outline: 3px solid var(--sabri-shell-focus, #0b57d0) !important;
+	outline-offset: 2px;
+}
+
+/* No shell element may create a page-level horizontal scrollbar. */
+body.sabri-shell-enabled,
+body.sabri-shell-enabled .sabri-shell-header-inner,
+body.sabri-shell-enabled .sabri-shell-content-column {
+	max-inline-size: 100%;
+}
