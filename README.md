@@ -2,21 +2,27 @@
 
 Independent repository for **File 20 — Sabri Unified Application Shell** of the **Sabri Social Homeopathy Platform**.
 
-## Baseline
+## Current lifecycle
 
-- Version: `1.0.0 FINAL`
-- Plugin directory: `sabri-unified-application-shell/`
-- Original package: `SOURCE-ARCHIVE/20-sabri-unified-application-shell-1.0.0-FINAL.zip`
-- SHA-256: `68ebf68f11f11911207867341ad6611eeaeeac577d1ecfc04f6bf9f623627160`
+- Preserved original baseline: `SOURCE-ARCHIVE/20-sabri-unified-application-shell-1.0.0-FINAL.zip`
+- Audited main baseline: `1.1.2`
+- Central-plan v4 corrective candidate: `1.2.0`
+- Governing implementation record: `CENTRAL-PLAN-V4-TRACEABILITY.md`
+- Status: repository candidate; Hostinger staging, Founder acceptance and production deployment remain separate gates
 
-## Primary Responsibilities
+## Canonical responsibilities
 
-The module supplies the shared WordPress application shell, including the global header, horizontal primary navigation, layout resolution, left and conditional right sidebars, mobile drawers, bottom navigation, chronological Latest feed, settings, System Check, Repair, Safe Mode, emergency controls, activation snapshots, and rollback support.
+File 20 owns the shared structural application shell:
 
-It does not replace the databases or business logic owned by companion modules such as Membership, Profiles, Publishing, Appointments, Network, Marketplace, or Notifications.
+- global header and one horizontal no-wrap primary navigation line;
+- persistent left navigation, contextual right panels, mobile drawers and bottom navigation;
+- exact Three-column, Two-column, Minimal and Immersive layout resolution;
+- route discovery, page mounting and role-aware global controls;
+- settings, System Check, Complete Repair, Safe Mode, activation snapshots and rollback;
+- File 00–25 dependency/ownership registry and failure-state vocabulary.
 
-## Repository Status
+File 20 does **not** own native membership, publishing, profiles, messages, notifications, appointments, marketplace, clinic, clinical or security-assurance data. File 25 owns visual tokens, component appearance, profiles/timelines and visual-regression governance; File 20 consumes its versioned visual contract and uses a clearly marked continuity fallback only when File 25 is unavailable.
 
-The exact original package and extracted source are preserved on the baseline branch for review through Draft Pull Request #1. Import integrity and syntax checks are automated, but production acceptance still requires independent review, WordPress staging tests, responsive and accessibility acceptance, integration testing, rollback verification, and founder approval.
+## Quality boundary
 
-See `SOURCE-PROVENANCE.md`, `MANIFEST.md`, and `STATUS.md` for evidence and lifecycle details.
+Repository checks cover PHP 7.4/8.3 syntax and behavior, Create-contract authorization, central-plan traceability, route/layout invariants, JavaScript/CSS/JSON integrity and deterministic packaging. They do not establish real WordPress/Hostinger staging, cross-browser, accessibility, backup/restore, rollback or production acceptance.

@@ -11,19 +11,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-/**
- * Resolves three-column, two-column, and minimal modes.
- */
+/** Resolves the four central-plan layout modes. */
 final class Layout {
-	const THREE   = 'three';
-	const TWO     = 'two';
-	const MINIMAL = 'minimal';
+	const THREE     = 'three';
+	const TWO       = 'two';
+	const MINIMAL   = 'minimal';
+	const IMMERSIVE = 'immersive';
 
-	/**
-	 * Conservative content-level selectors. Site/root wrappers are excluded.
-	 *
-	 * @return array<int,string>
-	 */
+	/** Conservative content-level selectors. */
 	public static function content_target_fallbacks() {
 		return array(
 			'main.site-main',
@@ -37,12 +32,7 @@ final class Layout {
 		);
 	}
 
-	/**
-	 * Return configured selector followed by safe fallbacks.
-	 *
-	 * @param array<string,mixed>|null $settings Settings.
-	 * @return array<int,string>
-	 */
+	/** Return configured selector followed by safe fallbacks. */
 	public static function content_target_candidates( $settings = null ) {
 		$settings   = null === $settings ? Settings::get() : $settings;
 		$candidates = array();
@@ -52,12 +42,7 @@ final class Layout {
 		return array_values( array_unique( array_merge( $candidates, self::content_target_fallbacks() ) ) );
 	}
 
-	/**
-	 * Human-readable target resolver summary for System Check.
-	 *
-	 * @param array<string,mixed>|null $settings Settings.
-	 * @return string
-	 */
+	/** Human-readable target resolver summary for System Check. */
 	public static function content_target_report( $settings = null ) {
 		$settings = null === $settings ? Settings::get() : $settings;
 		if ( ! empty( $settings['layout']['theme_content_selector'] ) ) {
@@ -74,11 +59,7 @@ final class Layout {
 		);
 	}
 
-	/**
-	 * Resolve the current request layout.
-	 *
-	 * @return string
-	 */
+	/** Resolve the current request layout. */
 	public static function current_mode() {
 		$settings = Settings::get();
 		if ( empty( $settings['enabled'] ) || SafeMode::disabled() || self::is_excluded_request() ) {
@@ -89,55 +70,59 @@ final class Layout {
 		if ( $page_id && in_array( $page_id, (array) $settings['layout']['excluded_page_ids'], true ) ) {
 			return self::MINIMAL;
 		}
+
 		if ( $page_id && ! empty( $settings['layout']['per_page_overrides'][ $page_id ] ) ) {
 			$override = $settings['layout']['per_page_overrides'][ $page_id ];
-			if ( 'default' !== $override && in_array( $override, array( self::THREE, self::TWO, self::MINIMAL ), true ) ) {
-				return apply_filters( 'sabri_shell_layout_mode', $override, $settings );
+			if ( 'default' !== $override && in_array( $override, self::modes(), true ) ) {
+				return self::filter_mode( $override, $settings );
 			}
 		}
-		if ( self::is_three_column_context( $settings, $page_id ) ) {
-			return apply_filters( 'sabri_shell_layout_mode', self::THREE, $settings );
+
+		if ( self::is_immersive_context( $settings, $page_id ) ) {
+			return self::filter_mode( self::IMMERSIVE, $settings );
 		}
-		return apply_filters( 'sabri_shell_layout_mode', self::TWO, $settings );
+		if ( self::is_three_column_context( $settings, $page_id ) ) {
+			return self::filter_mode( self::THREE, $settings );
+		}
+		return self::filter_mode( self::TWO, $settings );
 	}
 
-	/**
-	 * Whether the right sidebar may render.
-	 *
-	 * @return bool
-	 */
+	/** Return valid layout modes. */
+	public static function modes() {
+		return array( self::THREE, self::TWO, self::MINIMAL, self::IMMERSIVE );
+	}
+
+	/** Apply the public mode filter without accepting unknown values. */
+	private static function filter_mode( $mode, array $settings ) {
+		$filtered = apply_filters( 'sabri_shell_layout_mode', $mode, $settings );
+		return in_array( $filtered, self::modes(), true ) ? $filtered : $mode;
+	}
+
+	/** Whether the right sidebar may render. */
 	public static function right_sidebar_allowed() {
 		$settings = Settings::get();
 		return self::THREE === self::current_mode() && ! empty( $settings['right_sidebar']['enabled'] );
 	}
 
-	/**
-	 * Determine three-column contexts.
-	 *
-	 * @param array<string,mixed> $settings Settings.
-	 * @param int                 $page_id Current page ID.
-	 * @return bool
-	 */
+	/** Determine exact three-column contexts. */
 	public static function is_three_column_context( array $settings, $page_id = 0 ) {
 		if ( function_exists( 'is_front_page' ) && is_front_page() ) {
 			return true;
 		}
 
-		$clinic_page_id = ! empty( $settings['layout']['worldwide_clinic_page_id'] ) ? absint( $settings['layout']['worldwide_clinic_page_id'] ) : Integrations::page_id( 'clinic' );
+		$clinic_page_id = ! empty( $settings['layout']['worldwide_clinic_page_id'] )
+			? absint( $settings['layout']['worldwide_clinic_page_id'] )
+			: Integrations::page_id( 'clinic' );
 		if ( $clinic_page_id && $page_id && $clinic_page_id === $page_id ) {
 			return true;
 		}
 
-		$profile_page_id = Integrations::page_id( 'profile' );
-		if ( $profile_page_id && $page_id === $profile_page_id && ! empty( $_GET['user'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only public routing.
-			return true;
-		}
-
+		$detected = Integrations::detect();
 		$post_types = array_filter(
 			array_unique(
 				array_merge(
 					array( isset( $settings['layout']['clinic_post_type'] ) ? sanitize_key( $settings['layout']['clinic_post_type'] ) : '' ),
-					(array) Integrations::detect()['clinic_post_types']
+					isset( $detected['clinic_post_types'] ) ? (array) $detected['clinic_post_types'] : array()
 				)
 			)
 		);
@@ -146,14 +131,36 @@ final class Layout {
 				return true;
 			}
 		}
+		return (bool) apply_filters( 'sabri_shell_is_three_column_context', false, $settings, $page_id );
+	}
+
+	/** Determine video, live, Reel and PDF-reader immersive contexts. */
+	public static function is_immersive_context( array $settings, $page_id = 0 ) {
+		$filtered = apply_filters( 'sabri_shell_is_immersive_context', null, $settings, $page_id );
+		if ( is_bool( $filtered ) ) {
+			return $filtered;
+		}
+
+		/*
+		 * Do not accept a generic query-string switch: a crafted public URL must
+		 * not be able to hide ordinary navigation. Native owners opt in through
+		 * the contract filter, canonical routes or registered post types.
+		 */
+		$request = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+		$path    = strtolower( (string) wp_parse_url( $request, PHP_URL_PATH ) );
+		if ( preg_match( '#/(reels?|video-wall/(watch|live)|live-broadcast|pdf-reader|read-pdf)(/|$)#', $path ) ) {
+			return true;
+		}
+
+		foreach ( array( 'srl_reel', 'svw_video', 'svw_live', 'spl_reader' ) as $post_type ) {
+			if ( function_exists( 'is_singular' ) && post_type_exists( $post_type ) && is_singular( $post_type ) ) {
+				return true;
+			}
+		}
 		return false;
 	}
 
-	/**
-	 * Determine if the request must be excluded.
-	 *
-	 * @return bool
-	 */
+	/** Determine if the request must use Minimal/no visual shell. */
 	public static function is_excluded_request() {
 		if ( is_admin() || ( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() ) || ( function_exists( 'wp_doing_cron' ) && wp_doing_cron() ) ) {
 			return true;
@@ -175,13 +182,14 @@ final class Layout {
 
 		$request = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
 		$path    = (string) wp_parse_url( $request, PHP_URL_PATH );
-		$auth_slugs = array(
+		$task_slugs = array(
 			'wp-login.php', 'login', 'signup', 'register', 'lostpassword', 'password-reset', 'account-verification',
 			'account-login', 'create-account', 'complete-profile', 'forgot-password', 'account-access-required',
-			'verification', 'verify-email', 'security-center', 'safe-mode', 'maintenance',
+			'verification', 'verify-email', 'doctor-verification',
+			'safe-mode', 'repair', 'maintenance',
 		);
 		$segments = array_values( array_filter( explode( '/', trim( strtolower( $path ), '/' ) ) ) );
-		if ( array_intersect( $segments, $auth_slugs ) ) {
+		if ( array_intersect( $segments, $task_slugs ) ) {
 			return true;
 		}
 		if ( preg_match( '#/(wp-json|feed|robots\.txt|sitemap[^/]*)#i', $path ) ) {
@@ -190,11 +198,7 @@ final class Layout {
 		return false;
 	}
 
-	/**
-	 * Return current public page ID when available.
-	 *
-	 * @return int
-	 */
+	/** Return current public page ID when available. */
 	public static function current_page_id() {
 		return function_exists( 'get_queried_object_id' ) ? absint( get_queried_object_id() ) : 0;
 	}

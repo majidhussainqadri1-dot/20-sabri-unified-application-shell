@@ -4,7 +4,7 @@ Tags: application shell, navigation, layout, accessibility, homeopathy
 Requires at least: 6.0
 Tested up to: 7.0.1
 Requires PHP: 7.4
-Stable tag: 1.1.2
+Stable tag: 1.2.0
 License: GPLv2 or later
 Text Domain: sabri-unified-application-shell
 
@@ -12,56 +12,53 @@ Responsive application shell and integration layer for the Sabri Social Homeopat
 
 == Description ==
 
-Sabri Unified Application Shell provides the global header, resolved platform navigation, persistent left navigation, conditional contextual panels, mobile drawers, bottom navigation, minimal authentication/system layouts, settings, System Check, Complete Repair, Safe Mode, activation snapshot, and rollback.
+Sabri Unified Application Shell provides the global header, one-line primary navigation, persistent left navigation, conditional contextual panels, mobile drawers, bottom navigation, exact Three/Two/Minimal/Immersive layouts, settings, System Check, Complete Repair, Safe Mode, activation snapshots and rollback.
 
-Version 1.1.2 closes four authorization, privacy, and performance defects found during a fresh adversarial review: File 22 can no longer elevate a File 00 denial; Create links are omitted from server markup when the exact contract denies them; public doctor data no longer falls back to raw profile metadata; and shortcode-page discovery is bounded and paginated.
+Version 1.2.0 harmonizes File 20 with the Definitive Master Plan v3.0 and File 20 v4.0 specification. It adds the missing Immersive mode, corrects profiles/timelines and the Publishing Dashboard to Two-column contexts, enforces one no-wrap desktop navigation line, publishes a complete File 00–25 contract registry, and makes File 25 the canonical visual-token owner. File 20's legacy Appearance editor is retired; a clearly marked continuity fallback is used only while File 25 is unavailable.
 
-Version 1.1.1 added the exact package-owned File 20 Create contract required by File 22, separated the profile-card status, wrapped desktop navigation, and repaired the safe content column for File 21 managed single publications without reparenting theme or companion markup.
+Version 1.1.2 closed authorization, public-projection privacy and bounded-discovery defects. Version 1.1.1 added the exact package-owned File 22 Create contract and bounded File 21 layout recovery. The plugin does not create duplicate native-domain databases.
 
-Version 1.1.0 corrected the original 1.0.0 integration and layout defects. It resolves real companion page maps and shortcodes, honors Membership Core founder/doctor/publisher contracts, uses the moderated public composer, prevents duplicate feeds and notification bells, preserves theme DOM hierarchy and IDs, and replaces list settings correctly.
-
-The plugin does not create duplicate messaging, notification, appointment, profile, marketplace, clinic, publishing, or clinical databases.
-
-Hostinger staging testing and founder acceptance are required before production deployment.
+Hostinger staging testing and Founder acceptance are required before production deployment.
 
 == Installation ==
 
-1. Back up the site.
+1. Back up files and database.
 2. Install or upgrade on staging only.
-3. Activate the required companion modules.
-4. Open Sabri Shell in wp-admin and run System Check.
-5. Confirm both File 20 Create-contract checks pass in File 22 Composer Health.
-6. Verify the Home Feed and long-form single-publication layout at desktop, tablet, and mobile widths.
-7. Complete `STAGING-ACCEPTANCE.md` before production.
+3. Activate required companion modules.
+4. Open Sabri Shell and run System Check.
+5. Confirm the File 22 Create-contract checks pass.
+6. Confirm File 25 visual-provider status or the truthful continuity-fallback marker.
+7. Test Three, Two, Minimal and Immersive contexts at mobile, tablet and desktop widths.
+8. Test keyboard, screen reader, RTL, Safe Mode, Repair and rollback.
+9. Complete STAGING-ACCEPTANCE.md before production.
 
 == Shortcode ==
 
-Use `[sabri_shell_home_feed]` only as a chronological fallback feed. Automatic insertion is suppressed when an authoritative platform feed is already present.
+Use [sabri_shell_home_feed] only as a chronological fallback feed. Automatic insertion is suppressed when an authoritative platform feed exists.
 
 == Changelog ==
 
+= 1.2.0 =
+* Added the exact Four-mode layout constitution, including Immersive media/reader contexts.
+* Removed generic profile promotion to Three-column and preserved private Publishing Dashboard as Two-column.
+* Enforced one horizontal no-wrap desktop primary-navigation line with bounded accessible overflow.
+* Added canonical File 00–25 ownership, dependency and failure-behavior registry.
+* Added versioned File 25 visual-contract consumption and truthful continuity fallback.
+* Retired File 20's legacy Appearance editor and prevented new File 20 writes to File 25-owned values.
+* Preserved File 22 Create contract 1.0.1 and existing File 00 fail-closed authorization.
+* Added central-plan static regression, JSON contract and deterministic CI package gates.
+
 = 1.1.2 =
-* Made the File 22 visibility filter deny-only; it cannot elevate a principal denied by File 00/File 20.
-* Omitted desktop and mobile Create markup unless the exact current-user contract returns true.
-* Required subject-bound File 00 contract 1.1.2+ assertions and removed legacy identity fallbacks from privileged shell decisions.
-* Required File 00 truth before File 03 directory eligibility can expose a verified doctor.
-* Removed raw Membership/File 03 getter fallbacks from public professional data; only approved projections may populate fields.
-* Replaced unbounded all-Page shortcode scans with deterministic 100-item batches and a 5,000-page ceiling.
-* Added regressions for deny-only filtering, server-rendered markup, bounded discovery, and public-projection privacy.
+* Made File 22 visibility deny-only and omitted denied Create markup server-side.
+* Required subject-bound File 00 1.1.2+ assertions for privileged decisions.
+* Removed raw public-profile fallbacks and bounded shortcode-page discovery.
 
 = 1.1.1 =
-* Added exact File 22 Create contract version 1.0.1 with canonical ownership and current-user-only visibility.
-* Preserved fail-closed behavior for partial or foreign contract claims and Safe Mode.
-* Added bounded File 21 managed-single content-column recovery without DOM reparenting.
-* Wrapped desktop navigation, separated profile-card status text, and contained publication content/actions/comments.
-* Added PHP 7.4/8.3, JavaScript, CSS, contract, package, and checksum gates.
+* Added exact File 22 Create contract 1.0.1 and package ownership checks.
+* Added bounded File 21 managed-single layout recovery without DOM reparenting.
 
 = 1.1.0 =
-* Corrected companion page-map, shortcode, role, profile, clinic, appointment, authentication, publishing, language, and notification integrations.
-* Removed unsafe theme-wrapper reparenting and preserved theme DOM hierarchy and IDs.
-* Corrected list-array settings merge behavior and expanded cache invalidation.
-* Prevented duplicate Home feeds and duplicate notification outputs.
-* Added behavioral regression tests and corrective CI gates.
+* Corrected integration, layout, cache, notification and recovery defects.
 
 = 1.0.0 =
 * Original baseline release.

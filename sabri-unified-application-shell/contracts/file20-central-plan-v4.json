@@ -1,0 +1,35 @@
+{
+  "schema": "sabri-file20-central-plan-contract",
+  "version": "1.0.0",
+  "runtime_target": "1.2.0",
+  "owner": "file-20",
+  "governing_plan": "SSH-PMP-2026-v3.0",
+  "file_plan": "File 20 v4.0 Central-Plan-Harmonized Specification",
+  "layout_modes": {
+    "three": ["home", "worldwide-clinic-directory", "single-doctor-or-clinic"],
+    "two": ["ordinary-public-pages", "profiles-and-timelines", "directories", "knowledge-pages", "private-applications"],
+    "minimal": ["authentication", "registration", "recovery", "verification", "feeds", "rest", "ajax", "cron", "repair", "safe-mode"],
+    "immersive": ["reels", "video-full-screen", "live-broadcast", "pdf-reader"]
+  },
+  "visual_contract": {
+    "canonical_owner": "file-25",
+    "consumer_hook": "sabri_shell_file25_visual_contract",
+    "minimum_version": "1.0.0",
+    "fallback": "continuity-only"
+  },
+  "published_hooks": [
+    "sabri_shell_contract_registry",
+    "sabri_shell_layout_contexts",
+    "sabri_shell_operational_states",
+    "sabri_shell_is_immersive_context"
+  ],
+  "invariants": [
+    "one-global-shell",
+    "one-horizontal-no-wrap-primary-navigation-line",
+    "native-domain-ownership-preserved",
+    "no-file20-appearance-editor",
+    "file22-create-contract-preserved",
+    "safe-mode-non-destructive",
+    "staging-before-production"
+  ]
+}

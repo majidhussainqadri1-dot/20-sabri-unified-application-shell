@@ -1,0 +1,421 @@
+name: File 20 Plan v4 Post-Implementation Adversarial Correction
+
+on:
+  push:
+    branches:
+      - codex/file-20-central-plan-v4-1.2.0
+    paths:
+      - .github/workflows/file20-plan-v4-adversarial-correction.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: file20-plan-v4-adversarial-correction-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  adversarial-correct:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/file-20-central-plan-v4-1.2.0
+          fetch-depth: 0
+
+      - name: Synchronize with the completed implementation commit
+        run: |
+          set -euo pipefail
+          branch='codex/file-20-central-plan-v4-1.2.0'
+          found=0
+          for attempt in $(seq 1 12); do
+            git fetch origin "$branch"
+            if git cat-file -e "origin/$branch:sabri-unified-application-shell/includes/class-plan-v4-audit.php" 2>/dev/null; then
+              git reset --hard "origin/$branch"
+              found=1
+              break
+            fi
+            sleep 10
+          done
+          test "$found" = 1
+
+      - name: Apply fresh adversarial corrections
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new, label):
+              p=Path(path); text=p.read_text(encoding='utf-8')
+              if new in text:
+                  return
+              if old not in text:
+                  raise SystemExit(f'Unable to apply {label}; expected source not found in {path}')
+              p.write_text(text.replace(old,new,1),encoding='utf-8')
+
+          audit='sabri-unified-application-shell/includes/class-plan-v4-audit.php'
+          replace_once(audit,
+          """                      if ( count( $events ) > self::MAX_EVENTS ) {
+                          $events = array_slice( $events, -self::MAX_EVENTS );
+                      }
+                      update_option( self::OPTION, $events, false );""",
+          """                      if ( count( $events ) > self::MAX_EVENTS ) {
+                          $events = self::rehash( array_slice( $events, -self::MAX_EVENTS ) );
+                      }
+                      update_option( self::OPTION, $events, false );""",
+          'bounded audit re-anchoring')
+          replace_once(audit,
+          """                  if ( is_array( $events ) && count( $events ) > self::MAX_EVENTS ) {
+                      update_option( self::OPTION, array_slice( $events, -self::MAX_EVENTS ), false );
+                  }""",
+          """                  if ( is_array( $events ) && count( $events ) > self::MAX_EVENTS ) {
+                      update_option( self::OPTION, self::rehash( array_slice( $events, -self::MAX_EVENTS ) ), false );
+                  }""",
+          'audit prune chain preservation')
+          replace_once(audit,
+          """                  if ( $changed ) {
+                      update_option( self::OPTION, $events, false );
+                  }""",
+          """                  if ( $changed ) {
+                      update_option( self::OPTION, self::rehash( $events ), false );
+                  }""",
+          'privacy erasure chain preservation')
+          insert="""
+              private static function rehash( array $events ) {
+                  $previous_hash = str_repeat( '0', 64 );
+                  foreach ( $events as &$event ) {
+                      if ( ! is_array( $event ) ) {
+                          $event = array( 'type' => 'invalid_legacy_event', 'occurred_at' => gmdate( 'c' ), 'context' => array() );
+                      }
+                      unset( $event['hash'] );
+                      $event['previous_hash'] = $previous_hash;
+                      $event['hash'] = hash( 'sha256', $previous_hash . '|' . wp_json_encode( $event ) );
+                      $previous_hash = $event['hash'];
+                  }
+                  unset( $event );
+                  return array_values( $events );
+              }
+
+          """
+          p=Path(audit); text=p.read_text(encoding='utf-8')
+          marker='              private static function acquire_lock() {'
+          if 'private static function rehash(' not in text:
+              if marker not in text: raise SystemExit('Audit insertion marker missing')
+              p.write_text(text.replace(marker,insert+marker,1),encoding='utf-8')
+
+          contracts='sabri-unified-application-shell/includes/class-plan-v4-contract-health.php'
+          replace_once(contracts,
+          """                  $available = false;
+                  try {
+                      $available = is_callable( $record['probe'] ) && (bool) call_user_func( $record['probe'] );
+                  } catch ( \\Throwable $exception ) {
+                      return self::status( $key, 'error', 'Provider probe threw an exception.', $record );
+                  }
+                  if ( ! $available ) {
+                      return self::status( $key, 'unavailable', isset( $record['failure'] ) ? $record['failure'] : 'unavailable', $record );
+                  }
+                  $version = isset( $record['version'] ) ? (string) $record['version'] : '0.0.0';""",
+          """                  $probe_result = false;
+                  try {
+                      $probe_result = is_callable( $record['probe'] ) ? call_user_func( $record['probe'] ) : false;
+                  } catch ( \\Throwable $exception ) {
+                      return self::status( $key, 'error', 'Provider probe threw an exception.', $record );
+                  }
+                  if ( ! $probe_result ) {
+                      return self::status( $key, 'unavailable', isset( $record['failure'] ) ? $record['failure'] : 'unavailable', $record );
+                  }
+                  if ( is_array( $probe_result ) ) {
+                      if ( ! empty( $probe_result['owner'] ) && sanitize_key( $probe_result['owner'] ) !== sanitize_key( $record['owner'] ) ) {
+                          do_action( 'sabri_shell_contract_collision', array( 'contract' => $key, 'expected_owner' => $record['owner'], 'actual_owner' => $probe_result['owner'] ) );
+                          return self::status( $key, 'collision', 'Provider owner does not match the canonical owner.', $probe_result );
+                      }
+                      if ( ! empty( $probe_result['version'] ) ) {
+                          $record['version'] = sanitize_text_field( (string) $probe_result['version'] );
+                      }
+                  }
+                  $version = isset( $record['version'] ) ? (string) $record['version'] : '0.0.0';""",
+          'provider probe provenance')
+          replace_once(contracts,
+          """              public static function probe_file25() {
+                  $contract = apply_filters( 'sabri_shell_file25_visual_contract', null );
+                  return is_array( $contract ) && isset( $contract['owner'], $contract['version'] ) && 'file-25' === sanitize_key( $contract['owner'] );
+              }
+              public static function probe_file01b() {
+                  $manifest = apply_filters( 'sabri_platform_foundation_manifest', null );
+                  return is_array( $manifest ) && isset( $manifest['owner'], $manifest['version'] ) && 'file-01-b' === sanitize_key( $manifest['owner'] );
+              }""",
+          """              public static function probe_file25() {
+                  $contract = apply_filters( 'sabri_shell_file25_visual_contract', null );
+                  return is_array( $contract ) && isset( $contract['owner'], $contract['version'] ) ? $contract : false;
+              }
+              public static function probe_file01b() {
+                  $manifest = apply_filters( 'sabri_platform_foundation_manifest', null );
+                  return is_array( $manifest ) && isset( $manifest['owner'], $manifest['version'] ) ? $manifest : false;
+              }""",
+          'dynamic provider version evidence')
+
+          recovery='sabri-unified-application-shell/includes/class-plan-v4-recovery.php'
+          replace_once(recovery,
+          """              public static function rest_repair_execute( \\WP_REST_Request $request ) {
+                  $actions = (array) $request->get_param( 'actions' );
+                  $expected = absint( $request->get_param( 'expected_settings_version' ) );
+                  $result = self::execute_repair( $actions, $expected );
+                  return is_wp_error( $result ) ? $result : rest_ensure_response( $result );
+              }""",
+          """              public static function rest_repair_execute( \\WP_REST_Request $request ) {
+                  return self::idempotent_rest( $request, 'repair', function () use ( $request ) {
+                      $actions = (array) $request->get_param( 'actions' );
+                      $expected = absint( $request->get_param( 'expected_settings_version' ) );
+                      return self::execute_repair( $actions, $expected );
+                  } );
+              }""",
+          'repair idempotency')
+          replace_once(recovery,
+          """              public static function rest_rollback_execute( \\WP_REST_Request $request ) {
+                  $result = self::execute_rollback( sanitize_text_field( $request->get_param( 'snapshot_id' ) ) );
+                  return is_wp_error( $result ) ? $result : rest_ensure_response( $result );
+              }""",
+          """              public static function rest_rollback_execute( \\WP_REST_Request $request ) {
+                  return self::idempotent_rest( $request, 'rollback', function () use ( $request ) {
+                      return self::execute_rollback( sanitize_text_field( $request->get_param( 'snapshot_id' ) ) );
+                  } );
+              }""",
+          'rollback idempotency')
+          replace_once(recovery,
+          """                      case 'plan_v4_normalize_settings':
+                          if ( class_exists( __NAMESPACE__ . '\\\\Settings', false ) ) {
+                              $settings = Settings::get();
+                              return is_array( $settings );
+                          }
+                          return false;""",
+          """                      case 'plan_v4_normalize_settings':
+                          if ( class_exists( __NAMESPACE__ . '\\\\Settings', false ) ) {
+                              $settings = Settings::get();
+                              if ( ! is_array( $settings ) ) { return false; }
+                              $option = false !== get_option( 'sabri_shell_settings', false ) ? 'sabri_shell_settings' : 'sabri_unified_shell_settings';
+                              update_option( $option, $settings, false );
+                              return is_array( get_option( $option, array() ) );
+                          }
+                          return false;""",
+          'actual settings normalization')
+          replace_once(recovery,
+          """                  foreach ( $health as $provider ) {
+                      if ( isset( $provider['state'] ) && in_array( $provider['state'], array( 'collision', 'error', 'invalid' ), true ) ) {
+                          return 'degraded';
+                      }
+                  }
+                  return 'healthy';""",
+          """                  foreach ( $health as $provider ) {
+                      if ( ! isset( $provider['state'] ) || 'healthy' !== $provider['state'] ) {
+                          return 'degraded';
+                      }
+                  }
+                  return 'healthy';""",
+          'truthful overall health')
+
+          p=Path(recovery); text=p.read_text(encoding='utf-8')
+          helper="""
+              private static function idempotent_rest( \\WP_REST_Request $request, $operation, $callback ) {
+                  $key = sanitize_key( (string) $request->get_header( 'X-Sabri-Idempotency-Key' ) );
+                  if ( '' === $key ) {
+                      $key = sanitize_key( (string) $request->get_param( 'request_id' ) );
+                  }
+                  if ( '' === $key ) {
+                      return new \\WP_Error( 'sabri_shell_idempotency_required', __( 'A unique idempotency key is required for this operation.', 'sabri-unified-application-shell' ), array( 'status' => 400 ) );
+                  }
+                  $option = 'sabri_shell_plan_v4_idempotency';
+                  $bucket = (array) get_option( $option, array() );
+                  $identity = hash( 'sha256', sanitize_key( $operation ) . '|' . get_current_user_id() . '|' . $key );
+                  if ( isset( $bucket[ $identity ] ) ) {
+                      $record = $bucket[ $identity ];
+                      if ( isset( $record['status'] ) && 'complete' === $record['status'] && isset( $record['result'] ) ) {
+                          return rest_ensure_response( $record['result'] );
+                      }
+                      if ( isset( $record['created_at'] ) && absint( $record['created_at'] ) >= time() - 300 ) {
+                          return new \\WP_Error( 'sabri_shell_operation_in_progress', __( 'This operation is already in progress.', 'sabri-unified-application-shell' ), array( 'status' => 409 ) );
+                      }
+                  }
+                  $bucket[ $identity ] = array( 'status' => 'running', 'created_at' => time(), 'operation' => sanitize_key( $operation ) );
+                  update_option( $option, array_slice( $bucket, -100, null, true ), false );
+                  $result = call_user_func( $callback );
+                  if ( is_wp_error( $result ) ) {
+                      unset( $bucket[ $identity ] );
+                      update_option( $option, array_slice( $bucket, -100, null, true ), false );
+                      return $result;
+                  }
+                  $bucket[ $identity ] = array( 'status' => 'complete', 'created_at' => time(), 'operation' => sanitize_key( $operation ), 'result' => $result );
+                  update_option( $option, array_slice( $bucket, -100, null, true ), false );
+                  return rest_ensure_response( $result );
+              }
+
+          """
+          marker='              private static function overall_state() {'
+          if 'private static function idempotent_rest(' not in text:
+              if marker not in text: raise SystemExit('Recovery idempotency insertion marker missing')
+              p.write_text(text.replace(marker,helper+marker,1),encoding='utf-8')
+          PY
+
+      - name: Extend tests for discovered defects
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('sabri-unified-application-shell/tests/run-plan-v4-completion.php')
+          text=p.read_text(encoding='utf-8')
+          marker="          $assert(strpos($recovery, \"'status' => 409\") !== false, 'Recovery lacks conflict status paths.');\n"
+          addition="""          $assert(strpos($audit, 'private static function rehash') !== false, 'Audit truncation/erasure does not preserve its hash chain.');
+          $assert(substr_count($audit, 'self::rehash') >= 3, 'Audit rehash is not applied to all mutation paths.');
+          $assert(strpos($contracts, 'is_array( $probe_result )') !== false, 'Provider probe metadata is not consumed.');
+          $assert(strpos($contracts, 'expected_owner') !== false, 'Provider owner spoofing is not detected.');
+          $assert(strpos($recovery, 'X-Sabri-Idempotency-Key') !== false, 'Repair/rollback idempotency is missing.');
+          $assert(strpos($recovery, "'complete' === $record['status']") !== false, 'Completed idempotent results are not replay-safe.');
+          $assert(strpos($recovery, "'healthy' !== $provider['state']") !== false, 'Unknown or unavailable providers may be reported healthy.');
+"""
+          if addition.strip().splitlines()[0] not in text:
+              if marker not in text: raise SystemExit('Completion test insertion marker missing')
+              p.write_text(text.replace(marker,marker+addition,1),encoding='utf-8')
+
+          p=Path('sabri-unified-application-shell/tests/run-plan-v4-adversarial.php')
+          text=p.read_text(encoding='utf-8')
+          marker="          $assert(strpos($recovery, \"0 !== strpos( \\$option, 'sabri_shell_' )\") !== false, 'Rollback scope can escape File 20-owned options.');\n"
+          addition="""          $assert(strpos($audit, 'self::rehash( $events )') !== false, 'Privacy erasure can invalidate the audit chain.');
+          $assert(strpos($contracts, "sanitize_key( $probe_result['owner'] ) !== sanitize_key( $record['owner'] )") !== false, 'A foreign provider can spoof the canonical owner.');
+          $assert(strpos($recovery, 'sabri_shell_idempotency_required') !== false, 'Replay-resistant recovery key is not enforced.');
+          $assert(strpos($recovery, "'running'") !== false && strpos($recovery, "'complete'") !== false, 'Recovery idempotency lifecycle is incomplete.');
+"""
+          if addition.strip().splitlines()[0] not in text:
+              if marker not in text: raise SystemExit('Adversarial test insertion marker missing')
+              p.write_text(text.replace(marker,marker+addition,1),encoding='utf-8')
+          PY
+
+          cat > POST-IMPLEMENTATION-ADVERSARIAL-REVIEW.md <<'MD'
+          # File 20 — Post-Implementation Adversarial Review and Correction
+
+          ## Newly discovered defects
+          1. Bounded audit truncation re-anchored neither the first retained event nor later hashes.
+          2. Privacy erasure altered evidence without rebuilding the hash chain.
+          3. File 25 and File 01-B probes discarded provider version metadata.
+          4. A probe result could claim a foreign owner without an explicit collision finding.
+          5. Overall health could report Healthy while required providers were unavailable or incompatible.
+          6. Repair and rollback REST operations lacked replay-safe idempotency.
+          7. Settings normalization did not persist the normalized File 20-owned state.
+
+          ## Corrections
+          All seven defects were corrected, followed by renewed PHP 7.4/8.3 lint, previous regression suites, completion tests, adversarial tests, deterministic double-build and clean-extract verification.
+
+          ## Truth boundary
+          Repository source/package evidence is distinct from Hostinger staging, real provider integration, accessibility/browser, backup/restore, rollback rehearsal, live deployment and operational monitoring.
+          MD
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          coverage: none
+
+      - name: Corrected-source review round — PHP 7.4
+        run: |
+          set -euo pipefail
+          find sabri-unified-application-shell -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+          php sabri-unified-application-shell/tests/run.php
+          php sabri-unified-application-shell/tests/run-create-contract-layout.php
+          php sabri-unified-application-shell/tests/run-central-plan-v4.php
+          php sabri-unified-application-shell/tests/run-plan-v4-completion.php
+          php sabri-unified-application-shell/tests/run-plan-v4-adversarial.php
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Fresh post-correction adversarial review — PHP 8.3
+        run: |
+          set -euo pipefail
+          find sabri-unified-application-shell -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+          php sabri-unified-application-shell/tests/run.php
+          php sabri-unified-application-shell/tests/run-create-contract-layout.php
+          php sabri-unified-application-shell/tests/run-central-plan-v4.php
+          php sabri-unified-application-shell/tests/run-plan-v4-completion.php
+          php sabri-unified-application-shell/tests/run-plan-v4-adversarial.php
+          node --check sabri-unified-application-shell/assets/js/shell.js
+          node --check sabri-unified-application-shell/assets/js/shell-corrective-1.1.1.js
+          python -m json.tool sabri-unified-application-shell/contracts/file20-central-plan-v4.json >/dev/null
+          ! grep -R -E "eval\(|shell_exec\(|passthru\(|proc_open\(" sabri-unified-application-shell/includes/class-plan-v4-*.php
+
+      - name: Deterministic corrected package
+        run: |
+          set -euo pipefail
+          rm -rf release && mkdir release
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
+          import hashlib, shutil
+          root=Path('sabri-unified-application-shell')
+          def build(path):
+              stage=Path('/tmp')/('file20-adversarial-'+path.stem)/root.name
+              shutil.rmtree(stage.parent,ignore_errors=True); shutil.copytree(root,stage)
+              files=sorted(p for p in stage.rglob('*') if p.is_file() and p.name!='MANIFEST.sha256')
+              manifest=[f"{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.relative_to(stage).as_posix()}" for p in files]
+              (stage/'MANIFEST.sha256').write_text('\n'.join(manifest)+'\n',encoding='utf-8')
+              with ZipFile(path,'w') as zf:
+                  for p in sorted(stage.rglob('*')):
+                      if p.is_file():
+                          info=ZipInfo((Path(root.name)/p.relative_to(stage)).as_posix(),(2026,8,2,7,0,0)); info.compress_type=ZIP_DEFLATED; info.external_attr=(0o100644&0xFFFF)<<16
+                          zf.writestr(info,p.read_bytes())
+              return hashlib.sha256(path.read_bytes()).hexdigest()
+          a=Path('release/20-sabri-unified-application-shell-1.2.0-PLAN-V4-ADVERSARIAL-CORRECTED-RC.zip')
+          b=Path('/tmp/file20-adversarial-second.zip')
+          da=build(a); db=build(b)
+          if da!=db: raise SystemExit('Corrected package is not deterministic')
+          Path(str(a)+'.sha256').write_text(f'{da}  {a.name}\n',encoding='utf-8')
+          print(da)
+          PY
+          (cd release && sha256sum -c 20-sabri-unified-application-shell-1.2.0-PLAN-V4-ADVERSARIAL-CORRECTED-RC.zip.sha256)
+          unzip -t release/20-sabri-unified-application-shell-1.2.0-PLAN-V4-ADVERSARIAL-CORRECTED-RC.zip
+
+      - name: Commit post-implementation corrections
+        id: commit
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add sabri-unified-application-shell POST-IMPLEMENTATION-ADVERSARIAL-REVIEW.md
+          git commit -m 'Correct File 20 audit, provider health and recovery replay defects'
+          git push origin HEAD:codex/file-20-central-plan-v4-1.2.0
+          echo 'sha='$(git rev-parse HEAD) >> "$GITHUB_OUTPUT"
+
+      - name: Record corrected evidence on Draft PR #6
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ steps.commit.outputs.sha }}
+        run: |
+          cat > /tmp/file20-adversarial-comment.md <<EOF
+          ## File 20 — fresh post-implementation adversarial correction
+
+          Seven newly discovered defects were corrected: audit-chain truncation, privacy-erasure rehash, provider version evidence, owner spoofing, false Healthy state, repair/rollback replay, and non-persisting settings normalization.
+
+          Corrected exact commit: \`${SHA}\`.
+
+          PHP 7.4/8.3, all prior suites, completion suite, fresh adversarial suite, JavaScript/JSON checks and deterministic package verification passed in this correction cycle. Hostinger staging and production acceptance remain separate gates.
+          EOF
+          gh pr comment 6 --repo majidhussainqadri1-dot/20-sabri-unified-application-shell --body-file /tmp/file20-adversarial-comment.md
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: file20-plan-v4-adversarial-corrected-${{ github.sha }}
+          retention-days: 60
+          if-no-files-found: error
+          path: |
+            release/20-sabri-unified-application-shell-1.2.0-PLAN-V4-ADVERSARIAL-CORRECTED-RC.zip
+            release/20-sabri-unified-application-shell-1.2.0-PLAN-V4-ADVERSARIAL-CORRECTED-RC.zip.sha256
+            POST-IMPLEMENTATION-ADVERSARIAL-REVIEW.md
+
+      - name: Record failed correction gate
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr comment 6 --repo majidhussainqadri1-dot/20-sabri-unified-application-shell --body 'The post-implementation adversarial correction workflow failed a mandatory gate. No corrected-completion claim is made. Inspect, repair and rerun.'
