@@ -1,0 +1,42 @@
+name: Apply File 20 Round Three
+
+on:
+  push:
+    branches:
+      - fix/file20-zero-known-defects-1.1.2
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/file20-zero-known-defects-1.1.2
+          fetch-depth: 0
+      - name: Apply fresh adversarial correction when pending
+        shell: bash
+        run: |
+          set -euo pipefail
+          if test ! -f tools/file20-round3.patch.gz.b64; then
+            echo 'Round-three patch is already applied.'
+            exit 0
+          fi
+          base64 --decode tools/file20-round3.patch.gz.b64 | gzip -dc > /tmp/file20-round3.patch
+          git apply --check /tmp/file20-round3.patch
+          git apply /tmp/file20-round3.patch
+          rm -f tools/file20-round3.patch.gz.b64
+          rmdir tools 2>/dev/null || true
+          find sabri-unified-application-shell -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+          php sabri-unified-application-shell/tests/run.php
+          php sabri-unified-application-shell/tests/run-create-contract-layout.php
+          grep -Fq 'assertions_allow_privileged_action' sabri-unified-application-shell/includes/class-integrations.php
+          grep -Fq 'array_intersect_key( $filtered, $data )' sabri-unified-application-shell/includes/class-integrations.php
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add --all
+          git commit -m 'fix: harden File 00 action assurance and public projection allowlist'
+          git push origin HEAD:fix/file20-zero-known-defects-1.1.2
