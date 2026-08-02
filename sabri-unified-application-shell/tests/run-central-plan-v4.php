@@ -46,7 +46,9 @@ foreach (array('const THREE', 'const TWO', 'const MINIMAL', 'const IMMERSIVE') a
 	$assert(strpos($layout, $mode) !== false, "Missing layout mode: {$mode}.");
 }
 $assert(strpos($layout, "'publishing-dashboard'") === false, 'Publishing Dashboard must remain a two-column private application, not Minimal.');
+$assert(strpos($layout, "'security-center'") === false, 'Security Center must not be forced into Minimal layout.');
 $assert(strpos($layout, "! empty( \$_GET['user'] )") === false, 'Public profiles must not be forced into the three-column layout by query parameter.');
+$assert(strpos($layout, "\$_GET[ \$query_key ]") === false, 'A generic query string must not force Immersive mode.');
 $assert(strpos($layout, 'sabri_shell_is_immersive_context') !== false, 'Immersive context extension hook missing.');
 
 $assert(strpos($assets, "\$settings['appearance']") === false, 'File 20 assets must not own File 25 appearance settings.');
