@@ -300,6 +300,33 @@ final class Integrations {
 		return $assertions;
 	}
 
+	/** Whether File 00 has placed the exact subject in a terminal/restricted state. */
+	private static function assertions_have_hard_block( array $assertions ) {
+		return ! empty( $assertions['_contract_error'] )
+			|| ! empty( $assertions['suspended'] )
+			|| in_array(
+				(string) ( $assertions['status'] ?? '' ),
+				array( 'rejected', 'suspended', 'expired', 'appeal_review', 'erasure_pending', 'invalid_application' ),
+				true
+			);
+	}
+
+	/** Whether File 00 permits a current public identity projection. */
+	private static function assertions_allow_public_identity( array $assertions ) {
+		return ! self::assertions_have_hard_block( $assertions )
+			&& ! empty( $assertions['approved'] )
+			&& ! empty( $assertions['eligible'] )
+			&& ! empty( $assertions['identity_evidence_current'] );
+	}
+
+	/** Whether File 00 permits a privileged action in the current session. */
+	private static function assertions_allow_privileged_action( array $assertions ) {
+		return self::assertions_allow_public_identity( $assertions )
+			&& ! empty( $assertions['two_factor_ready'] )
+			&& ! empty( $assertions['session_two_factor'] )
+			&& ! empty( $assertions['sensitive_action_ready'] );
+	}
+
 	/**
 	 * Whether a user is the authoritative Founder identity.
 	 *
@@ -312,11 +339,8 @@ final class Integrations {
 			return false;
 		}
 		$assertions = self::membership_assertions( $user_id );
-		return empty( $assertions['_contract_error'] )
-			&& 'founder' === ( $assertions['account_class'] ?? '' )
-			&& ! empty( $assertions['approved'] )
-			&& empty( $assertions['suspended'] )
-			&& ! in_array( (string) ( $assertions['status'] ?? '' ), array( 'rejected', 'suspended', 'expired', 'appeal_review', 'erasure_pending', 'invalid_application' ), true );
+		return self::assertions_allow_public_identity( $assertions )
+			&& 'founder' === ( $assertions['account_class'] ?? '' );
 	}
 
 	/**
@@ -329,7 +353,7 @@ final class Integrations {
 		$user_id    = absint( $user_id );
 		$assertions = self::membership_assertions( $user_id );
 		if ( ! empty( $assertions ) ) {
-			if ( ! empty( $assertions['_contract_error'] ) || ! empty( $assertions['suspended'] ) || empty( $assertions['approved'] ) || empty( $assertions['eligible'] ) || empty( $assertions['session_two_factor'] ) ) {
+			if ( ! self::assertions_allow_privileged_action( $assertions ) ) {
 				return false;
 			}
 			if ( ! empty( $assertions['can_publish'] ) ) {
@@ -353,7 +377,7 @@ final class Integrations {
 			return false;
 		}
 		$assertions = self::membership_assertions( $user_id );
-		if ( ! empty( $assertions['_contract_error'] ) || ! empty( $assertions['suspended'] ) || empty( $assertions['approved'] ) || empty( $assertions['eligible'] ) || empty( $assertions['professional_verified'] ) ) {
+		if ( ! self::assertions_allow_public_identity( $assertions ) || empty( $assertions['professional_verified'] ) ) {
 			return false;
 		}
 		if ( array_key_exists( 'public_profile_allowed', $assertions ) && empty( $assertions['public_profile_allowed'] ) ) {
@@ -382,7 +406,7 @@ final class Integrations {
 
 		$assertions = self::membership_assertions( $user_id );
 		if ( ! empty( $assertions ) ) {
-			if ( ! empty( $assertions['_contract_error'] ) || ! empty( $assertions['suspended'] ) || empty( $assertions['approved'] ) || empty( $assertions['eligible'] ) || empty( $assertions['session_two_factor'] ) ) {
+			if ( ! self::assertions_allow_privileged_action( $assertions ) ) {
 				return false;
 			}
 			if ( ! empty( $assertions['can_publish'] ) ) {
@@ -421,7 +445,7 @@ final class Integrations {
 			}
 		} else {
 			$assertions = self::membership_assertions( $user_id );
-			if ( empty( $assertions ) || ! empty( $assertions['_contract_error'] ) || ! empty( $assertions['suspended'] ) || empty( $assertions['approved'] ) ) {
+			if ( ! self::assertions_allow_public_identity( $assertions ) ) {
 				return array();
 			}
 			if ( ! $founder && ( 'doctor' !== ( $assertions['membership_type'] ?? '' ) || empty( $assertions['public_profile_allowed'] ) ) ) {
@@ -460,14 +484,19 @@ final class Integrations {
 
 		$filtered = apply_filters( 'sabri_shell_doctor_public_data', $data, $user_id );
 		if ( is_array( $filtered ) ) {
-			$data = $filtered;
+			// Extension callbacks may refine approved fields but cannot add a new
+			// undeclared public-data channel (for example email or identity data).
+			$data = array_merge( $data, array_intersect_key( $filtered, $data ) );
 		}
 		if ( ! $contact_allowed ) {
 			$data['phone']    = '';
 			$data['whatsapp'] = '';
 		}
 		foreach ( $data as $key => $value ) {
-			$data[ $key ] = is_scalar( $value ) ? (string) $value : '';
+			$value = is_scalar( $value ) ? (string) $value : '';
+			$data[ $key ] = 'profile' === $key
+				? ( function_exists( 'esc_url_raw' ) ? esc_url_raw( $value ) : $value )
+				: ( function_exists( 'sanitize_text_field' ) ? sanitize_text_field( $value ) : strip_tags( $value ) );
 		}
 		return $data;
 	}

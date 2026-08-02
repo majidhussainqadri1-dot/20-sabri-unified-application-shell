@@ -78,7 +78,10 @@ $GLOBALS['test_membership_assertions'][7] = array(
 	'membership_type'       => 'doctor',
 	'approved'              => true,
 	'eligible'              => true,
+	'identity_evidence_current' => true,
+	'two_factor_ready'      => true,
 	'session_two_factor'    => true,
+	'sensitive_action_ready'=> true,
 	'professional_verified' => true,
 	'can_publish'           => true,
 	'can_practice'          => true,
@@ -101,6 +104,15 @@ $assert( '' === $private_contact['phone'] && '' === $private_contact['whatsapp']
 $GLOBALS['test_public_contact'][7] = true;
 $public_contact = Integrations::doctor_public_data( 7 );
 $assert( '+923001234567' === $public_contact['phone'] && '+923001234567' === $public_contact['whatsapp'], 'Approved contact fields render only after explicit File 03 public-contact consent.' );
+$GLOBALS['test_filter_overrides']['sabri_shell_doctor_public_data'] = static function ( $data ) {
+	$data['email'] = 'private@example.test';
+	$data['country'] = '<b>Pakistan</b>';
+	return $data;
+};
+$filtered_public = Integrations::doctor_public_data( 7 );
+$assert( ! array_key_exists( 'email', $filtered_public ), 'Public doctor projection filters cannot introduce undeclared private fields.' );
+$assert( 'Pakistan' === $filtered_public['country'], 'Public doctor projection filter values are sanitized.' );
+unset( $GLOBALS['test_filter_overrides']['sabri_shell_doctor_public_data'] );
 
 $GLOBALS['test_users'][8] = new WP_User( 8, array( 'sabri_doctor_verified' ), 'Suspended Doctor' );
 $GLOBALS['test_user_meta'][8]['_smc_doctor_verified'] = 1;
@@ -111,7 +123,10 @@ $GLOBALS['test_membership_assertions'][8] = array(
 	'membership_type'       => 'doctor',
 	'approved'              => false,
 	'eligible'              => false,
+	'identity_evidence_current' => false,
+	'two_factor_ready'      => false,
 	'session_two_factor'    => false,
+	'sensitive_action_ready'=> false,
 	'professional_verified' => true,
 	'can_publish'           => false,
 	'can_practice'          => false,
@@ -130,7 +145,10 @@ $GLOBALS['test_membership_assertions'][9] = array(
 	'account_class'      => 'founder',
 	'approved'           => true,
 	'eligible'           => true,
+	'identity_evidence_current' => true,
+	'two_factor_ready'   => true,
 	'session_two_factor' => true,
+	'sensitive_action_ready' => true,
 	'can_publish'        => true,
 	'suspended'          => false,
 );
@@ -145,11 +163,25 @@ $GLOBALS['test_membership_assertions'][10] = array(
 	'institutional_account' => true,
 	'approved'           => true,
 	'eligible'           => true,
+	'identity_evidence_current' => true,
+	'two_factor_ready'   => true,
 	'session_two_factor' => true,
+	'sensitive_action_ready' => true,
 	'can_publish'        => false,
 	'suspended'          => false,
 );
 $assert( Integrations::can_publish( 10 ), 'A valid institutional Administrator may reach the composer without bypassing File 00 status and 2FA.' );
+
+$GLOBALS['test_users'][13] = new WP_User( 13, array( 'founder' ), 'Expired Founder' );
+$GLOBALS['test_membership_assertions'][13] = $GLOBALS['test_membership_assertions'][9];
+$GLOBALS['test_membership_assertions'][13]['user_id'] = 13;
+$GLOBALS['test_membership_assertions'][13]['status'] = 'expired';
+$assert( ! Integrations::can_publish( 13 ), 'Terminal File 00 status blocks publishing even when stale allow booleans remain true.' );
+$GLOBALS['test_users'][14] = new WP_User( 14, array( 'founder' ), 'Stale Session Founder' );
+$GLOBALS['test_membership_assertions'][14] = $GLOBALS['test_membership_assertions'][9];
+$GLOBALS['test_membership_assertions'][14]['user_id'] = 14;
+$GLOBALS['test_membership_assertions'][14]['sensitive_action_ready'] = false;
+$assert( ! Integrations::can_publish( 14 ), 'Missing File 00 sensitive-action assurance blocks composer access.' );
 
 $GLOBALS['test_users'][11] = new WP_User( 11, array( 'sabri_doctor_verified' ), 'Private Contact Doctor' );
 $GLOBALS['test_membership_assertions'][11] = $GLOBALS['test_membership_assertions'][7];

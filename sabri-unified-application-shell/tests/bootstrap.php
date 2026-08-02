@@ -17,11 +17,18 @@ $GLOBALS['test_directory_eligible'] = array();
 $GLOBALS['test_approved_fields'] = array();
 $GLOBALS['test_public_contact'] = array();
 $GLOBALS['test_profiles'] = array();
+$GLOBALS['test_filter_overrides'] = array();
 
 function __( $text ) { return $text; }
 function esc_html__( $text ) { return $text; }
 function esc_attr__( $text ) { return $text; }
-function apply_filters( $tag, $value ) { return $value; }
+function apply_filters( $tag, $value, ...$args ) {
+	if ( array_key_exists( $tag, $GLOBALS['test_filter_overrides'] ) ) {
+		$override = $GLOBALS['test_filter_overrides'][ $tag ];
+		return is_callable( $override ) ? $override( $value, ...$args ) : $override;
+	}
+	return $value;
+}
 function do_action() {}
 function add_action() {}
 function add_filter() {}
