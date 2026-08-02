@@ -1104,7 +1104,7 @@ final class Renderer {
 	 */
 	private static function render_mobile_bottom_nav( array $settings, array $nav ) {
 		$third_key = 'doctors';
-		if ( 'create' === $settings['mobile']['create_or_doctors'] || ( 'auto' === $settings['mobile']['create_or_doctors'] && self::can_show_create( $settings ) ) ) {
+		if ( in_array( $settings['mobile']['create_or_doctors'], array( 'create', 'auto' ), true ) && self::can_show_create( $settings ) ) {
 			$third_key = 'create';
 		}
 
@@ -1206,7 +1206,8 @@ final class Renderer {
 	 */
 	private static function can_show_create( array $settings ) {
 		unset( $settings );
-		return is_user_logged_in() && Integrations::can_publish( get_current_user_id() ) && '' !== Integrations::create_url();
+		return function_exists( 'sabri_shell_create_visible_for_current_user' )
+			&& sabri_shell_create_visible_for_current_user();
 	}
 
 	/**

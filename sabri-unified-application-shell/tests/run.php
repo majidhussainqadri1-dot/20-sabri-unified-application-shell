@@ -72,7 +72,8 @@ $assert( HomeFeed::authoritative_feed_present( '[sabri_news_home]' ), 'Authorita
 $GLOBALS['test_users'][7] = new WP_User( 7, array( 'sabri_doctor_verified' ), 'Verified Doctor' );
 $GLOBALS['test_user_meta'][7]['_smc_doctor_verified'] = 1;
 $GLOBALS['test_membership_assertions'][7] = array(
-	'contract_version'      => '1.1.1',
+	'user_id'               => 7,
+	'contract_version'      => '1.1.2',
 	'account_class'         => 'member',
 	'membership_type'       => 'doctor',
 	'approved'              => true,
@@ -104,7 +105,8 @@ $assert( '+923001234567' === $public_contact['phone'] && '+923001234567' === $pu
 $GLOBALS['test_users'][8] = new WP_User( 8, array( 'sabri_doctor_verified' ), 'Suspended Doctor' );
 $GLOBALS['test_user_meta'][8]['_smc_doctor_verified'] = 1;
 $GLOBALS['test_membership_assertions'][8] = array(
-	'contract_version'      => '1.1.1',
+	'user_id'               => 8,
+	'contract_version'      => '1.1.2',
 	'account_class'         => 'member',
 	'membership_type'       => 'doctor',
 	'approved'              => false,
@@ -123,7 +125,8 @@ $assert( array() === Integrations::doctor_public_data( 8 ), 'A suspended/private
 
 $GLOBALS['test_users'][9] = new WP_User( 9, array( 'founder' ), 'Founder' );
 $GLOBALS['test_membership_assertions'][9] = array(
-	'contract_version'   => '1.1.1',
+	'user_id'               => 9,
+	'contract_version'   => '1.1.2',
 	'account_class'      => 'founder',
 	'approved'           => true,
 	'eligible'           => true,
@@ -136,7 +139,8 @@ $assert( Integrations::can_publish( 9 ), 'Canonical Founder publishing remains a
 $GLOBALS['test_users'][10] = new WP_User( 10, array( 'administrator' ), 'Administrator' );
 $GLOBALS['test_user_caps'][10]['manage_options'] = true;
 $GLOBALS['test_membership_assertions'][10] = array(
-	'contract_version'   => '1.1.1',
+	'user_id'               => 10,
+	'contract_version'   => '1.1.2',
 	'account_class'      => 'administrator',
 	'institutional_account' => true,
 	'approved'           => true,
@@ -149,6 +153,7 @@ $assert( Integrations::can_publish( 10 ), 'A valid institutional Administrator m
 
 $GLOBALS['test_users'][11] = new WP_User( 11, array( 'sabri_doctor_verified' ), 'Private Contact Doctor' );
 $GLOBALS['test_membership_assertions'][11] = $GLOBALS['test_membership_assertions'][7];
+$GLOBALS['test_membership_assertions'][11]['user_id'] = 11;
 $GLOBALS['test_directory_eligible'][11] = true;
 $GLOBALS['test_approved_fields'][11] = array( 'display_name' => 'Private Contact Doctor' );
 $GLOBALS['test_profiles'][11] = array( 'phone' => '+923009999999', 'whatsapp' => '+923009999999', 'country' => 'Pakistan' );

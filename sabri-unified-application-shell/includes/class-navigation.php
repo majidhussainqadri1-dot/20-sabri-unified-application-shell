@@ -230,29 +230,7 @@ final class Navigation {
 	 * @return string
 	 */
 	private static function find_page_by_shortcodes( array $shortcodes ) {
-		if ( empty( $shortcodes ) ) {
-			return '';
-		}
-		$pages = get_posts(
-			array(
-				'post_type'              => 'page',
-				'post_status'            => 'publish',
-				'posts_per_page'         => -1,
-				'no_found_rows'          => true,
-				'update_post_meta_cache' => false,
-				'update_post_term_cache' => false,
-				'orderby'                => array( 'menu_order' => 'ASC', 'ID' => 'ASC' ),
-			)
-		);
-		foreach ( $pages as $page ) {
-			$content = isset( $page->post_content ) ? (string) $page->post_content : '';
-			foreach ( $shortcodes as $shortcode ) {
-				if ( has_shortcode( $content, $shortcode ) ) {
-					return (string) get_permalink( $page );
-				}
-			}
-		}
-		return '';
+		return Integrations::find_page_by_shortcodes( $shortcodes );
 	}
 
 	/**

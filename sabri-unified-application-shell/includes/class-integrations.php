@@ -279,22 +279,25 @@ final class Integrations {
 	 */
 	public static function membership_assertions( $user_id ) {
 		$user_id = absint( $user_id );
-		if ( ! $user_id ) {
-			return array();
+		if ( ! $user_id || ! class_exists( 'SMC_Contracts' ) || ! is_callable( array( 'SMC_Contracts', 'assertions' ) ) ) {
+			return array( '_contract_error' => true );
 		}
 
-		if ( class_exists( 'SMC_Contracts' ) && is_callable( array( 'SMC_Contracts', 'assertions' ) ) ) {
-			try {
-				$assertions = \SMC_Contracts::assertions( $user_id );
-				return is_array( $assertions ) ? $assertions : array( '_contract_error' => true );
-			} catch ( \Throwable $error ) {
-				unset( $error );
-				return array( '_contract_error' => true );
-			}
+		try {
+			$assertions = \SMC_Contracts::assertions( $user_id );
+		} catch ( \Throwable $error ) {
+			unset( $error );
+			return array( '_contract_error' => true );
 		}
-
-		$assertions = apply_filters( 'smc_assertions_v1', array(), $user_id );
-		return is_array( $assertions ) ? $assertions : array();
+		if ( ! is_array( $assertions ) ) {
+			return array( '_contract_error' => true );
+		}
+		$contract = isset( $assertions['contract_version'] ) ? (string) $assertions['contract_version'] : '';
+		$subject  = isset( $assertions['user_id'] ) ? absint( $assertions['user_id'] ) : 0;
+		if ( $subject !== $user_id || '' === $contract || version_compare( $contract, '1.1.2', '<' ) ) {
+			return array( '_contract_error' => true );
+		}
+		return $assertions;
 	}
 
 	/**
@@ -309,16 +312,11 @@ final class Integrations {
 			return false;
 		}
 		$assertions = self::membership_assertions( $user_id );
-		if ( ! empty( $assertions ) && 'founder' === ( $assertions['account_class'] ?? '' ) ) {
-			return true;
-		}
-		if ( function_exists( 'smc_is_founder' ) && smc_is_founder( $user_id ) ) {
-			return true;
-		}
-		if ( get_user_meta( $user_id, '_smc_official_founder', true ) ) {
-			return true;
-		}
-		return $user_id === absint( get_option( 'spf_founder_user_id', 0 ) );
+		return empty( $assertions['_contract_error'] )
+			&& 'founder' === ( $assertions['account_class'] ?? '' )
+			&& ! empty( $assertions['approved'] )
+			&& empty( $assertions['suspended'] )
+			&& ! in_array( (string) ( $assertions['status'] ?? '' ), array( 'rejected', 'suspended', 'expired', 'appeal_review', 'erasure_pending', 'invalid_application' ), true );
 	}
 
 	/**
@@ -335,9 +333,6 @@ final class Integrations {
 				return false;
 			}
 			if ( ! empty( $assertions['can_publish'] ) ) {
-				return true;
-			}
-			if ( 'founder' === ( $assertions['account_class'] ?? '' ) ) {
 				return true;
 			}
 			return 'administrator' === ( $assertions['account_class'] ?? '' ) && user_can( $user_id, 'manage_options' );
@@ -357,22 +352,20 @@ final class Integrations {
 		if ( ! $user_id ) {
 			return false;
 		}
+		$assertions = self::membership_assertions( $user_id );
+		if ( ! empty( $assertions['_contract_error'] ) || ! empty( $assertions['suspended'] ) || empty( $assertions['approved'] ) || empty( $assertions['eligible'] ) || empty( $assertions['professional_verified'] ) ) {
+			return false;
+		}
+		if ( array_key_exists( 'public_profile_allowed', $assertions ) && empty( $assertions['public_profile_allowed'] ) ) {
+			return false;
+		}
+		if ( 'doctor' !== ( $assertions['membership_type'] ?? '' ) || ( empty( $assertions['can_practice'] ) && empty( $assertions['can_publish'] ) ) ) {
+			return false;
+		}
 		if ( class_exists( 'SPD_Verification_Adapter' ) && is_callable( array( 'SPD_Verification_Adapter', 'directory_eligible' ) ) ) {
 			return (bool) \SPD_Verification_Adapter::directory_eligible( $user_id );
 		}
-
-		$assertions = self::membership_assertions( $user_id );
-		if ( ! empty( $assertions ) ) {
-			if ( ! empty( $assertions['_contract_error'] ) || ! empty( $assertions['suspended'] ) || empty( $assertions['approved'] ) || empty( $assertions['eligible'] ) || empty( $assertions['professional_verified'] ) ) {
-				return false;
-			}
-			if ( array_key_exists( 'public_profile_allowed', $assertions ) && empty( $assertions['public_profile_allowed'] ) ) {
-				return false;
-			}
-			return 'doctor' === ( $assertions['membership_type'] ?? '' ) && ( ! empty( $assertions['can_practice'] ) || ! empty( $assertions['can_publish'] ) );
-		}
-
-		return false;
+		return true;
 	}
 
 	/**
@@ -393,9 +386,6 @@ final class Integrations {
 				return false;
 			}
 			if ( ! empty( $assertions['can_publish'] ) ) {
-				return true;
-			}
-			if ( 'founder' === ( $assertions['account_class'] ?? '' ) ) {
 				return true;
 			}
 			return 'administrator' === ( $assertions['account_class'] ?? '' ) && user_can( $user_id, 'manage_options' );
@@ -454,27 +444,9 @@ final class Integrations {
 			'whatsapp'  => '',
 		);
 
-		if ( class_exists( 'SPD_Helpers' ) && is_callable( array( 'SPD_Helpers', 'get' ) ) ) {
-			foreach ( array( 'country', 'city', 'clinic', 'languages', 'specialty' ) as $field ) {
-				if ( empty( $data[ $field ] ) ) {
-					$data[ $field ] = (string) \SPD_Helpers::get( $user_id, $field );
-				}
-			}
-		}
-
-		if ( function_exists( 'smc_get_profile' ) ) {
-			$profile = smc_get_profile( $user_id );
-			if ( is_array( $profile ) ) {
-				foreach ( array( 'country', 'city' ) as $field ) {
-					if ( empty( $data[ $field ] ) && ! empty( $profile[ $field ] ) ) {
-						$data[ $field ] = (string) $profile[ $field ];
-					}
-				}
-				if ( empty( $data['languages'] ) && ! empty( $profile['preferred_language'] ) ) {
-					$data['languages'] = (string) $profile['preferred_language'];
-				}
-			}
-		}
+		// File 20 must never infer public professional data from raw profile or
+		// membership metadata. Only File 03's explicit approved projection may
+		// populate professional fields.
 
 		$contact_allowed = false;
 		if ( class_exists( 'SPD_Helpers' ) && is_callable( array( 'SPD_Helpers', 'can_show_contact' ) ) ) {
@@ -484,10 +456,6 @@ final class Integrations {
 		if ( $contact_allowed ) {
 			$data['phone']    = (string) ( $approved_fields['phone'] ?? '' );
 			$data['whatsapp'] = (string) ( $approved_fields['whatsapp'] ?? '' );
-			if ( class_exists( 'SPD_Helpers' ) && is_callable( array( 'SPD_Helpers', 'get' ) ) ) {
-				$data['phone']    = $data['phone'] ?: (string) \SPD_Helpers::get( $user_id, 'phone' );
-				$data['whatsapp'] = $data['whatsapp'] ?: (string) \SPD_Helpers::get( $user_id, 'whatsapp' );
-			}
 		}
 
 		$filtered = apply_filters( 'sabri_shell_doctor_public_data', $data, $user_id );
@@ -598,25 +566,47 @@ final class Integrations {
 	 * @param array<int,string> $shortcodes Shortcodes.
 	 * @return string
 	 */
-	private static function find_page_by_shortcodes( array $shortcodes ) {
+	public static function find_page_by_shortcodes( array $shortcodes ) {
+		$shortcodes = array_values( array_unique( array_filter( array_map( 'sanitize_key', $shortcodes ) ) ) );
 		if ( empty( $shortcodes ) ) {
 			return '';
 		}
-		$pages = get_posts(
-			array(
-				'post_type'              => 'page',
-				'post_status'            => 'publish',
-				'posts_per_page'         => -1,
-				'no_found_rows'          => true,
-				'update_post_meta_cache' => false,
-				'update_post_term_cache' => false,
-			)
-		);
-		foreach ( $pages as $page ) {
-			foreach ( $shortcodes as $shortcode ) {
-				if ( has_shortcode( (string) $page->post_content, $shortcode ) ) {
-					return (string) get_permalink( $page );
+
+		/*
+		 * Never request every Page in one unbounded query. The shell scans in
+		 * deterministic batches and stops after a documented ceiling. Companion
+		 * page maps remain the preferred resolution contract, so this is only a
+		 * bounded compatibility fallback.
+		 */
+		$per_page   = 100;
+		$max_pages  = 50;
+		for ( $page_number = 1; $page_number <= $max_pages; $page_number++ ) {
+			$pages = get_posts(
+				array(
+					'post_type'              => 'page',
+					'post_status'            => 'publish',
+					'posts_per_page'         => $per_page,
+					'paged'                  => $page_number,
+					'no_found_rows'          => true,
+					'update_post_meta_cache' => false,
+					'update_post_term_cache' => false,
+					'orderby'                => array( 'menu_order' => 'ASC', 'ID' => 'ASC' ),
+				)
+			);
+			if ( empty( $pages ) ) {
+				break;
+			}
+			foreach ( $pages as $page ) {
+				$content = isset( $page->post_content ) ? (string) $page->post_content : '';
+				foreach ( $shortcodes as $shortcode ) {
+					if ( has_shortcode( $content, $shortcode ) ) {
+						$url = get_permalink( $page );
+						return $url ? (string) $url : '';
+					}
 				}
+			}
+			if ( count( $pages ) < $per_page ) {
+				break;
 			}
 		}
 		return '';
