@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - fix/file20-zero-known-defects-1.1.2
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
