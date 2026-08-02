@@ -29,6 +29,26 @@ jobs:
             exit 0
           fi
           python3 tools/apply-file20-round3.py
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('sabri-unified-application-shell/includes/class-integrations.php')
+          text = path.read_text(encoding='utf-8')
+          old = """\t\tif ( ! empty( $assertions ) ) {
+          \t\t\tif ( ! empty( $assertions['_contract_error'] ) || ! empty( $assertions['suspended'] ) || empty( $assertions['approved'] ) || empty( $assertions['eligible'] ) || empty( $assertions['session_two_factor'] ) ) {
+          \t\t\t\treturn false;
+          \t\t\t}
+          """
+          new = """\t\tif ( ! empty( $assertions ) ) {
+          \t\t\tif ( ! self::assertions_allow_privileged_action( $assertions ) ) {
+          \t\t\t\treturn false;
+          \t\t\t}
+          """
+          if old in text:
+              text = text.replace(old, new)
+              path.write_text(text, encoding='utf-8')
+          if old in path.read_text(encoding='utf-8'):
+              raise SystemExit('A legacy privileged-action gate remains.')
+          PY
           rm -f tools/apply-file20-round3.py tools/file20-round3.patch.gz.b64
           rmdir tools 2>/dev/null || true
           find sabri-unified-application-shell -type f -name '*.php' -print0 | xargs -0 -n1 php -l
