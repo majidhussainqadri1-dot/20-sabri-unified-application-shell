@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   apply:
-    if: ${{ hashFiles('.file20-correction/READY') != '' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -23,6 +22,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          test -f .file20-correction/READY
           base64 --decode tools/file20-1.1.2.patch.gz.b64 | gzip -dc > /tmp/file20-1.1.2.patch
           git apply --check /tmp/file20-1.1.2.patch
           git apply /tmp/file20-1.1.2.patch
@@ -35,8 +35,9 @@ jobs:
           s = s.replace("File 20 Version 1.1.2 Corrective Quality", "File 20 Version 1.1.2 Zero-Known-Defects Quality")
           p.write_text(s, encoding='utf-8')
           PY
-          rm -f .file20-correction/READY
-          rmdir .file20-correction 2>/dev/null || true
+          rm -f .file20-correction/READY tools/file20-1.1.2.patch.gz.b64
+          rmdir .file20-correction tools 2>/dev/null || true
+          rm -f .github/workflows/apply-file20-1.1.2-correction.yml
 
       - name: Validate corrected source before commit
         shell: bash
