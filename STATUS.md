@@ -1,27 +1,32 @@
 # File 20 Status
 
-## Current State
+## Current state
 
-The exact **Sabri Unified Application Shell 1.0.0 FINAL** package remains preserved in `SOURCE-ARCHIVE/`. The corrective branch contains **File 20 version 1.1.0 RC1**, produced after two separate review-and-correction rounds.
+The exact **Sabri Unified Application Shell 1.0.0 FINAL** archive remains preserved in `SOURCE-ARCHIVE/`. Main currently contains the repeatedly reviewed **1.1.2** authorization/privacy correction. The central-plan harmonization branch targets **1.2.0** and reconciles runtime architecture with the approved File 20 v4.0 specification and Definitive Master Plan v3.0.
 
-## Corrective Evidence
+## 1.2.0 corrective scope
 
-- authoritative File 00 membership, suspension, eligibility, current-2FA, Founder/Administrator, and publishing assertions are enforced;
-- File 03 owns verified/public doctor projections and explicit public phone/WhatsApp consent;
-- legacy role/meta values cannot substitute for unavailable authority contracts;
-- direct queries to non-owned Membership Core professional/clinic tables are absent;
-- File 17 Messages has a dedicated URL/page-map preference with Network URL compatibility fallback;
-- unsafe DOM movement and forced theme-ID replacement are absent;
-- PHP 7.4/8.3, behavioral tests, JavaScript syntax, static architecture, version consistency, ZIP integrity, checksum, and package/source equality are automated gates.
+- exact Four-mode layout constitution: Three, Two, Minimal and Immersive;
+- profile/timeline and Publishing Dashboard correction to Two-column contexts;
+- one-line no-wrap primary navigation with bounded accessible horizontal overflow;
+- File 25 canonical visual-token ownership and retired File 20 Appearance editor;
+- complete File 00–25 machine-readable ownership/dependency registry;
+- operational-state and failure-behavior vocabulary;
+- retained File 22 Create contract `1.0.1` and File 00 fail-closed authority;
+- new static and CI regression evidence.
 
-## Corrective Package
+## Truthful lifecycle status
 
-- Package: `RELEASES/20-sabri-unified-application-shell-1.1.0-RC1.zip`
-- SHA-256: `ccdb9809947477801e49ca82bc2cbea17bca8650b3cb7c6530b10dab2956f127`
-- Plugin version: `1.1.0`
+| Stage | State |
+|---|---|
+| Specified | Complete in File 20 v4.0 |
+| Coded | 1.2.0 candidate branch |
+| Packaged | Deterministic CI artifact after successful run |
+| Automated QA | Pending exact PR-head CI |
+| Staging accepted | No |
+| Live deployed | No |
+| Operational | No |
 
-This status update intentionally triggers final exact-head automated verification before repository merge.
+## Remaining gates
 
-## Lifecycle Boundary
-
-Repository merge is not staging or production acceptance. Hostinger staging fresh-install and upgrade, real companion-module/database integration, browser and viewport testing, accessibility, Safe Mode, Repair, emergency controls, backup/restore, snapshot/rollback, and live deployment remain separate later gates. No staging or live website change is authorized by this repository status.
+Hostinger staging fresh install and upgrade, real File 00/21/22/24/25 contracts, responsive and RTL visual acceptance, keyboard/screen-reader testing, browser matrix, Safe Mode/Repair, backup/restore, rollback rehearsal, Founder acceptance and controlled production deployment remain mandatory. No staging or live website change is authorized by this repository status.
