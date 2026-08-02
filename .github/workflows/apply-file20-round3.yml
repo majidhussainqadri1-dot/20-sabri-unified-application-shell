@@ -24,14 +24,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if test ! -f tools/file20-round3.patch.gz.b64; then
-            echo 'Round-three patch is already applied.'
+          if test ! -f tools/apply-file20-round3.py; then
+            echo 'Round-three source correction is already applied.'
             exit 0
           fi
-          base64 --decode tools/file20-round3.patch.gz.b64 | gzip -dc > /tmp/file20-round3.patch
-          git apply --check /tmp/file20-round3.patch
-          git apply /tmp/file20-round3.patch
-          rm -f tools/file20-round3.patch.gz.b64
+          python3 tools/apply-file20-round3.py
+          rm -f tools/apply-file20-round3.py tools/file20-round3.patch.gz.b64
           rmdir tools 2>/dev/null || true
           find sabri-unified-application-shell -type f -name '*.php' -print0 | xargs -0 -n1 php -l
           php sabri-unified-application-shell/tests/run.php
@@ -41,5 +39,9 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add --all
+          if git diff --cached --quiet; then
+            echo 'Round-three correction already present.'
+            exit 0
+          fi
           git commit -m 'fix: harden File 00 action assurance and public projection allowlist'
           git push origin HEAD:fix/file20-zero-known-defects-1.1.2
