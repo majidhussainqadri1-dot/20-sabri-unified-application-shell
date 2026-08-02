@@ -47,6 +47,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          grep -Fq '* Version: 1.1.2' sabri-unified-application-shell/sabri-unified-application-shell.php
-          grep -Fq "define( 'SABRI_SHELL_VERSION', '1.1.2' );" sabri-unified-application-shell/sabri-unified-application-shell.php
+          main='sabri-unified-application-shell/sabri-unified-application-shell.php'
+          readme='sabri-unified-application-shell/readme.txt'
+          version="$(sed -n 's/^ \* Version: \([0-9][0-9.]*\)$/\1/p' "$main" | head -n1)"
+          constant="$(sed -n "s/^define( 'SABRI_SHELL_VERSION', '\([^']*\)' );$/\1/p" "$main" | head -n1)"
+          stable="$(sed -n 's/^Stable tag: \([0-9][0-9.]*\)$/\1/p' "$readme" | head -n1)"
+          test -n "$version"
+          test "$version" != '1.0.0'
+          test "$version" = "$constant"
+          test "$version" = "$stable"
           ! diff -qr /tmp/file20-baseline/sabri-unified-application-shell sabri-unified-application-shell >/dev/null
