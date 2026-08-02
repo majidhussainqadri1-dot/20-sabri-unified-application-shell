@@ -3,7 +3,7 @@
  * Plugin Name: Sabri Unified Application Shell
  * Plugin URI: https://github.com/majidhussainqadri1-dot/20-sabri-unified-application-shell
  * Description: Secure responsive public application shell for the Sabri Social Homeopathy Platform.
- * Version: 1.1.1
+ * Version: 1.1.2
  * Author: Dr. Allamah Majid Hussain Sabri Muhaddith Mursheed
  * Text Domain: sabri-unified-application-shell
  * Domain Path: /languages
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SABRI_SHELL_VERSION', '1.1.1' );
+define( 'SABRI_SHELL_VERSION', '1.1.2' );
 define( 'SABRI_SHELL_FILE', __FILE__ );
 define( 'SABRI_SHELL_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SABRI_SHELL_URL', plugin_dir_url( __FILE__ ) );

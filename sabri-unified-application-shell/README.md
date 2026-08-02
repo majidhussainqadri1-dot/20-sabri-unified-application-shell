@@ -2,7 +2,7 @@
 
 Sabri Unified Application Shell is the independent, responsive WordPress application shell for the **Sabri Social Homeopathy Platform**.
 
-- Version: `1.1.1`
+- Version: `1.1.2`
 - File 22 Create contract: `1.0.1`
 - Status: corrective candidate; Hostinger staging acceptance required
 - Plugin slug: `sabri-unified-application-shell`
@@ -21,9 +21,9 @@ File 20 owns the shared presentation and routing layer:
 
 It does **not** create duplicate membership, publishing, profile, messaging, notification, appointment, marketplace, clinic or clinical databases.
 
-## Version 1.1.1 correction
+## Version 1.1.2 correction
 
-Version 1.1.1 supplies the exact package-owned Create producer contract expected by File 22:
+Version 1.1.2 hardens the existing File 22 Create producer contract and public-data boundaries. It requires subject-bound File 00 contract 1.1.2+ assertions, makes File 22 visibility deny-only, suppresses denied Create markup server-side, removes raw profile fallbacks, and bounds shortcode discovery. The retained Create contract remains:
 
 - `SABRI_SHELL_CREATE_CONTRACT_VERSION = 1.0.1`;
 - `SABRI_SHELL_CREATE_CONTRACT_OWNER = sabri-unified-application-shell`;

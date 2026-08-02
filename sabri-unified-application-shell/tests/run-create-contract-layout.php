@@ -1,5 +1,5 @@
 <?php
-/** Runtime and static regression for File 20 1.1.1. */
+/** Runtime and static regression for File 20 1.1.2. */
 declare(strict_types=1);
 
 namespace {
@@ -71,7 +71,7 @@ namespace Sabri\UnifiedShell {
 	$assert( ! CreateContract::visible_for_current_user(), 'File 22 adapter filter may deny the control.' );
 	$GLOBALS['shell_filter_mode'] = 'allow';
 	Integrations::$can_publish = false;
-	$assert( CreateContract::visible_for_current_user(), 'File 22 may provide the final adapter-aware allowance after File 20 identity checks.' );
+	$assert( ! CreateContract::visible_for_current_user(), 'File 22 cannot elevate a principal denied by File 00/File 20.' );
 	Integrations::$can_publish = true;
 
 	$GLOBALS['shell_filter_mode'] = 'recursive';
@@ -116,6 +116,17 @@ namespace Sabri\UnifiedShell {
 	$assert( false !== strpos( $main, 'CreateContract::register()' ) && false !== strpos( $main, 'LayoutCorrection::register()' ), 'Corrective services register from canonical bootstrap.' );
 	$assert( false !== strpos( $contract, 'ReflectionClass' ) && false !== strpos( $contract, 'ReflectionFunction' ), 'Contract verifies package-source ownership.' );
 	$assert( false !== strpos( $contract, 'catch ( \\Throwable $error )' ), 'Contract fails closed on adapter/filter exceptions.' );
+	$renderer = file_get_contents( $root . '/includes/class-renderer.php' );
+	$integrations = file_get_contents( $root . '/includes/class-integrations.php' );
+	$navigation = file_get_contents( $root . '/includes/class-navigation.php' );
+	$assert( false !== strpos( $contract, 'if ( ! $base_allowed )' ), 'File 22 filter is a deny-only narrowing gate.' );
+	$assert( false !== strpos( $renderer, 'sabri_shell_create_visible_for_current_user()' ), 'Server-rendered Create markup consumes the exact visibility contract.' );
+	$assert( false === strpos( $renderer, "create_or_doctors'] ||" ), 'Explicit mobile Create configuration cannot bypass authorization.' );
+	$assert( false === strpos( $integrations, "'posts_per_page'         => -1" ) && false === strpos( $navigation, "'posts_per_page'         => -1" ), 'Shortcode fallback discovery contains no unbounded Page query.' );
+	$assert( false !== strpos( $integrations, '$max_pages  = 50;' ), 'Shortcode compatibility scan has an explicit page ceiling.' );
+	$doctor_projection = explode( 'public static function doctor_public_data', $integrations, 2 )[1];
+	$doctor_projection = explode( 'public static function language_switcher', $doctor_projection, 2 )[0];
+	$assert( false === strpos( $doctor_projection, 'smc_get_profile' ) && false === strpos( $doctor_projection, 'SPD_Helpers::get' ), 'Public doctor projection never falls back to raw File 00/File 03 metadata getters.' );
 	$assert( false !== strpos( $css, 'flex-wrap: wrap' ) && false !== strpos( $css, '.sabri-shell-user-card > div' ), 'Navigation wrap and user-card separation are present.' );
 	$assert( false !== strpos( $js, 'MutationObserver' ) && false !== strpos( $js, 'sabri-hnf-single-content' ), 'Bounded managed-single target recovery is present.' );
 	$assert( false === strpos( $js, 'appendChild(' ) && false === strpos( $js, 'replaceChild(' ) && false === strpos( $js, 'insertBefore(' ), 'Correction does not reparent theme or companion DOM.' );

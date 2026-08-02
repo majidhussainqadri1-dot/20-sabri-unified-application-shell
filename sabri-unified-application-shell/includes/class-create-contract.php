@@ -110,13 +110,17 @@ final class CreateContract {
 		}
 
 		$base_allowed = Integrations::can_publish( $user_id ) && '' !== Integrations::create_url();
+		if ( ! $base_allowed ) {
+			return false;
+		}
+
 		self::$resolving = true;
 		try {
 			/**
 			 * Filter the current principal's global Create visibility.
 			 *
-			 * File 22 consumes this exact hook and supplies its final adapter-aware
-			 * decision. Callers must not use it to authorize a different subject.
+			 * File 22 consumes this exact hook and may only narrow File 20's
+			 * already-authorized decision. It cannot elevate a denied principal. Callers must not use it to authorize a different subject.
 			 *
 			 * @param bool                $base_allowed Existing File 20 decision.
 			 * @param int                 $user_id Current logged-in user ID.
