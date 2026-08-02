@@ -1,5 +1,34 @@
 # Changelog
 
+## 1.2.0 — Central-Plan v4 Architecture Harmonization
+
+### Canonical architecture
+
+- Added the complete File 00–25 ownership, dependency, criticality and failure-behavior registry.
+- Published exact layout-context and operational-state contracts.
+- Preserved native module ownership and the existing File 22 Create contract `1.0.1`.
+
+### Layout correction
+
+- Added the missing Immersive mode for Reels, full-screen video/live and PDF reader contexts.
+- Removed query-parameter-based profile promotion to Three-column.
+- Kept Founder/Doctor/member profiles and timelines in Two-column presentation.
+- Kept the File 23 Publishing Dashboard as a Two-column private application rather than Minimal.
+- Enforced one horizontal no-wrap primary-navigation line with bounded accessible overflow.
+
+### File 25 boundary
+
+- Added a versioned File 25 visual-contract consumer with an owner allowlist and semantic-version floor.
+- Moved runtime visual-token authority out of File 20's base Assets class.
+- Retired and hid File 20's legacy Appearance editor while preserving old values as migration-only data.
+- Added a truthful `fallback` state when File 25 is unavailable instead of claiming full visual integration.
+
+### QA and lifecycle
+
+- Added central-plan static regression, machine-readable JSON contract and deterministic CI package artifact.
+- Recorded two separate review-and-fix rounds in `CENTRAL-PLAN-V4-TRACEABILITY.md`.
+- Retained the explicit boundary that repository/CI success is not Hostinger staging or production acceptance.
+
 ## 1.1.2 — Authorization, Privacy, and Bounded Discovery Correction
 
 ### Authorization integrity
@@ -28,45 +57,8 @@
 
 ## 1.1.0 — Corrective Release Candidate
 
-### Integration contracts
-
-- Replaced guessed module shortcodes with the actual File 02–19 contracts.
-- Added authoritative companion page-map resolution before generic discovery.
-- Added current and legacy Membership Core founder, trusted publisher, doctor, and verified-doctor recognition.
-- Added public platform login, signup, password recovery, profile, completion, and moderated composer resolution.
-- Removed the WordPress admin post editor as the Create fallback.
-- Added existing profile/credential/approved-clinic adapters without creating a duplicate database.
-- Added real language switcher output for supported multilingual plugins.
-
-### Layout and accessibility
-
-- Removed broad theme wrapper reparenting.
-- Preserved theme element IDs and DOM hierarchy.
-- Restricted content targeting to conservative content containers.
-- Added fail-safe behavior when no safe target is found.
-- Improved drawer background handling, focus management, and mobile behavior.
-- Added the circular `S | H` identity and approved orange `#FF8A1F`.
-
-### Visibility and duplication controls
-
-- Enforced logged-in visibility for private Messages and Notifications actions.
-- Integrated the File 19 bell and suppressed the duplicate floating bell.
-- Suppressed fallback feed insertion when File 04, File 21, or platform Home feed output already exists.
-- Prevented unresolved News from silently linking to Home.
-- Corrected doctor directory filter parameter names.
-
-### Data, cache, and recovery
-
-- Corrected recursive list-array merging so removed roles/items do not survive settings updates.
-- Added locale- and epoch-aware navigation caching.
-- Expanded invalidation for companion page maps, pages, post types, plugins, themes, permalinks, front-page configuration, and language changes.
-- Restored captured front-page settings during rollback and scheduled rewrite flushing.
-- Made System Check distinguish static declarations from unverified runtime/staging behavior.
-
-### Verification
-
-- Added PHP behavioral regression tests.
-- Added CI checks for PHP syntax, JavaScript syntax, regression behavior, CSS balance, corrected integration contracts, forbidden core composer fallback, forbidden DOM reparenting, version consistency, and release artifact integrity.
+- Corrected companion contracts, authority boundaries, layout targeting, accessibility, duplication, cache invalidation, repair and rollback.
+- Added PHP behavioral regression and deterministic release gates.
 
 ## 1.0.0 — Original Baseline
 
