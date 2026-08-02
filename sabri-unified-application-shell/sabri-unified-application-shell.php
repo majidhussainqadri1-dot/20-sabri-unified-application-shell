@@ -62,8 +62,8 @@ spl_autoload_register(
  */
 $sabri_shell_corrective_classes_owned = static function () {
 	$expected = array(
-		'Sabri\\UnifiedShell\\SafeMode'         => realpath( SABRI_SHELL_PATH . 'includes/class-safe-mode.php' ),
-		'Sabri\\UnifiedShell\\CreateContract'   => realpath( SABRI_SHELL_PATH . 'includes/class-create-contract.php' ),
+		'Sabri\\UnifiedShell\\SafeMode'       => realpath( SABRI_SHELL_PATH . 'includes/class-safe-mode.php' ),
+		'Sabri\\UnifiedShell\\CreateContract' => realpath( SABRI_SHELL_PATH . 'includes/class-create-contract.php' ),
 		'Sabri\\UnifiedShell\\LayoutCorrection' => realpath( SABRI_SHELL_PATH . 'includes/class-layout-correction.php' ),
 	);
 	try {
