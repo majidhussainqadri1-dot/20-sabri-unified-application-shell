@@ -1,0 +1,75 @@
+name: Apply File 20 Full-Plan Corrective Payload
+
+on:
+  push:
+    branches:
+      - codex/file-20-central-plan-v4-1.2.0
+    paths:
+      - .github/file20-full-plan-payload.b64
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: file20-full-plan-payload-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  apply-reviewed-payload:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out exact branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Decode and apply reviewed source payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f .github/file20-full-plan-payload.b64
+          base64 --decode .github/file20-full-plan-payload.b64 > /tmp/file20-full-plan.tar.gz
+          echo '134ac29f38f00482a8bbc4a1ae462be79c4166645ce4cbc3214ac48c8554b420  /tmp/file20-full-plan.tar.gz' | sha256sum -c -
+          tar -tzf /tmp/file20-full-plan.tar.gz | grep -Fqx 'sabri-unified-application-shell/sabri-unified-application-shell.php'
+          tar -xzf /tmp/file20-full-plan.tar.gz -C .
+          test -f sabri-unified-application-shell/contracts/file20-requirements-v4.1.json
+          test -f sabri-unified-application-shell/tests/run-operations.php
+          test -f sabri-unified-application-shell/tests/run-requirements.php
+
+      - name: Verify corrected source before commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash sabri-unified-application-shell/qa/run-tests.sh
+          rm -rf /tmp/file20-release
+          python sabri-unified-application-shell/tools/build-package.py \
+            --source sabri-unified-application-shell \
+            --release /tmp/file20-release
+          base='20-sabri-unified-application-shell-1.2.0-FILE20-V4.1-REVIEWED-CANDIDATE'
+          (cd /tmp/file20-release && sha256sum -c "${base}.sha256")
+          unzip -t "/tmp/file20-release/${base}.zip"
+
+      - name: Commit the reviewed full-plan implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/file20-full-plan-payload.b64
+          rm -f .github/workflows/apply-file20-full-plan.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'No source changes remain to commit.'
+            exit 0
+          fi
+          git commit -m 'feat: complete File 20 v4.1 full-plan corrective implementation'
+          git push origin "HEAD:${GITHUB_REF_NAME}"
