@@ -1,6 +1,6 @@
 <?php
 /**
- * Corrective public layout bridge for File 21 managed publications.
+ * Corrective public layout bridge for File 21 publications.
  *
  * @package SabriUnifiedApplicationShell
  */
@@ -24,7 +24,7 @@ final class LayoutCorrection {
 		if ( ! is_array( $classes ) ) {
 			$classes = array();
 		}
-		$classes[] = 'sabri-shell-corrective-1-1-2';
+		$classes[] = 'sabri-shell-corrective-1-2-0-r3';
 		return array_values( array_unique( $classes ) );
 	}
 
@@ -33,17 +33,18 @@ final class LayoutCorrection {
 		if ( Layout::MINIMAL === Layout::current_mode() ) {
 			return;
 		}
+		$asset_version = SABRI_SHELL_VERSION . '-publication-layout-r3';
 		wp_enqueue_style(
-			'sabri-shell-corrective-1-1-2',
+			'sabri-shell-corrective-1-2-0-r3',
 			SABRI_SHELL_URL . 'assets/css/shell-corrective-1.1.1.css',
 			array( 'sabri-shell' ),
-			SABRI_SHELL_VERSION
+			$asset_version
 		);
 		wp_enqueue_script(
-			'sabri-shell-corrective-1-1-2',
+			'sabri-shell-corrective-1-2-0-r3',
 			SABRI_SHELL_URL . 'assets/js/shell-corrective-1.1.1.js',
 			array( 'sabri-shell' ),
-			SABRI_SHELL_VERSION,
+			$asset_version,
 			true
 		);
 	}

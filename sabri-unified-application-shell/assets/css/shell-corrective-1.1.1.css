@@ -27,24 +27,24 @@
 	scroll-margin-block-start: calc(var(--sabri-shell-admin-bar) + var(--sabri-shell-chrome-height) + 12px);
 }
 
-.sabri-hnf-managed-single .sabri-hnf-single-content,
-.sabri-hnf-managed-single .sabri-hnf-actions,
-.sabri-hnf-managed-single .sabri-hnf-comments {
+:is(.sabri-hnf-managed-single, .sabri-hnf-content-integrity-single) .sabri-hnf-single-content,
+:is(.sabri-hnf-managed-single, .sabri-hnf-content-integrity-single) .sabri-hnf-actions,
+:is(.sabri-hnf-managed-single, .sabri-hnf-content-integrity-single) .sabri-hnf-comments {
 	box-sizing: border-box;
 	min-width: 0;
 	max-width: min(880px, 100%);
 	overflow-wrap: anywhere;
 }
 
-.sabri-hnf-managed-single .sabri-hnf-single-content :where(img, video, iframe, canvas, svg, table, pre) {
+:is(.sabri-hnf-managed-single, .sabri-hnf-content-integrity-single) .sabri-hnf-single-content :where(img, video, iframe, canvas, svg, table, pre) {
 	max-width: 100%;
 }
 
-.sabri-hnf-managed-single .sabri-hnf-single-content :where(table, pre) {
+:is(.sabri-hnf-managed-single, .sabri-hnf-content-integrity-single) .sabri-hnf-single-content :where(table, pre) {
 	overflow-x: auto;
 }
 
-.sabri-hnf-managed-single :where(h1, h2, h3, h4, [id]) {
+:is(.sabri-hnf-managed-single, .sabri-hnf-content-integrity-single) :where(h1, h2, h3, h4, [id]) {
 	scroll-margin-block-start: calc(var(--sabri-shell-admin-bar) + var(--sabri-shell-chrome-height) + 16px);
 }
 
@@ -65,10 +65,48 @@
 }
 
 @media (max-width: 1023px) {
-	.sabri-hnf-managed-single .sabri-hnf-single-content,
-	.sabri-hnf-managed-single .sabri-hnf-actions,
-	.sabri-hnf-managed-single .sabri-hnf-comments {
+	:is(.sabri-hnf-managed-single, .sabri-hnf-content-integrity-single) .sabri-hnf-single-content,
+	:is(.sabri-hnf-managed-single, .sabri-hnf-content-integrity-single) .sabri-hnf-actions,
+	:is(.sabri-hnf-managed-single, .sabri-hnf-content-integrity-single) .sabri-hnf-comments {
 		width: 100%;
 		margin-inline: 0;
+	}
+}
+
+
+/* R3: legacy Markdown publications use a neutral File 21 display-integrity signal. */
+:is(.sabri-hnf-managed-single, .sabri-hnf-content-integrity-single).sabri-shell-layout-ready .sabri-shell-content-column {
+	padding-block-start: max(20px, calc(var(--sabri-shell-gap, 24px) / 2));
+}
+
+@media (min-width: 1024px) {
+	/* Never allow fixed shell sidebars to cover unreadable publication content while target recovery is pending. */
+	body:is(.sabri-hnf-managed-single, .sabri-hnf-content-integrity-single).sabri-shell-publication-layout-pending :is(
+		.sabri-shell-left-sidebar:not(.sabri-shell-left-sidebar-drawer),
+		.sabri-shell-right-sidebar:not(.sabri-shell-right-sidebar-drawer)
+	) {
+		visibility: hidden !important;
+		pointer-events: none !important;
+	}
+
+	body:is(.sabri-hnf-managed-single, .sabri-hnf-content-integrity-single).sabri-shell-publication-layout-failed :is(
+		.sabri-shell-left-sidebar:not(.sabri-shell-left-sidebar-drawer),
+		.sabri-shell-right-sidebar:not(.sabri-shell-right-sidebar-drawer)
+	) {
+		display: none !important;
+	}
+
+	body:is(.sabri-hnf-managed-single, .sabri-hnf-content-integrity-single).sabri-shell-publication-layout-failed :is(
+		main.site-main,
+		main#main,
+		.site-main,
+		#primary,
+		.content-area
+	) {
+		box-sizing: border-box;
+		inline-size: min(100%, 960px);
+		max-inline-size: 960px;
+		margin-inline: auto;
+		padding-inline: clamp(16px, 3vw, 32px);
 	}
 }
