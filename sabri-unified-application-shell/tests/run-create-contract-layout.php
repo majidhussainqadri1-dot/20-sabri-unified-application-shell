@@ -129,6 +129,11 @@ namespace Sabri\UnifiedShell {
 	$assert( false === strpos( $doctor_projection, 'smc_get_profile' ) && false === strpos( $doctor_projection, 'SPD_Helpers::get' ), 'Public doctor projection never falls back to raw File 00/File 03 metadata getters.' );
 	$assert( false !== strpos( $css, 'flex-wrap: wrap' ) && false !== strpos( $css, '.sabri-shell-user-card > div' ), 'Navigation wrap and user-card separation are present.' );
 	$assert( false !== strpos( $js, 'MutationObserver' ) && false !== strpos( $js, 'sabri-hnf-single-content' ), 'Bounded managed-single target recovery is present.' );
+	$assert( false !== strpos( $js, 'sabri-hnf-content-integrity-single' ) && false !== strpos( $js, 'sabri-shell-publication-layout-failed' ), 'Neutral legacy-publication signal and fail-safe state are supported.' );
+	$assert( false !== strpos( $css, 'sabri-shell-publication-layout-pending' ) && false !== strpos( $css, 'visibility: hidden !important' ), 'Desktop sidebar is suppressed while publication target recovery is pending.' );
+	$assert( false !== strpos( $css, 'sabri-shell-publication-layout-failed' ) && false !== strpos( $css, 'max-inline-size: 960px' ), 'Failed target recovery preserves a readable centered publication without sidebar overlay.' );
+	$layout_correction = file_get_contents( $root . '/includes/class-layout-correction.php' );
+	$assert( false !== strpos( $layout_correction, "SABRI_SHELL_VERSION . '-publication-layout-r3'" ), 'Corrective assets use an explicit cache-busting identity.' );
 	$assert( false === strpos( $js, 'appendChild(' ) && false === strpos( $js, 'replaceChild(' ) && false === strpos( $js, 'insertBefore(' ), 'Correction does not reparent theme or companion DOM.' );
 
 	if ( $failures ) {

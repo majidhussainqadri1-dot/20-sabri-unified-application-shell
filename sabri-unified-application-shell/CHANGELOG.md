@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.0 Publication Layout R3 — 2026-08-04
+
+- Accept File 21's neutral `sabri-hnf-content-integrity-single` signal for legacy Markdown articles without taking content ownership.
+- Recover and annotate the nearest safe theme content column for both managed and legacy public publications.
+- Hide fixed desktop sidebars during bounded recovery and fail to a readable centered content layout instead of overlaying the article.
+- Add explicit pending/repaired/failed states and cache-busting CSS/JavaScript identities.
+- Preserve no-DOM-reparenting, Safe Mode, File 00 authorization and File 22 Create-contract boundaries.
+
 ## 1.2.0 — Central-Plan v4 Architecture Harmonization
 
 ### Canonical architecture
