@@ -16,6 +16,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class ContextNavigation {
 	/**
+	 * Once-only render guard.
+	 *
+	 * @var bool
+	 */
+	private static $rendered = false;
+
+	/**
 	 * Register public hooks.
 	 *
 	 * @return void
@@ -57,9 +64,10 @@ final class ContextNavigation {
 	 * @return void
 	 */
 	public static function render() {
-		if ( ! self::should_render() ) {
+		if ( self::$rendered || ! self::should_render() ) {
 			return;
 		}
+		self::$rendered = true;
 
 		$home_url     = home_url( '/' );
 		$fallback_url = self::fallback_url( $home_url );
@@ -68,10 +76,10 @@ final class ContextNavigation {
 
 		echo '<nav class="sabri-context-navigation" data-sabri-context-navigation aria-label="' . esc_attr__( 'Page navigation', 'sabri-unified-application-shell' ) . '">';
 		echo '<div class="sabri-context-navigation__inner">';
-		echo '<button type="button" class="sabri-context-navigation__control sabri-context-navigation__back" data-sabri-context-back data-fallback-url="' . esc_url( $fallback_url ) . '" data-home-url="' . esc_url( $home_url ) . '" aria-label="' . esc_attr( $back_label ) . '">';
+		echo '<a class="sabri-context-navigation__control sabri-context-navigation__back" data-sabri-context-back data-fallback-url="' . esc_url( $fallback_url ) . '" data-home-url="' . esc_url( $home_url ) . '" href="' . esc_url( $fallback_url ) . '" aria-label="' . esc_attr( $back_label ) . '">';
 		echo '<span class="sabri-context-navigation__icon sabri-context-navigation__back-icon" aria-hidden="true">&#8594;</span>';
 		echo '<span class="sabri-context-navigation__label">' . esc_html( $back_label ) . '</span>';
-		echo '</button>';
+		echo '</a>';
 		echo '<a class="sabri-context-navigation__control sabri-context-navigation__home" href="' . esc_url( $home_url ) . '" aria-label="' . esc_attr( $home_label ) . '">';
 		echo '<span class="sabri-context-navigation__icon" aria-hidden="true">&#8962;</span>';
 		echo '<span class="sabri-context-navigation__label">' . esc_html( $home_label ) . '</span>';
