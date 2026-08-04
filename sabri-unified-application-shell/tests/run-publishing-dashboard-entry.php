@@ -150,7 +150,7 @@ $readme = file_get_contents(dirname(__DIR__) . '/readme.txt');
 $assert(strpos($source, "SPDB_Membership_Guard::is_user_approved") !== false && strpos($source, "SPDB_Capabilities::current_user_can( 'spdb_view_dashboard' )") !== false, 'Exact File 23 authority and capability contracts are required.');
 $assert(strpos($source, "SPDB_Dashboard_Router::route_url( 'overview' )") !== false, 'No duplicate or guessed dashboard route is owned by File 20.');
 $assert(strpos($source, "sabri_public_experience/action_url") !== false, 'File 25 dormant profile action is activated through its public contract.');
-$assert(strpos($source, 'current_user_can(') === false && strpos($source, 'get_user_meta(') === false, 'No raw WordPress capability or metadata fallback widens File 23 authority.');
+$assert(preg_match('/(?<!::)\bcurrent_user_can\s*\(/', $source) !== 1 && strpos($source, 'get_user_meta(') === false, 'No raw WordPress capability or metadata fallback widens File 23 authority.');
 $assert(strpos($script, 'data-sabri-publishing-dashboard-entry') !== false && strpos($script, 'MutationObserver') !== false && strpos($script, '5000') !== false, 'Idempotent bounded shell mounting is present.');
 $assert(strpos($script, 'innerHTML') === false && strpos($script, 'outerHTML') === false && strpos($script, 'document.write') === false, 'Entry mounting avoids unsafe HTML injection APIs.');
 $assert(substr_count($css, '{') === substr_count($css, '}') && strpos($css, ':focus-visible') !== false && strpos($css, 'forced-colors') !== false, 'CSS is balanced and includes accessibility states.');
