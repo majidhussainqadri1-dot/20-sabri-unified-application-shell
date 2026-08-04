@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.1 — File 23 Publishing Dashboard Entry Integration — 2026-08-04
+
+- Resolve File 23's exact protected route only when File 23, File 00 approval and File 23 capability checks all pass.
+- Add role-aware Publishing Dashboard links to File 20's left sidebar and account menu.
+- Activate File 25's existing owner-only `publishing_dashboard` profile action through a final same-site URL filter.
+- Add a WordPress account-toolbar entry as a no-JavaScript fallback.
+- Hide every entry from guests, non-owners, pending, suspended and unauthorized accounts.
+- Preserve File 23 as the sole route, authorization, capability, data and operational owner.
+- Add idempotent DOM mounting, same-site validation, RTL/accessibility treatment and dedicated regression/package evidence.
+
 ## 1.2.0 Publication Layout R3 — 2026-08-04
 
 - Accept File 21's neutral `sabri-hnf-content-integrity-single` signal for legacy Markdown articles without taking content ownership.
