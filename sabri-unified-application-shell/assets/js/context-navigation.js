@@ -1,8 +1,10 @@
 (function () {
 	'use strict';
 
-	var CURRENT_KEY = 'sabriShellContextCurrentUrl';
-	var PREVIOUS_KEY = 'sabriShellContextPreviousUrl';
+	var STACK_KEY = 'sabriShellContextNavigationStack';
+	var ARRIVAL_KEY = 'sabriShellContextManagedBackArrival';
+	var MAX_STACK_SIZE = 20;
+	var arrivedByManagedBack = false;
 
 	function safeSameOriginUrl(value) {
 		if (!value) {
@@ -23,55 +25,99 @@
 		}
 	}
 
-	function rememberCurrentPage() {
+	function readStack() {
 		try {
-			var current = window.location.href;
-			var storedCurrent = safeSameOriginUrl(window.sessionStorage.getItem(CURRENT_KEY));
-
-			if (storedCurrent && storedCurrent !== current) {
-				window.sessionStorage.setItem(PREVIOUS_KEY, storedCurrent);
+			var parsed = JSON.parse(window.sessionStorage.getItem(STACK_KEY) || '[]');
+			if (!Array.isArray(parsed)) {
+				return [];
 			}
-			window.sessionStorage.setItem(CURRENT_KEY, current);
+			return parsed.map(safeSameOriginUrl).filter(Boolean).slice(-MAX_STACK_SIZE);
+		} catch (error) {
+			return [];
+		}
+	}
+
+	function writeStack(stack) {
+		try {
+			window.sessionStorage.setItem(STACK_KEY, JSON.stringify(stack.slice(-MAX_STACK_SIZE)));
 		} catch (error) {
 			// Storage can be unavailable; referrer and server fallback remain usable.
 		}
 	}
 
-	function storedPreviousUrl() {
+	function rememberCurrentPage() {
+		var current = window.location.href;
+		var stack = readStack();
+
 		try {
-			return safeSameOriginUrl(window.sessionStorage.getItem(PREVIOUS_KEY));
+			var arrival = safeSameOriginUrl(window.sessionStorage.getItem(ARRIVAL_KEY));
+			arrivedByManagedBack = arrival === current;
+			window.sessionStorage.removeItem(ARRIVAL_KEY);
 		} catch (error) {
-			return null;
+			arrivedByManagedBack = false;
 		}
+
+		if (stack.length && stack[stack.length - 1] === current) {
+			return;
+		}
+
+		if (stack.length > 1 && stack[stack.length - 2] === current) {
+			stack.pop();
+		} else {
+			stack.push(current);
+		}
+		writeStack(stack);
 	}
 
-	function navigateBack(button) {
+	function previousStackUrl() {
 		var current = window.location.href;
-		var referrer = safeSameOriginUrl(document.referrer);
+		var stack = readStack();
 
-		if (referrer && referrer !== current && window.history.length > 1) {
-			window.history.back();
-			return;
+		while (stack.length && stack[stack.length - 1] === current) {
+			stack.pop();
 		}
 
-		var previous = storedPreviousUrl();
+		var previous = stack.length ? safeSameOriginUrl(stack[stack.length - 1]) : null;
+		writeStack(stack);
+		return previous;
+	}
+
+	function managedNavigate(target) {
+		try {
+			window.sessionStorage.setItem(ARRIVAL_KEY, target);
+		} catch (error) {
+			// Navigation remains safe without storage.
+		}
+		window.location.assign(target);
+	}
+
+	function navigateBack(link) {
+		var current = window.location.href;
+		var previous = previousStackUrl();
 		if (previous && previous !== current) {
-			window.location.assign(previous);
+			managedNavigate(previous);
 			return;
 		}
 
-		var fallback = safeSameOriginUrl(button.getAttribute('data-fallback-url'));
-		var home = safeSameOriginUrl(button.getAttribute('data-home-url'));
-		window.location.assign(fallback || home || window.location.origin + '/');
+		var referrer = arrivedByManagedBack ? null : safeSameOriginUrl(document.referrer);
+		if (referrer && referrer !== current) {
+			managedNavigate(referrer);
+			return;
+		}
+
+		var fallback = safeSameOriginUrl(link.getAttribute('data-fallback-url'));
+		var home = safeSameOriginUrl(link.getAttribute('data-home-url'));
+		managedNavigate(fallback || home || window.location.origin + '/');
 	}
 
 	function initialize() {
 		rememberCurrentPage();
 
-		var buttons = document.querySelectorAll('[data-sabri-context-back]');
-		buttons.forEach(function (button) {
-			button.addEventListener('click', function () {
-				navigateBack(button);
+		var links = document.querySelectorAll('[data-sabri-context-back]');
+		links.forEach(function (link) {
+			link.addEventListener('click', function (event) {
+				event.preventDefault();
+				navigateBack(link);
 			});
 		});
 	}
@@ -81,4 +127,6 @@
 	} else {
 		initialize();
 	}
+
+	window.addEventListener('pageshow', rememberCurrentPage);
 })();
