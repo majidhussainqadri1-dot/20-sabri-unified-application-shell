@@ -1,0 +1,102 @@
+.sabri-context-navigation {
+	--sabri-context-nav-accent: var(--sabri-color-success, #2e7d32);
+	--sabri-context-nav-surface: var(--sabri-color-surface, #ffffff);
+	--sabri-context-nav-text: var(--sabri-color-text, #132235);
+	box-sizing: border-box;
+	direction: rtl;
+	inline-size: 100%;
+	margin-block: 0.75rem;
+	padding-inline: clamp(1rem, 4vw, 3rem);
+	position: relative;
+	z-index: 20;
+}
+
+.sabri-context-navigation *,
+.sabri-context-navigation *::before,
+.sabri-context-navigation *::after {
+	box-sizing: border-box;
+}
+
+.sabri-context-navigation__inner {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.625rem;
+	inline-size: min(100%, 90rem);
+	justify-content: flex-start;
+	margin-inline: auto;
+}
+
+.sabri-context-navigation__control {
+	align-items: center;
+	background: var(--sabri-context-nav-surface);
+	border: 1px solid var(--sabri-context-nav-accent);
+	border-color: color-mix(in srgb, var(--sabri-context-nav-accent) 45%, transparent);
+	border-radius: 999px;
+	color: var(--sabri-context-nav-text);
+	cursor: pointer;
+	display: inline-flex;
+	font: inherit;
+	font-weight: 700;
+	gap: 0.45rem;
+	justify-content: center;
+	line-height: 1.2;
+	min-block-size: 44px;
+	min-inline-size: 44px;
+	padding-block: 0.65rem;
+	padding-inline: 1rem;
+	text-decoration: none;
+	touch-action: manipulation;
+	transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.sabri-context-navigation__control:hover {
+	background: var(--sabri-context-nav-accent);
+	border-color: var(--sabri-context-nav-accent);
+	color: #ffffff;
+	text-decoration: none;
+	transform: translateY(-1px);
+}
+
+.sabri-context-navigation__control:focus-visible {
+	outline: 3px solid var(--sabri-context-nav-accent);
+	outline-color: color-mix(in srgb, var(--sabri-context-nav-accent) 55%, #ffffff);
+	outline-offset: 3px;
+}
+
+.sabri-context-navigation__icon,
+.sabri-context-navigation__label {
+	display: inline-block;
+	unicode-bidi: isolate;
+}
+
+.sabri-context-navigation__icon {
+	font-size: 1.15em;
+	line-height: 1;
+}
+
+html[dir='ltr'] .sabri-context-navigation__back-icon {
+	transform: rotate(180deg);
+}
+
+@media (max-width: 480px) {
+	.sabri-context-navigation {
+		padding-inline: 0.75rem;
+	}
+
+	.sabri-context-navigation__control {
+		flex: 0 1 auto;
+		padding-inline: 0.85rem;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sabri-context-navigation__control {
+		transition: none;
+	}
+}
+
+@media (forced-colors: active) {
+	.sabri-context-navigation__control {
+		border: 1px solid ButtonText;
+	}
+}

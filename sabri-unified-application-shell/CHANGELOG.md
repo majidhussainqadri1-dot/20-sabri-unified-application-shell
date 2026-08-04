@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased — Shared Context Navigation
+
+- Added one File 20-owned Back + Home control for internal public pages, positioned RTL-first on the right.
+- Kept Back safe and deterministic through a bounded same-origin session stack, a same-origin referrer fallback, and a canonical section/Home fallback.
+- Preserved a functional no-JavaScript Back link and the canonical Home link.
+- Deliberately omitted a permanent generic Forward control; native modules remain responsible for meaningful Previous/Next content controls.
+- Added 44×44 minimum touch targets, visible keyboard focus, reduced-motion handling, duplicate-output protection, PHP 7.4/8.3 syntax coverage, JavaScript syntax checks, CSS balance checks, and dedicated static security regressions.
+- Hostinger staging, visual acceptance, and live deployment remain pending.
+
 ## 1.2.0 Publication Layout R3 — 2026-08-04
 
 - Accept File 21's neutral `sabri-hnf-content-integrity-single` signal for legacy Markdown articles without taking content ownership.

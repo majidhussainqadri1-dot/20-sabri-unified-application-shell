@@ -32,6 +32,7 @@ jobs:
           php sabri-unified-application-shell/tests/run.php
           php sabri-unified-application-shell/tests/run-create-contract-layout.php
           php sabri-unified-application-shell/tests/run-central-plan-v4.php
+          php sabri-unified-application-shell/tests/run-context-navigation.php
 
   static-package:
     name: Ownership privacy central-plan and deterministic package
@@ -45,6 +46,7 @@ jobs:
           set -euo pipefail
           node --check sabri-unified-application-shell/assets/js/shell.js
           node --check sabri-unified-application-shell/assets/js/shell-corrective-1.1.1.js
+          node --check sabri-unified-application-shell/assets/js/context-navigation.js
           python -m json.tool sabri-unified-application-shell/contracts/file20-central-plan-v4.json >/dev/null
           grep -Fq '* Version: 1.2.0' sabri-unified-application-shell/sabri-unified-application-shell.php
           grep -Fq "define( 'SABRI_SHELL_VERSION', '1.2.0' );" sabri-unified-application-shell/sabri-unified-application-shell.php
@@ -54,18 +56,28 @@ jobs:
           grep -Fq 'flex-wrap: nowrap !important' sabri-unified-application-shell/assets/css/shell-central-plan-v4.css
           grep -Fq "if ( ! \$base_allowed )" sabri-unified-application-shell/includes/class-create-contract.php
           grep -Fq 'sabri_shell_create_visible_for_current_user()' sabri-unified-application-shell/includes/class-renderer.php
+          grep -Fq 'ContextNavigation::register();' sabri-unified-application-shell/includes/class-plugin.php
+          grep -Fq 'sabri_shell_context_navigation_fallback_url' sabri-unified-application-shell/includes/class-context-navigation.php
           grep -Fq 'SMC_Contracts::assertions' sabri-unified-application-shell/includes/class-integrations.php
           ! grep -Eq "smc_assertions_v1|_smc_official_founder|_smc_doctor_verified|_smc_trusted_publisher|post-new.php" sabri-unified-application-shell/includes/class-integrations.php sabri-unified-application-shell/includes/class-create-contract.php
           ! grep -R "'posts_per_page'[[:space:]]*=>[[:space:]]*-1" sabri-unified-application-shell/includes
           python - <<'PY'
           from pathlib import Path
           root = Path('sabri-unified-application-shell')
-          for name in ('assets/css/shell-corrective-1.1.1.css', 'assets/css/shell-central-plan-v4.css'):
+          for name in (
+              'assets/css/shell-corrective-1.1.1.css',
+              'assets/css/shell-central-plan-v4.css',
+              'assets/css/context-navigation.css',
+          ):
               css = (root / name).read_text(encoding='utf-8')
               assert css.count('{') == css.count('}'), f'Unbalanced CSS: {name}'
-          js = (root / 'assets/js/shell-corrective-1.1.1.js').read_text(encoding='utf-8')
-          for forbidden in ('appendChild(', 'replaceChild(', 'insertBefore(', 'outerHTML', 'innerHTML ='):
-              assert forbidden not in js, f'Unsafe DOM mutation: {forbidden}'
+          for name in (
+              'assets/js/shell-corrective-1.1.1.js',
+              'assets/js/context-navigation.js',
+          ):
+              js = (root / name).read_text(encoding='utf-8')
+              for forbidden in ('appendChild(', 'replaceChild(', 'insertBefore(', 'outerHTML', 'innerHTML ='):
+                  assert forbidden not in js, f'Unsafe DOM mutation in {name}: {forbidden}'
           print('Static ownership, privacy, central-plan and layout checks passed.')
           PY
 
@@ -109,9 +121,10 @@ jobs:
           # File 20 Version 1.2.0 Central-Plan Evidence
 
           - Exact workflow SHA: ${{ github.sha }}
-          - PHP 7.4/8.3 syntax and three regression suites: PASS
+          - PHP 7.4/8.3 syntax and four regression suites: PASS
           - File 00/File 22 authorization boundaries: PASS
           - File 25 visual ownership and fallback contract: PASS
+          - Shared Back + Home same-origin navigation contract: PASS
           - Four layout modes and no-wrap navigation: PASS
           - File 00–25 registry: PASS
           - JavaScript/CSS/JSON/static boundaries: PASS
