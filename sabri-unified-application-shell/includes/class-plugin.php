@@ -46,6 +46,7 @@ final class Plugin {
 		Navigation::register_cache_hooks();
 		HomeFeed::register();
 		Renderer::register();
+		ContextNavigation::register();
 		add_action( 'init', array( __CLASS__, 'maybe_flush_rewrite_rules' ), 99 );
 
 		if ( is_admin() ) {
