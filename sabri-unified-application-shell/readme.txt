@@ -4,7 +4,7 @@ Tags: application shell, navigation, layout, accessibility, homeopathy
 Requires at least: 6.0
 Tested up to: 7.0.1
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 Text Domain: sabri-unified-application-shell
 
@@ -13,6 +13,8 @@ Responsive application shell and integration layer for the Sabri Social Homeopat
 == Description ==
 
 Sabri Unified Application Shell provides the global header, one-line primary navigation, persistent left navigation, conditional contextual panels, mobile drawers, bottom navigation, exact Three/Two/Minimal/Immersive layouts, settings, System Check, Complete Repair, Safe Mode, activation snapshots and rollback.
+
+Version 1.2.1 adds fail-closed, role-aware entry points to File 23's existing protected Publishing Dashboard. Authorized Founder or publishing Doctor accounts receive the link in the File 20 left sidebar, the shell account menu, the WordPress account toolbar and their own File 25 public profile action area. Guests, pending, suspended and unauthorized users receive no link. File 23 remains the sole route, authorization, capability, data and operational owner.
 
 Version 1.2.0 harmonizes File 20 with the Definitive Master Plan v3.0 and File 20 v4.0 specification. It adds the missing Immersive mode, corrects profiles/timelines and the Publishing Dashboard to Two-column contexts, enforces one no-wrap desktop navigation line, publishes a complete File 00–25 contract registry, and makes File 25 the canonical visual-token owner. File 20's legacy Appearance editor is retired; a clearly marked continuity fallback is used only while File 25 is unavailable.
 
@@ -24,19 +26,28 @@ Hostinger staging testing and Founder acceptance are required before production 
 
 1. Back up files and database.
 2. Install or upgrade on staging only.
-3. Activate required companion modules.
+3. Activate required companion modules, including File 00, File 23 and File 25.
 4. Open Sabri Shell and run System Check.
 5. Confirm the File 22 Create-contract checks pass.
 6. Confirm File 25 visual-provider status or the truthful continuity-fallback marker.
-7. Test Three, Two, Minimal and Immersive contexts at mobile, tablet and desktop widths.
-8. Test keyboard, screen reader, RTL, Safe Mode, Repair and rollback.
-9. Complete STAGING-ACCEPTANCE.md before production.
+7. Confirm an authorized Founder/Doctor sees Publishing Dashboard links in the sidebar, account menu and own profile.
+8. Confirm guest, pending, suspended and unauthorized accounts see no Publishing Dashboard link.
+9. Test Three, Two, Minimal and Immersive contexts at mobile, tablet and desktop widths.
+10. Test keyboard, screen reader, RTL, Safe Mode, Repair and rollback.
+11. Complete STAGING-ACCEPTANCE.md before production.
 
 == Shortcode ==
 
 Use [sabri_shell_home_feed] only as a chronological fallback feed. Automatic insertion is suppressed when an authoritative platform feed exists.
 
 == Changelog ==
+
+= 1.2.1 =
+* Added fail-closed File 23 Publishing Dashboard discovery through File 23's exact router and capability contract.
+* Added role-aware sidebar and shell account-menu links without exposing the route to guests or unauthorized accounts.
+* Activated File 25's existing own-profile Publishing Dashboard action through a same-site filtered URL.
+* Added a WordPress account-toolbar shortcut as a no-JavaScript fallback.
+* Added idempotent UI mounting, same-site validation, accessibility styles and dedicated regression/package gates.
 
 = 1.2.0 =
 * Added the exact Four-mode layout constitution, including Immersive media/reader contexts.
