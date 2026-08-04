@@ -61,7 +61,8 @@
 		}
 
 		var fallback = safeSameOriginUrl(button.getAttribute('data-fallback-url'));
-		window.location.assign(fallback || window.location.origin + '/');
+		var home = safeSameOriginUrl(button.getAttribute('data-home-url'));
+		window.location.assign(fallback || home || window.location.origin + '/');
 	}
 
 	function initialize() {
