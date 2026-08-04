@@ -68,7 +68,7 @@ final class ContextNavigation {
 
 		echo '<nav class="sabri-context-navigation" data-sabri-context-navigation aria-label="' . esc_attr__( 'Page navigation', 'sabri-unified-application-shell' ) . '">';
 		echo '<div class="sabri-context-navigation__inner">';
-		echo '<button type="button" class="sabri-context-navigation__control sabri-context-navigation__back" data-sabri-context-back data-fallback-url="' . esc_url( $fallback_url ) . '" aria-label="' . esc_attr( $back_label ) . '">';
+		echo '<button type="button" class="sabri-context-navigation__control sabri-context-navigation__back" data-sabri-context-back data-fallback-url="' . esc_url( $fallback_url ) . '" data-home-url="' . esc_url( $home_url ) . '" aria-label="' . esc_attr( $back_label ) . '">';
 		echo '<span class="sabri-context-navigation__icon sabri-context-navigation__back-icon" aria-hidden="true">&#8594;</span>';
 		echo '<span class="sabri-context-navigation__label">' . esc_html( $back_label ) . '</span>';
 		echo '</button>';
@@ -86,7 +86,7 @@ final class ContextNavigation {
 	 * @return bool
 	 */
 	private static function should_render() {
-		if ( is_admin() || wp_doing_ajax() || is_front_page() || is_home() ) {
+		if ( is_admin() || wp_doing_ajax() || is_front_page() ) {
 			return false;
 		}
 
@@ -180,12 +180,14 @@ final class ContextNavigation {
 			return $fallback;
 		}
 
-		$scheme = isset( $candidate_parts['scheme'] ) ? strtolower( $candidate_parts['scheme'] ) : '';
+		$scheme      = isset( $candidate_parts['scheme'] ) ? strtolower( $candidate_parts['scheme'] ) : '';
+		$home_scheme = isset( $home_parts['scheme'] ) ? strtolower( $home_parts['scheme'] ) : '';
 
 		if (
 			empty( $candidate_parts['host'] ) ||
 			empty( $home_parts['host'] ) ||
 			! in_array( $scheme, array( 'http', 'https' ), true ) ||
+			$scheme !== $home_scheme ||
 			strtolower( $candidate_parts['host'] ) !== strtolower( $home_parts['host'] ) ||
 			self::normalized_port( $candidate_parts ) !== self::normalized_port( $home_parts )
 		) {
