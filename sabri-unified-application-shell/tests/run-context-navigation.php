@@ -21,10 +21,13 @@ $assert( false !== strpos( $php, 'sabri_shell_context_navigation_enabled' ), 'Re
 $assert( false !== strpos( $php, 'sabri_shell_context_navigation_fallback_url' ), 'Native modules need a bounded fallback filter.' );
 $assert( false !== strpos( $php, 'same_origin_url' ), 'Server fallback must pass same-origin validation.' );
 $assert( false !== strpos( $php, "array( 'http', 'https' )" ), 'Only HTTP(S) fallback schemes are permitted.' );
+$assert( false !== strpos( $php, '$scheme !== $home_scheme' ), 'Server validation must compare the complete scheme-aware origin.' );
+$assert( false !== strpos( $php, 'data-home-url' ), 'The client must receive the canonical Home fallback, including subdirectory installs.' );
 $assert( false === strpos( $php, 'return_to' ), 'Untrusted return_to input must not control Back navigation.' );
 $assert( false !== strpos( $js, 'url.origin !== window.location.origin' ), 'Client navigation must enforce same-origin URLs.' );
 $assert( false !== strpos( $js, "url.protocol !== 'http:'" ), 'Client navigation must restrict URL schemes.' );
 $assert( false !== strpos( $js, 'window.history.back()' ), 'Valid same-origin history should use browser Back semantics.' );
+$assert( false !== strpos( $js, "button.getAttribute('data-home-url')" ), 'Client fallback must preserve the canonical WordPress Home URL.' );
 $assert( false === strpos( $js, 'window.history.forward' ), 'A generic permanent Forward control is forbidden.' );
 $assert( false === strpos( $js, 'innerHTML' ), 'Context navigation JavaScript must not inject HTML.' );
 $assert( false !== strpos( $css, 'min-block-size: 44px' ), 'Controls must satisfy the minimum touch target.' );
