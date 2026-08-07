@@ -115,7 +115,7 @@ final class Settings {
 				break;
 
 			case 'appearance':
-				$output['appearance'] = self::sanitize_appearance_group( isset( $input['appearance'] ) && is_array( $input['appearance'] ) ? $input['appearance'] : array(), $existing['appearance'] );
+				/* File 25 owns appearance; File 20 refuses parallel visual writes. */
 				break;
 		}
 
@@ -306,7 +306,7 @@ final class Settings {
 	 */
 	private static function sanitize_mobile_group( array $input, array $existing ) {
 		$output                      = $existing;
-		$output['bottom_nav']        = self::bool_from_input( $input, 'bottom_nav', $existing['bottom_nav'] );
+		$output['bottom_nav']        = false;
 		$output['drawers']           = self::bool_from_input( $input, 'drawers', $existing['drawers'] );
 		$output['create_or_doctors'] = in_array( isset( $input['create_or_doctors'] ) ? $input['create_or_doctors'] : 'auto', array( 'auto', 'create', 'doctors' ), true ) ? $input['create_or_doctors'] : 'auto';
 		$output['menu_label']        = sanitize_text_field( isset( $input['menu_label'] ) ? $input['menu_label'] : $existing['menu_label'] );
@@ -347,7 +347,7 @@ final class Settings {
 		$output                  = $existing;
 		$output['color_mode']    = in_array( isset( $input['color_mode'] ) ? $input['color_mode'] : 'system', array( 'light', 'dark', 'system' ), true ) ? $input['color_mode'] : 'system';
 		$output['density']       = in_array( isset( $input['density'] ) ? $input['density'] : 'comfortable', array( 'comfortable', 'compact' ), true ) ? $input['density'] : 'comfortable';
-		$output['primary_color'] = self::sanitize_hex_color( isset( $input['primary_color'] ) ? $input['primary_color'] : $existing['primary_color'], '#ff8a1f' );
+		$output['primary_color'] = self::sanitize_hex_color( isset( $input['primary_color'] ) ? $input['primary_color'] : $existing['primary_color'], '#15803d' );
 		$output['border_radius'] = self::int_range( $input, 'border_radius', 0, 20, $existing['border_radius'] );
 		$output['font_scale']    = self::float_range( $input, 'font_scale', 0.9, 1.2, $existing['font_scale'] );
 

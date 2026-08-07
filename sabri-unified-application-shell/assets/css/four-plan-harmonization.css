@@ -1,0 +1,142 @@
+/* File 20 v1.3.0 — latest Founder/recovered/Top-20 harmonization guardrails. */
+
+/* Latest central directive: green is the continuity fallback; File 25 remains visual owner. */
+body.sabri-shell-enabled {
+	--sabri-shell-primary: #15803d;
+}
+
+/* No page-level horizontal overflow may be created by shell chrome. */
+html,
+body.sabri-shell-enabled {
+	max-inline-size: 100%;
+	overflow-x: clip;
+}
+
+/* The superseded duplicate mobile bottom strip must never render visually. */
+.sabri-shell-bottom-nav {
+	display: none !important;
+}
+
+/* One complete top navigation. Overflow is represented by a More disclosure, not a second row/strip. */
+.sabri-shell-primary-nav {
+	overflow: visible !important;
+}
+
+.sabri-shell-primary-nav > ul {
+	display: flex;
+	align-items: center;
+	flex-wrap: nowrap !important;
+	inline-size: min(100%, var(--sabri-shell-max-width, 1600px)) !important;
+	min-inline-size: 0 !important;
+	max-inline-size: var(--sabri-shell-max-width, 1600px) !important;
+	margin-inline: auto;
+	white-space: nowrap !important;
+	overflow: visible;
+}
+
+.sabri-shell-primary-nav > ul > li {
+	min-inline-size: 0;
+	flex: 0 1 auto;
+}
+
+.sabri-shell-primary-nav a[aria-current="page"],
+.sabri-shell-primary-nav summary[aria-current="page"] {
+	color: var(--sabri-shell-primary, #15803d);
+	box-shadow: inset 0 -3px 0 var(--sabri-shell-primary, #15803d);
+}
+
+.sabri-shell-nav-more {
+	position: relative;
+	margin-inline-start: auto;
+	list-style: none;
+	flex: 0 0 auto !important;
+}
+
+.sabri-shell-nav-more > details {
+	position: relative;
+}
+
+.sabri-shell-nav-more summary {
+	display: inline-flex;
+	align-items: center;
+	min-block-size: 44px;
+	padding: 8px 12px;
+	cursor: pointer;
+	list-style: none;
+	color: var(--sabri-shell-text);
+}
+
+.sabri-shell-nav-more summary::-webkit-details-marker {
+	display: none;
+}
+
+.sabri-shell-nav-more-menu {
+	position: absolute;
+	z-index: 10020;
+	inset-block-start: calc(100% + 2px);
+	inset-inline-end: 0;
+	display: grid !important;
+	grid-template-columns: minmax(200px, 1fr);
+	min-inline-size: 240px !important;
+	max-block-size: min(70vh, 640px);
+	margin: 0;
+	padding: 8px;
+	overflow-y: auto;
+	list-style: none;
+	border: 1px solid var(--sabri-shell-border);
+	border-radius: var(--sabri-shell-radius, 8px);
+	background: var(--sabri-shell-surface);
+	box-shadow: var(--sabri-shell-shadow);
+}
+
+.sabri-shell-nav-more-menu li,
+.sabri-shell-nav-more-menu a {
+	inline-size: 100%;
+}
+
+.sabri-shell-nav-more-menu a {
+	display: block;
+	padding: 10px 12px;
+	white-space: normal;
+}
+
+/* RTL semantics: start is the right side; no transform/mirroring hacks are used. */
+.rtl .sabri-shell-primary-nav > ul,
+[dir="rtl"] .sabri-shell-primary-nav > ul {
+	direction: rtl;
+}
+
+.rtl .sabri-shell-nav-more,
+[dir="rtl"] .sabri-shell-nav-more {
+	margin-inline-start: auto;
+}
+
+/* File 26 absent means no counterfeit WordPress search surface is shown. */
+.sabri-shell-search[data-sabri-search-owner="file-26"] {
+	min-inline-size: min(320px, 32vw);
+}
+
+/* All shell controls used by the updated contracts retain the 44x44 minimum target. */
+.sabri-shell-nav-more summary,
+.sabri-shell-search button,
+[data-sabri-welcome-dismiss] {
+	min-inline-size: 44px;
+	min-block-size: 44px;
+}
+
+@media (max-width: 1023px) {
+	/* Tablet/mobile use the canonical drawer; the top desktop row is not duplicated. */
+	.sabri-shell-primary-nav {
+		display: none !important;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sabri-shell-nav-more *,
+	[data-sabri-welcome-intro] * {
+		scroll-behavior: auto !important;
+		animation-duration: 0.001ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.001ms !important;
+	}
+}

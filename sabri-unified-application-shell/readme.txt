@@ -4,7 +4,7 @@ Tags: application shell, navigation, layout, accessibility, homeopathy
 Requires at least: 6.0
 Tested up to: 7.0.1
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPLv2 or later
 Text Domain: sabri-unified-application-shell
 

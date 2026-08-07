@@ -149,7 +149,7 @@ final class CentralPlanContract {
 		return $new_value;
 	}
 
-	/** Canonical File 00-25 responsibility registry. */
+	/** Canonical File 00-26 responsibility registry. */
 	public static function canonical_contracts() {
 		$rows = array(
 			'00' => array( 'Sabri Membership Core', 'identity-authorization-guardian-entitlement', 'consume-current-claims', 'hard', 'fail-closed' ),
@@ -179,6 +179,7 @@ final class CentralPlanContract {
 			'23' => array( 'Doctor and Founder Publishing Dashboard', 'private-publishing-operations', 'private-route-mount-only', 'optional', 'hidden-or-unavailable' ),
 			'24' => array( 'Security Privacy Compliance and Resilience Center', 'assurance-risk-incidents', 'sanitized-events-native-controls-remain', 'assurance', 'unknown' ),
 			'25' => array( 'Sabri Unified Global Visual Experience and Design System', 'design-tokens-profiles-timelines-visual-qa', 'consume-visual-contract-no-second-shell', 'visual-provider', 'continuity-fallback' ),
+			'26' => array( 'Search Discovery and Ranking', 'federated-search-discovery-ranking-explanations-index-contracts', 'validated-header-search-mount-only', 'shared-capability', 'search-hidden-no-native-fallback' ),
 		);
 		$output = array();
 		foreach ( $rows as $file => $row ) {
@@ -229,7 +230,7 @@ final class CentralPlanContract {
 	/** Continuity-only values; File 25 remains authoritative. */
 	private static function fallback_visual_tokens() {
 		return array(
-			'primary_color' => '#ff8a1f', 'background' => '#f7f7f7', 'surface' => '#ffffff', 'surface_strong' => '#f1f3f5',
+			'primary_color' => '#15803d', 'background' => '#f7f7f7', 'surface' => '#ffffff', 'surface_strong' => '#f1f3f5',
 			'text' => '#202124', 'muted' => '#5f6368', 'border' => '#d9dde2', 'focus' => '#0b57d0', 'radius' => 8,
 			'font_scale' => 1.0, 'density' => 'comfortable', 'shadow' => '0 12px 30px rgba(32,33,36,0.12)',
 		);

@@ -3,7 +3,7 @@
  * Plugin Name: Sabri Unified Application Shell
  * Plugin URI: https://github.com/majidhussainqadri1-dot/20-sabri-unified-application-shell
  * Description: Secure responsive public application shell for the Sabri Social Homeopathy Platform.
- * Version: 1.2.0
+ * Version: 1.3.0
  * Author: Dr. Allamah Majid Hussain Sabri Muhaddith Mursheed
  * Text Domain: sabri-unified-application-shell
  * Domain Path: /languages
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SABRI_SHELL_VERSION', '1.2.0' );
+define( 'SABRI_SHELL_VERSION', '1.3.0' );
 define( 'SABRI_SHELL_FILE', __FILE__ );
 define( 'SABRI_SHELL_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SABRI_SHELL_URL', plugin_dir_url( __FILE__ ) );
@@ -33,7 +33,8 @@ require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-settings-concurrency.php
 require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-privacy-cache.php';
 require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-jobs.php';
 require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-recovery.php';
-
+require_once SABRI_SHELL_PATH . 'includes/class-four-plan-harmonization.php';
+require_once SABRI_SHELL_PATH . 'includes/class-publishing-dashboard-entry.php';
 
 spl_autoload_register(
 	static function ( $class_name ) {
@@ -73,8 +74,8 @@ spl_autoload_register(
  */
 $sabri_shell_corrective_classes_owned = static function () {
 	$expected = array(
-		'Sabri\\UnifiedShell\\SafeMode'       => realpath( SABRI_SHELL_PATH . 'includes/class-safe-mode.php' ),
-		'Sabri\\UnifiedShell\\CreateContract' => realpath( SABRI_SHELL_PATH . 'includes/class-create-contract.php' ),
+		'Sabri\\UnifiedShell\\SafeMode'          => realpath( SABRI_SHELL_PATH . 'includes/class-safe-mode.php' ),
+		'Sabri\\UnifiedShell\\CreateContract'    => realpath( SABRI_SHELL_PATH . 'includes/class-create-contract.php' ),
 		'Sabri\\UnifiedShell\\LayoutCorrection' => realpath( SABRI_SHELL_PATH . 'includes/class-layout-correction.php' ),
 	);
 	try {
@@ -160,6 +161,8 @@ add_action(
 		if ( $sabri_shell_central_plan_contract_is_owned ) {
 			Sabri\UnifiedShell\CentralPlanContract::register();
 		}
+		Sabri\UnifiedShell\FourPlanHarmonization::register();
+		Sabri\UnifiedShell\PublishingDashboardEntry::register();
 	}
 );
 

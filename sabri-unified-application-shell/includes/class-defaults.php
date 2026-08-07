@@ -18,7 +18,7 @@ final class Defaults {
 	const OPTION_NAME          = 'sabri_shell_settings';
 	const SNAPSHOT_OPTION_NAME = 'sabri_shell_activation_snapshot';
 	const NAV_CACHE_KEY        = 'sabri_shell_navigation_cache_v1';
-	const SCHEMA_VERSION       = 2;
+	const SCHEMA_VERSION       = 3;
 
 	/**
 	 * Return all default navigation destinations.
@@ -330,7 +330,7 @@ final class Defaults {
 				'emergency_notice' => __( 'For medical emergencies, contact local emergency services immediately.', 'sabri-unified-application-shell' ),
 			),
 			'mobile'               => array(
-				'bottom_nav'               => true,
+				'bottom_nav'               => false,
 				'drawers'                  => true,
 				'create_or_doctors'         => 'auto',
 				'menu_label'               => __( 'Menu', 'sabri-unified-application-shell' ),
@@ -354,7 +354,7 @@ final class Defaults {
 			'appearance'           => array(
 				'color_mode'    => 'system',
 				'density'       => 'comfortable',
-				'primary_color' => '#ff8a1f',
+				'primary_color' => '#15803d',
 				'border_radius' => 8,
 				'font_scale'    => 1,
 			),
