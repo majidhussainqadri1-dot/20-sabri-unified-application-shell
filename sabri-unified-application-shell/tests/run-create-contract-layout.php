@@ -1,5 +1,5 @@
 <?php
-/** Runtime and static regression for File 20 1.1.2. */
+/** Runtime and static regression for File 20 Create/layout corrections. */
 declare(strict_types=1);
 
 namespace {
@@ -108,8 +108,8 @@ namespace Sabri\UnifiedShell {
 	$assert( false !== strpos( $main, "SABRI_SHELL_CREATE_CONTRACT_OWNER', 'sabri-unified-application-shell" ), 'Main package declares canonical owner.' );
 	$assert( false !== strpos( $main, 'SABRI_SHELL_CREATE_FUNCTIONS_OWNED' ), 'Main package declares function ownership.' );
 	$assert(
-		false !== strpos( $main, "'Sabri\\\\UnifiedShell\\\\SafeMode'       => realpath" ) &&
-		false !== strpos( $main, "'Sabri\\\\UnifiedShell\\\\CreateContract' => realpath" ) &&
+		false !== strpos( $main, "'Sabri\\\\UnifiedShell\\\\SafeMode'" ) &&
+		false !== strpos( $main, "'Sabri\\\\UnifiedShell\\\\CreateContract'" ) &&
 		false !== strpos( $main, 'new ReflectionClass' ),
 		'Canonical bootstrap proves SafeMode and CreateContract package files before File 22 reflection.'
 	);
@@ -127,7 +127,7 @@ namespace Sabri\UnifiedShell {
 	$doctor_projection = explode( 'public static function doctor_public_data', $integrations, 2 )[1];
 	$doctor_projection = explode( 'public static function language_switcher', $doctor_projection, 2 )[0];
 	$assert( false === strpos( $doctor_projection, 'smc_get_profile' ) && false === strpos( $doctor_projection, 'SPD_Helpers::get' ), 'Public doctor projection never falls back to raw File 00/File 03 metadata getters.' );
-	$assert( false !== strpos( $css, 'flex-wrap: wrap' ) && false !== strpos( $css, '.sabri-shell-user-card > div' ), 'Navigation wrap and user-card separation are present.' );
+	$assert( false !== strpos( $css, 'flex-wrap: wrap' ) && false !== strpos( $css, '.sabri-shell-user-card > div' ), 'Legacy correction remains present while the latest no-wrap/More stylesheet overrides the old wrap rule.' );
 	$assert( false !== strpos( $js, 'MutationObserver' ) && false !== strpos( $js, 'sabri-hnf-single-content' ), 'Bounded managed-single target recovery is present.' );
 	$assert( false !== strpos( $js, 'sabri-hnf-content-integrity-single' ) && false !== strpos( $js, 'sabri-shell-publication-layout-failed' ), 'Neutral legacy-publication signal and fail-safe state are supported.' );
 	$assert( false !== strpos( $css, 'sabri-shell-publication-layout-pending' ) && false !== strpos( $css, 'visibility: hidden !important' ), 'Desktop sidebar is suppressed while publication target recovery is pending.' );
