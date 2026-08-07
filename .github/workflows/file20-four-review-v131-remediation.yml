@@ -35,6 +35,7 @@ jobs:
           test -f .github/file20-four-review-v131.ready
           python .github/file20-v131-remediate.py
           python .github/file20-v131-postpatch.py
+          sed -i 's/[[:space:]]\+$//' sabri-unified-application-shell/FOUR-PLAN-REVIEW-2026-08-07.md
 
       - name: Fresh local verification before commit
         run: |
