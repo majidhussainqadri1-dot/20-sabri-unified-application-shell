@@ -34,7 +34,6 @@ final class Defaults {
 				'shortcodes'  => array( 'sabri_shell_home_feed', 'sabri_platform_home', 'sabri_news_home' ),
 				'post_type'   => '',
 				'order'       => 10,
-				'bottom_nav'  => true,
 				'visibility'  => 'public',
 			),
 			'news'         => array(
@@ -68,7 +67,6 @@ final class Defaults {
 				'shortcodes' => array( 'he_encyclopedia_home' ),
 				'post_type'  => 'he_entry',
 				'order'      => 50,
-				'bottom_nav' => true,
 			),
 			'doctors'      => array(
 				'label'      => __( 'Doctors', 'sabri-unified-application-shell' ),
@@ -77,7 +75,6 @@ final class Defaults {
 				'shortcodes' => array( 'sdd_doctors_directory', 'sabri_doctor_directory' ),
 				'post_type'  => '',
 				'order'      => 60,
-				'bottom_nav' => true,
 			),
 			'clinic'       => array(
 				'label'      => __( 'Worldwide Clinic', 'sabri-unified-application-shell' ),
@@ -175,7 +172,6 @@ final class Defaults {
 				'shortcodes' => array( 'sabri_network' ),
 				'post_type'  => '',
 				'order'      => 180,
-				'bottom_nav' => true,
 				'visibility' => 'logged_in',
 			),
 			'notifications' => array(

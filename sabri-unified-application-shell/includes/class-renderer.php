@@ -200,19 +200,6 @@ final class Renderer {
 		echo '</header>';
 	}
 
-	/**
-	 * Render search form.
-	 *
-	 * @return void
-	 */
-	private static function render_search() {
-		$query = get_search_query();
-		echo '<form class="sabri-shell-search" role="search" method="get" action="' . esc_url( home_url( '/' ) ) . '">';
-		echo '<label class="screen-reader-text" for="sabri-shell-search-field">' . esc_html__( 'Search', 'sabri-unified-application-shell' ) . '</label>';
-		echo '<input id="sabri-shell-search-field" type="search" name="s" value="' . esc_attr( $query ) . '" placeholder="' . esc_attr__( 'Search', 'sabri-unified-application-shell' ) . '">';
-		echo '<button type="submit" aria-label="' . esc_attr__( 'Submit search', 'sabri-unified-application-shell' ) . '"><span aria-hidden="true">&#8981;</span></button>';
-		echo '</form>';
-	}
 
 	/**
 	 * Render a simple resolved header action.
@@ -306,8 +293,8 @@ final class Renderer {
 				$visible[] = $nav[ $key ];
 			}
 		}
-		$direct = array_slice( $visible, 0, 8 );
-		$more   = array_slice( $visible, 8 );
+		$direct = array_slice( $visible, 0, 6 );
+		$more   = array_slice( $visible, 6 );
 		echo '<nav class="sabri-shell-primary-nav" aria-label="' . esc_attr__( 'Primary navigation', 'sabri-unified-application-shell' ) . '" data-sabri-shell-component="primary-nav">';
 		echo '<ul>';
 		foreach ( $direct as $item ) {
