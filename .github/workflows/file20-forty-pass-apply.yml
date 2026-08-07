@@ -1,0 +1,80 @@
+name: File20 Forty Pass Apply
+
+on:
+  push:
+    branches: [codex/file20-forty-pass-1.4.0-2026-08-07]
+    paths: [.github/file20-forty-pass.ready]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: file20-forty-pass-apply-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Decode reviewed source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .github/file20-forty-pass-payload.part-* | base64 --decode > /tmp/file20.tar.xz
+          echo 'dd5dfaca7830a30899ffaf1b99a4e0914446231be97d84557c9b46cc2088a039  /tmp/file20.tar.xz' | sha256sum -c -
+          rm -rf sabri-unified-application-shell
+          tar -xJf /tmp/file20.tar.xz -C .
+      - name: Advance permanent quality workflow
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('.github/workflows/corrective-quality.yml')
+          t = p.read_text(encoding='utf-8')
+          t = t.replace('Version 1.3.1 Four-Plan Quality', 'Version 1.4.0 Forty-Pass Quality')
+          t = t.replace('1.3.1', '1.4.0')
+          t = t.replace('FOUR-PLAN-R4', 'FORTY-PASS')
+          t = t.replace('four-plan-r4', 'forty-pass')
+          p.write_text(t, encoding='utf-8')
+          PY
+      - name: Verify forty-pass reviewed source
+        shell: bash
+        run: |
+          set -euo pipefail
+          find sabri-unified-application-shell -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+          for js in sabri-unified-application-shell/assets/js/*.js; do node --check "$js"; done
+          php sabri-unified-application-shell/tests/run.php
+          php sabri-unified-application-shell/tests/run-create-contract-layout.php
+          php sabri-unified-application-shell/tests/run-central-plan-v4.php
+          php sabri-unified-application-shell/tests/run-context-navigation.php
+          php sabri-unified-application-shell/tests/run-plan-v4-adversarial.php
+          php sabri-unified-application-shell/tests/run-plan-v4-completion.php
+          php sabri-unified-application-shell/tests/run-four-plan-harmonization.php
+          python -m json.tool sabri-unified-application-shell/contracts/file20-central-plan-v4.json >/dev/null
+          (cd sabri-unified-application-shell && sha256sum -c MANIFEST.sha256)
+          grep -Fq 'PURGE_RETRY_OPTION' sabri-unified-application-shell/includes/class-plan-v4-privacy-cache.php
+          grep -Fq 'prepare_welcome_invocation' sabri-unified-application-shell/includes/class-four-plan-harmonization.php
+          grep -Fq 'rebalanceNavigation' sabri-unified-application-shell/assets/js/four-plan-harmonization.js
+          grep -Fq '40' sabri-unified-application-shell/FORTY-PASS-REVIEW-2026-08-07.md
+      - name: Commit reviewed implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          rm -f .github/file20-forty-pass.ready .github/file20-forty-pass-payload.part-* .github/workflows/file20-forty-pass-apply.yml
+          git add -A
+          git diff --cached --check
+          git commit -m 'feat: complete File 20 forty-pass remediation v1.4.0'
+          git push origin HEAD:${GITHUB_REF_NAME}
