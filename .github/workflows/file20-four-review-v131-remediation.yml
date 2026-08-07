@@ -58,10 +58,13 @@ jobs:
       - name: Commit corrected reviewed source
         run: |
           set -euo pipefail
+          # The workflow token has contents:write but not workflows permission. Restore
+          # the permanent workflow here; it is advanced separately through the authenticated
+          # GitHub connector after this source commit lands.
+          git checkout -- .github/workflows/corrective-quality.yml
           rm -f .github/file20-four-review-v131.ready
           rm -f .github/file20-v131-remediate.py
           rm -f .github/file20-v131-postpatch.py
-          rm -f .github/workflows/file20-four-review-v131-remediation.yml
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
