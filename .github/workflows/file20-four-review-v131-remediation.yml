@@ -34,6 +34,7 @@ jobs:
           set -euo pipefail
           test -f .github/file20-four-review-v131.ready
           python .github/file20-v131-remediate.py
+          python .github/file20-v131-postpatch.py
 
       - name: Fresh local verification before commit
         run: |
@@ -58,6 +59,7 @@ jobs:
           set -euo pipefail
           rm -f .github/file20-four-review-v131.ready
           rm -f .github/file20-v131-remediate.py
+          rm -f .github/file20-v131-postpatch.py
           rm -f .github/workflows/file20-four-review-v131-remediation.yml
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
