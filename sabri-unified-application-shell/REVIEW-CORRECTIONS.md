@@ -1,54 +1,41 @@
-# File 20 Corrective Review Traceability
+# File 20 — Four-Plan Corrective Review Traceability
 
-## Status
+## Current status
 
-`1.1.0` is a corrective release candidate. Local static and regression checks may be green, but WordPress/Hostinger staging acceptance, visual acceptance, rollback proof, and Founder approval remain required.
+Runtime `1.3.1` is the post-four-review repository candidate. Source/package/automated QA may be accepted after exact-head CI; Hostinger staging, real companion integration, browser/accessibility acceptance, backup/restore, rollback rehearsal, Founder approval, live deployment and operational monitoring remain separate gates.
 
-## Corrected Findings
+## Four fresh review rounds — 7 August 2026
 
-| Review finding | Correction |
-|---|---|
-| Guessed/obsolete shortcodes | Replaced with actual companion contracts and authoritative page maps. |
-| Incorrect doctor/founder roles | Added Membership Core and legacy role/meta/helper adapters. |
-| Core wp-admin Create bypass | Create now requires authoritative permission and a moderated public composer. |
-| Core auth/profile bypass | Platform public pages are preferred; safe core access fallback remains only when no platform page exists. |
-| Theme wrapper reparenting and ID replacement | Removed; safe target is annotated in place and theme IDs/DOM hierarchy are preserved. |
-| Authentication pages receiving public shell layouts | Added actual File 02 and Membership Core auth/security route exclusions. |
-| Sequential settings arrays merged recursively | Lists now replace lists, including empty lists. |
-| Wrong doctor filter parameters | Updated to current directory parameter contracts. |
-| Private actions shown publicly | Messages and Notifications enforce logged-in visibility. |
-| Generic/duplicate Notifications | Uses File 19 bell and suppresses its duplicate floating output for shell requests. |
-| Wrong doctor/clinic data model | Consumes File 03 approved projection and directory-eligibility contracts; direct queries to non-owned Membership Core tables are removed. |
-| Stale role/meta authority and public-contact leakage | File 00 current assertions govern publishing; File 03 governs public doctor eligibility and explicit phone/WhatsApp consent. Legacy role/meta fallbacks now fail closed. |
-| Combined Network/Messages destination | File 20 prefers a dedicated File 17 `messages_url()`/page-map contract and uses the shared Network URL only as a compatibility fallback. |
-| Duplicate/weak verified-doctor panel | Verification is checked authoritatively and profiles are linked. |
-| Duplicate Home feed | Detects authoritative platform/File 04/File 21 feed shortcodes before fallback insertion. |
-| News fallback to Home | Removed; unresolved News remains hidden. |
-| Placeholder language text | Renders a real supported multilingual switcher or renders nothing. |
-| Missing behavioral test harness | Added PHP regression tests and corrective CI gates. |
-| Incomplete cache invalidation | Added page-map, content, post type, plugin, theme, permalink, front-page, and locale-aware invalidation. |
-| Rollback omitted front-page values | Captured front-page settings are restored and rewrite flushing is scheduled. |
-| System Check overstated runtime PASS | Runtime and staging-dependent checks are explicitly marked unverified until tested. |
-| Brand inconsistency | Updated platform title, `#FF8A1F`, circular `S | H` identity, repository URL, and approved author name. |
+### Round 1 — Definitive Master Plan v3.0 / canonical architecture
 
-## Validation Performed Locally
+Found and corrected: stale 1.2.0 documentation identity; dormant native WordPress search fallback despite File 26 ownership; stale destination bottom-strip metadata; and an overly large fixed direct desktop nav set that increased clipping risk at small desktop/zoom.
 
-- PHP syntax for every plugin PHP file;
-- JavaScript syntax for `assets/js/shell.js`;
-- behavioral regression suite in `tests/run.php`;
-- adversarial File 00 suspension/2FA, missing-authority fail-closed, and File 03 profile/contact-consent regression matrix;
-- static proof that File 20 contains no direct queries to File 00-owned or nonexistent professional/clinic tables;
-- CSS brace balance;
-- prohibited-pattern scans for unsafe DOM movement and the core admin composer;
-- version consistency and package structure checks.
+### Round 2 — Recovered Founder directives
 
-## Unclosed External Gates
+Found and corrected: Welcome could re-invoke on refresh/internal navigation when the user had not clicked Skip/Close/Continue. A session-only seen marker is now written before template output, with sessionStorage fallback; dismissal still starts the separate 30-day interval. Documentation was also purged of superseded duplicate mobile-bottom-strip behavior.
 
-- WordPress 7.0.1/PHP 8.3.30 runtime on Hostinger staging;
-- companion-module activation and real database upgrade tests;
-- real-user permission matrix;
-- cross-browser and full viewport visual acceptance;
-- accessibility acceptance;
-- backup restore and rollback restore;
-- Founder approval;
-- production deployment and post-deployment monitoring.
+### Round 3 — Continuous Value / Top-20 Superset
+
+Found and corrected: historical review documentation still described orange branding and pre-1.3.0 behavior. Current records now reflect green continuity fallback, File 25 visual ownership, one free tier, no donor advantage, File 26 Search/Discovery/Ranking and one global navigation.
+
+### Round 4 — File 20 v4.1 fresh adversarial / release integrity
+
+Found and corrected: permanent QA did not prove once-per-session Welcome, absence of dormant native search, absence of stale destination bottom-nav metadata, current documentation version, or the new overflow-rebalance path. The regression/static/package gates now cover those cases and the release identity advances to 1.3.1.
+
+## Post-correction invariants
+
+- One canonical shell; no duplicate domain backend.
+- One complete top navigation; mobile drawer; no duplicate bottom strip.
+- File 26 owns global Search/Discovery/Ranking; File 20 only mounts a validated same-origin versioned contract and otherwise hides search.
+- File 25 owns visual tokens; File 20 uses a green continuity fallback only when File 25 is unavailable/incompatible.
+- File 19 owns notification truth/delivery; File 20 renders at most one header output.
+- File 22 owns create orchestration; File 00 is final authorization authority.
+- Welcome: first eligible request per browser session; Skip/Close/Continue suppresses for at least 30 days.
+- One free tier; voluntary donation cannot affect shell privileges or ranking.
+- Smail, verified 1GB file transfer and Download Manager are UI-entry/native-owner contracts only.
+- Back + Home same-origin controls remain; no generic permanent Forward control.
+- Safe Mode, System Check, Repair, snapshots and rollback remain File 20 responsibilities.
+
+## External gates still open
+
+WordPress 7.0.1/PHP 8.3 Hostinger staging; real provider contracts/data; responsive/browser/RTL/accessibility acceptance; LiteSpeed/cache acceptance; backup/restore and rollback rehearsal; Founder acceptance; live deployment; monitoring and incident operations.

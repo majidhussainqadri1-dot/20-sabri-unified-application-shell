@@ -20,7 +20,15 @@ final class FourPlanHarmonization {
 	const WELCOME_INTERVAL_DAYS  = 30;
 	const WELCOME_USER_META      = 'sabri_shell_welcome_dismissed_at';
 	const WELCOME_COOKIE         = 'sabri_shell_welcome_dismissed_at';
+	const WELCOME_SESSION_COOKIE = 'sabri_shell_welcome_seen_session';
 	const WELCOME_STORAGE_KEY    = 'sabriShellWelcomeDismissedAt';
+	const WELCOME_SESSION_KEY    = 'sabriShellWelcomeSeenSession';
+
+	/** @var bool Whether the current request has evaluated welcome eligibility. */
+	private static $welcome_prepared = false;
+
+	/** @var bool Whether File 13 may be invoked on this exact request. */
+	private static $welcome_invoke = false;
 	const MIGRATION_OPTION       = 'sabri_shell_four_plan_migration';
 
 	/** Register current governing integrations. */
@@ -31,6 +39,7 @@ final class FourPlanHarmonization {
 		add_filter( 'pre_update_option_' . Defaults::OPTION_NAME, array( __CLASS__, 'enforce_settings' ), 50, 2 );
 		add_action( 'init', array( __CLASS__, 'migrate_settings' ), 3 );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue' ), 120 );
+		add_action( 'wp', array( __CLASS__, 'prepare_welcome_invocation' ), 98 );
 		add_action( 'wp_body_open', array( __CLASS__, 'invoke_welcome_intro' ), 2 );
 		add_action( 'wp_ajax_sabri_shell_welcome_dismiss', array( __CLASS__, 'record_welcome_dismissal' ) );
 		add_action( 'wp_ajax_nopriv_sabri_shell_welcome_dismiss', array( __CLASS__, 'record_welcome_dismissal' ) );
@@ -202,6 +211,7 @@ final class FourPlanHarmonization {
 					'action'          => 'sabri_shell_welcome_dismiss',
 					'nonce'           => wp_create_nonce( 'sabri_shell_welcome_dismiss' ),
 					'storageKey'      => self::WELCOME_STORAGE_KEY,
+					'sessionKey'      => self::WELCOME_SESSION_KEY,
 					'intervalSeconds' => self::WELCOME_INTERVAL_DAYS * DAY_IN_SECONDS,
 				),
 			)
@@ -209,16 +219,31 @@ final class FourPlanHarmonization {
 	}
 
 	/**
-	 * Invoke File 13 only when the centrally owned frequency gate is eligible.
-	 *
-	 * File 13 remains the visual/content owner. File 20 emits a versioned hook;
-	 * if no provider is registered, no substitute intro is fabricated.
+	 * Prepare welcome before template output so a session cookie can be written
+	 * without a headers-sent race. Seeing the intro marks only this session;
+	 * Skip/Close/Continue starts the separate 30-day suppression interval.
 	 */
-	public static function invoke_welcome_intro() {
-		if ( ! self::welcome_eligible() ) {
+	public static function prepare_welcome_invocation() {
+		if ( self::$welcome_prepared ) {
 			return;
 		}
-		if ( ! has_action( 'sabri_shell_welcome_intro_invoke' ) ) {
+		self::$welcome_prepared = true;
+		self::$welcome_invoke   = false;
+
+		if ( ! self::welcome_eligible() || ! has_action( 'sabri_shell_welcome_intro_invoke' ) ) {
+			return;
+		}
+
+		self::$welcome_invoke = true;
+		self::mark_welcome_seen_for_session();
+	}
+
+	/**
+	 * Invoke File 13 only when this exact request was prepared as eligible.
+	 * File 13 remains visual/content owner; File 20 fabricates no substitute.
+	 */
+	public static function invoke_welcome_intro() {
+		if ( ! self::$welcome_invoke || ! has_action( 'sabri_shell_welcome_intro_invoke' ) ) {
 			return;
 		}
 		$context = array(
@@ -228,6 +253,7 @@ final class FourPlanHarmonization {
 			'dismiss_action'   => 'sabri_shell_welcome_dismiss',
 			'dismiss_nonce'    => wp_create_nonce( 'sabri_shell_welcome_dismiss' ),
 			'storage_key'      => self::WELCOME_STORAGE_KEY,
+			'session_key'      => self::WELCOME_SESSION_KEY,
 		);
 		do_action( 'sabri_shell_welcome_intro_invoke', $context );
 	}
@@ -249,6 +275,9 @@ final class FourPlanHarmonization {
 		}
 		$eligible = (bool) apply_filters( 'sabri_shell_welcome_request_eligible', $eligible );
 		if ( ! $eligible ) {
+			return false;
+		}
+		if ( self::welcome_seen_this_session() ) {
 			return false;
 		}
 		$last = self::welcome_last_dismissed_at();
@@ -315,6 +344,32 @@ final class FourPlanHarmonization {
 		update_option( self::MIGRATION_OPTION, SABRI_SHELL_VERSION, false );
 		Navigation::invalidate_cache();
 		Integrations::invalidate_cache();
+	}
+
+	/** Whether the intro was already invoked in this browser session. */
+	private static function welcome_seen_this_session() {
+		return isset( $_COOKIE[ self::WELCOME_SESSION_COOKIE ] )
+			&& '1' === sanitize_text_field( wp_unslash( $_COOKIE[ self::WELCOME_SESSION_COOKIE ] ) );
+	}
+
+	/** Mark only this browser session as having seen the intro. */
+	private static function mark_welcome_seen_for_session() {
+		$_COOKIE[ self::WELCOME_SESSION_COOKIE ] = '1';
+		if ( headers_sent() ) {
+			return;
+		}
+		setcookie(
+			self::WELCOME_SESSION_COOKIE,
+			'1',
+			array(
+				'expires'  => 0,
+				'path'     => defined( 'COOKIEPATH' ) && COOKIEPATH ? COOKIEPATH : '/',
+				'domain'   => defined( 'COOKIE_DOMAIN' ) ? COOKIE_DOMAIN : '',
+				'secure'   => is_ssl(),
+				'httponly' => true,
+				'samesite' => 'Lax',
+			)
+		);
 	}
 
 	/** Last welcome dismissal timestamp from the authoritative applicable state. */

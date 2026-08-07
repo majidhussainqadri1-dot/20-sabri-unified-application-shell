@@ -1,3 +1,13 @@
+# Changelog
+
+## 1.3.1 — 2026-08-07
+
+- Completed a fresh four-plan review over the merged 1.3.0 baseline.
+- Enforced once-per-session Welcome invocation plus 30-day post-dismissal suppression.
+- Removed dormant native WordPress search fallback and stale bottom-strip destination metadata.
+- Hardened desktop top-navigation overflow into the existing More disclosure.
+- Aligned release documentation, regression gates and deterministic package identity.
+
 ## 1.3.0 — 2026-08-07
 
 - Harmonized File 20 against all four governing plans.
@@ -8,7 +18,6 @@
 - Enforced File 25 visual ownership, green continuity fallback, single-free-tier and donor-neutral shell policy.
 - Added Smail/file-transfer/download UI-only ownership contracts; no duplicate backend.
 
-# Changelog
 
 ## Unreleased — Shared Context Navigation
 

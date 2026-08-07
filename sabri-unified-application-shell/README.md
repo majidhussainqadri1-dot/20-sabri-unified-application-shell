@@ -1,64 +1,48 @@
 # Sabri Unified Application Shell
 
-Sabri Unified Application Shell is the independent, responsive WordPress application shell for the **Sabri Social Homeopathy Platform**.
+Sabri Unified Application Shell is the canonical responsive WordPress application shell for the **Sabri Social Homeopathy Platform**.
 
-- Version: `1.2.0`
+- Version: `1.3.1`
 - File 22 Create contract: `1.0.1`
 - Central-plan contract: `1.0.0`
-- Status: corrective candidate; Hostinger staging acceptance required
+- Four-plan harmonization contract: `1.0.0`
+- Status: repository/code/package/automated-QA candidate; Hostinger staging acceptance required
 - Plugin slug/text domain: `sabri-unified-application-shell`
 - Author: Dr. Allamah Majid Hussain Sabri Muhaddith Mursheed
 
-## Scope
+## Canonical scope
 
-File 20 owns global structural presentation and routing: header, one horizontal no-wrap primary navigation line, left and contextual right panels, mobile drawers, bottom navigation, route mounting, exact Three/Two/Minimal/Immersive layouts, System Check, Complete Repair, Safe Mode, snapshots and rollback.
+File 20 owns the global header, single complete top navigation, mobile drawer, structural sidebars, route/layout resolver, integration slots, System Check, Complete Repair, Safe Mode, activation snapshots and rollback. It does **not** own native domain data or create duplicate membership, publishing, profile, communication, notification, clinic, marketplace, clinical, search/ranking or assurance backends.
 
-It does **not** create duplicate membership, publishing, profile, messaging, notification, appointment, marketplace, clinic, clinical or security-assurance databases.
+## Version 1.3.1 — four-review closure
 
-## Version 1.2.0 central-plan correction
+This release is a fresh four-review correction over 1.3.0 against Definitive Master Plan v3.0, recovered Founder directives, Continuous Value / Top-20 Superset, and File 20 v4.1. It closes the residual review findings:
 
-Version 1.2.0 reconciles runtime code with Definitive Master Plan v3.0 and File 20 v4.0:
+1. Welcome Intro is invoked only on the first eligible request in a browser session; Skip/Close/Continue still starts the 30-day suppression interval.
+2. File 26 remains the only global Search/Discovery/Ranking owner; the dormant native WordPress search fallback was removed.
+3. Desktop primary navigation keeps one row and a conservative direct set, with overflow moved into the existing accessible **More** disclosure.
+4. Superseded destination-level mobile-bottom-strip metadata was removed; mobile uses the canonical drawer without a duplicate bottom strip.
+5. Release documentation, regression assertions and deterministic package identity are aligned to 1.3.1.
 
-1. adds the missing Immersive mode for Reels, full-screen video/live and PDF reader contexts;
-2. keeps profiles/timelines and the File 23 Publishing Dashboard in Two-column contexts;
-3. enforces a one-line no-wrap desktop primary navigation with bounded horizontal overflow;
-4. publishes a complete File 00–25 ownership/dependency/failure registry;
-5. consumes File 25's versioned visual contract and marks fallback state truthfully;
-6. retires File 20's legacy Appearance editor while preserving old values as migration-only data;
-7. preserves the exact package-owned File 22 Create contract `1.0.1` and File 00 fail-closed authority.
-
-## File 25 visual boundary
-
-File 25 is canonical for colors, typography, spacing, radius, shadows, component states, profiles/timelines and visual-regression governance. File 20 owns only shell geometry and consumes `sabri_shell_file25_visual_contract`. If File 25 is absent or incompatible, File 20 uses a sanitized continuity fallback and exposes `sabri-shell-visual-fallback`; it does not claim File 25 integration succeeded.
+The existing 1.3.0 guarantees remain: green continuity fallback while File 25 owns visual tokens; one free tier; no donor advantage; File 23 authorized dashboard entry; File 26 fail-closed search mount; Smail/file-transfer/download UI-only contracts; Back + Home same-origin controls; File 00–26 registry; and no duplicate backend ownership.
 
 ## Layout constitution
 
 - **Three:** Home, Worldwide Clinic directory, single doctor/clinic.
 - **Two:** ordinary public pages, directories, profiles/timelines, knowledge pages and private applications.
-- **Minimal:** authentication, registration, recovery, verification, feeds, REST/AJAX/cron, Safe Mode and Repair.
+- **Minimal:** authentication, registration, recovery, verification, feeds/system endpoints, Safe Mode and Repair.
 - **Immersive:** Reels, full-screen video/live and PDF reader.
 
-## Installation and staging acceptance
+## Staging acceptance
 
-1. Back up files and database.
-2. Install or upgrade on Hostinger staging only.
-3. Activate required companion modules.
-4. Run **Sabri Shell → System Check**.
-5. Verify File 22's two File 20 contract checks.
-6. Verify File 25 provider status or the truthful fallback marker.
-7. Test all four layout modes from 320–1920 px, keyboard, screen reader, RTL and supported browsers.
-8. Rehearse Safe Mode, Repair, backup/restore and rollback.
-9. Do not promote until Founder acceptance is recorded.
+1. Verify backup and isolated restore before installation.
+2. Install/upgrade the exact candidate on Hostinger staging.
+3. Activate real companion modules and run **Sabri Shell → System Check**.
+4. Verify File 00/22 authorization, File 19 single bell, File 25 visual provider/fallback and File 26 search provider.
+5. Test all four modes, 320–1920 px, 200–400% zoom, keyboard, screen reader, RTL/LTR, reduced motion and supported browsers.
+6. Rehearse Safe Mode, Repair, backup/restore and rollback.
+7. Record Founder acceptance before production promotion.
 
 ## Automated verification
 
-```bash
-find . -type f -name '*.php' -print0 | xargs -0 -n1 php -l
-node --check assets/js/shell.js
-node --check assets/js/shell-corrective-1.1.1.js
-php tests/run.php
-php tests/run-create-contract-layout.php
-php tests/run-central-plan-v4.php
-```
-
-See `CENTRAL-PLAN-V4-TRACEABILITY.md` and `contracts/file20-central-plan-v4.json`. Automated QA does not itself establish staging, accessibility or production acceptance.
+The permanent GitHub workflow runs PHP 7.4/8.3 syntax, all regression/adversarial suites, JavaScript syntax, JSON/CSS/static boundaries, source/package parity, deterministic ZIP creation, manifest, SHA-256, ZIP CRC and clean extraction. Automated QA is not staging/live/operational acceptance.
