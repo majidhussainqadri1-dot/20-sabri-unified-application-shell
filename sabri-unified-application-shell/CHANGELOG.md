@@ -1,3 +1,13 @@
+## 1.3.0 — 2026-08-07
+
+- Harmonized File 20 against all four governing plans.
+- Replaced native WordPress search with a fail-closed File 26 contract.
+- Removed the duplicate mobile bottom navigation and added one-row More overflow.
+- Added 30-day Welcome invocation/frequency control while preserving File 13 visual ownership.
+- Ported the authorized File 23 Publishing Dashboard entry onto current main.
+- Enforced File 25 visual ownership, green continuity fallback, single-free-tier and donor-neutral shell policy.
+- Added Smail/file-transfer/download UI-only ownership contracts; no duplicate backend.
+
 # Changelog
 
 ## Unreleased — Shared Context Navigation

@@ -83,7 +83,7 @@ body.sabri-shell-theme-dark {
 	z-index: 100000;
 	padding: 10px 14px;
 	border-radius: var(--sabri-shell-radius, 8px);
-	background: var(--sabri-shell-primary, #ff8a1f);
+	background: var(--sabri-shell-primary, #15803d);
 	color: #ffffff;
 	text-decoration: none;
 	transform: translateY(-150%);
@@ -186,10 +186,10 @@ body.sabri-shell-theme-dark {
 	justify-content: center;
 	inline-size: 38px;
 	block-size: 38px;
-	border: 2px solid var(--sabri-shell-primary, #ff8a1f);
+	border: 2px solid var(--sabri-shell-primary, #15803d);
 	border-radius: 50%;
 	background: var(--sabri-shell-surface);
-	color: var(--sabri-shell-primary, #ff8a1f);
+	color: var(--sabri-shell-primary, #15803d);
 	font-size: 0.72rem;
 	font-weight: 800;
 	letter-spacing: -0.04em;
@@ -266,7 +266,7 @@ body.sabri-shell-theme-dark {
 }
 
 .sabri-shell-create-action {
-	background: var(--sabri-shell-primary, #ff8a1f);
+	background: var(--sabri-shell-primary, #15803d);
 	color: #ffffff;
 	font-weight: 700;
 }
@@ -328,8 +328,8 @@ body.sabri-shell-theme-dark {
 .sabri-shell-primary-nav a[aria-current="page"],
 .sabri-shell-left-sidebar a[aria-current="page"],
 .sabri-shell-bottom-item[aria-current="page"] {
-	background: color-mix(in srgb, var(--sabri-shell-primary, #ff8a1f) 16%, transparent);
-	color: var(--sabri-shell-primary, #ff8a1f);
+	background: color-mix(in srgb, var(--sabri-shell-primary, #15803d) 16%, transparent);
+	color: var(--sabri-shell-primary, #15803d);
 	font-weight: 700;
 }
 
@@ -437,7 +437,7 @@ body.sabri-shell-layout-unresolved .sabri-shell-right-sidebar:not(.sabri-shell-r
 	align-items: center;
 	min-block-size: 36px;
 	margin-inline-end: 6px;
-	color: var(--sabri-shell-primary, #ff8a1f);
+	color: var(--sabri-shell-primary, #15803d);
 	font-weight: 700;
 }
 

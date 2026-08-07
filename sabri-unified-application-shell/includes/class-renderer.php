@@ -143,9 +143,7 @@ final class Renderer {
 			}
 		}
 
-		if ( ! empty( $settings['mobile']['bottom_nav'] ) ) {
-			self::render_mobile_bottom_nav( $settings, $nav );
-		}
+		/* The superseded duplicate mobile bottom strip is intentionally not rendered. */
 	}
 
 	/**
@@ -164,7 +162,7 @@ final class Renderer {
 		echo '<a class="sabri-shell-brand" href="' . esc_url( home_url( '/' ) ) . '"><span class="sabri-shell-logo" aria-hidden="true"><span>S</span><span class="sabri-shell-logo-separator">|</span><span>H</span></span><span class="sabri-shell-brand-text">' . esc_html( $title ) . '</span></a>';
 
 		if ( ! empty( $settings['header']['search'] ) ) {
-			self::render_search();
+			FourPlanHarmonization::render_search();
 		}
 
 		echo '<nav class="sabri-shell-header-actions" aria-label="' . esc_attr__( 'Account and platform actions', 'sabri-unified-application-shell' ) . '">';
@@ -278,6 +276,10 @@ final class Renderer {
 			if ( $profile_url ) {
 				echo '<a href="' . esc_url( $profile_url ) . '">' . esc_html__( 'Profile', 'sabri-unified-application-shell' ) . '</a>';
 			}
+			$publishing_url = PublishingDashboardEntry::url();
+			if ( $publishing_url ) {
+				echo '<a href="' . esc_url( $publishing_url ) . '">' . esc_html( PublishingDashboardEntry::label() ) . '</a>';
+			}
 			echo '<a href="' . esc_url( wp_logout_url( home_url( '/' ) ) ) . '">' . esc_html__( 'Log out', 'sabri-unified-application-shell' ) . '</a>';
 			echo '</details>';
 			return;
@@ -298,13 +300,32 @@ final class Renderer {
 	 */
 	private static function render_primary_nav( array $nav ) {
 		$primary_keys = array( 'home', 'news', 'founder', 'learn', 'encyclopedia', 'doctors', 'clinic', 'video_wall', 'reels', 'pdf_library', 'radar', 'ai', 'network', 'marketplace' );
+		$visible = array();
+		foreach ( $primary_keys as $key ) {
+			if ( ! empty( $nav[ $key ] ) && self::item_visible_to_user( $nav[ $key ] ) ) {
+				$visible[] = $nav[ $key ];
+			}
+		}
+		$direct = array_slice( $visible, 0, 8 );
+		$more   = array_slice( $visible, 8 );
 		echo '<nav class="sabri-shell-primary-nav" aria-label="' . esc_attr__( 'Primary navigation', 'sabri-unified-application-shell' ) . '" data-sabri-shell-component="primary-nav">';
 		echo '<ul>';
-		foreach ( $primary_keys as $key ) {
-			if ( empty( $nav[ $key ] ) || ! self::item_visible_to_user( $nav[ $key ] ) ) {
-				continue;
+		foreach ( $direct as $item ) {
+			self::render_nav_item( $item );
+		}
+		if ( ! empty( $more ) ) {
+			$more_active = false;
+			foreach ( $more as $item ) {
+				if ( Navigation::is_active_url( $item['url'] ) ) {
+					$more_active = true;
+					break;
+				}
 			}
-			self::render_nav_item( $nav[ $key ] );
+			echo '<li class="sabri-shell-nav-more"><details><summary' . ( $more_active ? ' aria-current="page"' : '' ) . '>' . esc_html__( 'More', 'sabri-unified-application-shell' ) . '</summary><ul class="sabri-shell-nav-more-menu">';
+			foreach ( $more as $item ) {
+				self::render_nav_item( $item );
+			}
+			echo '</ul></details></li>';
 		}
 		echo '</ul>';
 		echo '</nav>';
@@ -326,6 +347,10 @@ final class Renderer {
 
 		echo '<aside class="' . esc_attr( $classes ) . '" aria-label="' . esc_attr__( 'Sabri navigation', 'sabri-unified-application-shell' ) . '" data-sabri-shell-component="left-sidebar">';
 		self::render_user_card();
+		$publishing_url = PublishingDashboardEntry::url();
+		if ( $publishing_url ) {
+			echo '<nav class="sabri-shell-account-tools" aria-label="' . esc_attr__( 'Publishing', 'sabri-unified-application-shell' ) . '"><a href="' . esc_url( $publishing_url ) . '">' . esc_html( PublishingDashboardEntry::label() ) . '</a></nav>';
+		}
 
 		$groups = Defaults::groups();
 		foreach ( $groups as $group_key => $group_label ) {

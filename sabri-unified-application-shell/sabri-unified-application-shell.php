@@ -34,6 +34,7 @@ require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-privacy-cache.php';
 require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-jobs.php';
 require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-recovery.php';
 require_once SABRI_SHELL_PATH . 'includes/class-four-plan-harmonization.php';
+require_once SABRI_SHELL_PATH . 'includes/class-publishing-dashboard-entry.php';
 
 spl_autoload_register(
 	static function ( $class_name ) {
@@ -161,6 +162,7 @@ add_action(
 			Sabri\UnifiedShell\CentralPlanContract::register();
 		}
 		Sabri\UnifiedShell\FourPlanHarmonization::register();
+		Sabri\UnifiedShell\PublishingDashboardEntry::register();
 	}
 );
 
