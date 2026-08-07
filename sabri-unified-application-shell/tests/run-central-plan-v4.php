@@ -29,12 +29,12 @@ $layout = $read('includes/class-layout.php');
 $assets = $read('includes/class-assets.php');
 $css = $read('assets/css/shell-central-plan-v4.css');
 
-$assert(strpos($main, '* Version: 1.2.0') !== false, 'Plugin header must be 1.2.0.');
-$assert(strpos($main, "define( 'SABRI_SHELL_VERSION', '1.2.0' )") !== false, 'Runtime version must be 1.2.0.');
+$assert(strpos($main, '* Version: 1.3.0') !== false, 'Plugin header must be 1.3.0.');
+$assert(strpos($main, "define( 'SABRI_SHELL_VERSION', '1.3.0' )") !== false, 'Runtime version must be 1.3.0.');
 $assert(strpos($main, 'CentralPlanContract::register()') !== false, 'Central-plan contract must register.');
 $assert(strpos($main, "SABRI_SHELL_CREATE_CONTRACT_VERSION', '1.0.1'") !== false, 'File 22 Create contract must remain 1.0.1.');
 
-foreach (array('00', '01-A', '01-B', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25') as $file) {
+foreach (array('00', '01-A', '01-B', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26') as $file) {
 	$assert(strpos($contract, "'{$file}'") !== false, "Missing canonical contract for File {$file}.");
 }
 $assert(strpos($contract, 'sabri_shell_file25_visual_contract') !== false, 'File 25 visual contract hook missing.');
@@ -56,7 +56,7 @@ $assert(strpos($assets, 'CentralPlanContract::visual_contract()') !== false, 'As
 $assert(strpos($assets, '--sabri-shell-primary:') === false, 'Base Assets class must not write File 25 visual tokens.');
 
 $assert(strpos($css, 'flex-wrap: nowrap !important') !== false, 'Desktop primary navigation must remain one no-wrap line.');
-$assert(strpos($css, 'inline-size: max-content') !== false, 'Primary nav needs bounded horizontal overflow width.');
+$assert(strpos($css, 'inline-size: max-content') !== false, 'Primary nav base CSS retains deterministic intrinsic-width handling; latest More-menu guardrail may override it.');
 $assert(strpos($css, 'sabri-shell-layout-immersive') !== false, 'Immersive presentation rules missing.');
 $assert(strpos($css, ':focus-visible') !== false, 'Visible keyboard focus correction missing.');
 $assert(substr_count($css, '{') === substr_count($css, '}'), 'Central-plan CSS braces are unbalanced.');
