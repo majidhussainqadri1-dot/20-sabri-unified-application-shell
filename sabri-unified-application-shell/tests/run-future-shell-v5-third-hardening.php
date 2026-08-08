@@ -22,7 +22,7 @@ foreach ( $required_task_slugs as $slug ) {
 }
 
 $checks = array(
-    'current release preserves 1.4.3 hardening' => false !== strpos( $main, '* Version: 1.4.8' ) && false !== strpos( $main, "define( 'SABRI_SHELL_VERSION', '1.4.8' );" ),
+    'current release preserves 1.4.3 hardening' => false !== strpos( $main, '* Version: 1.4.9' ) && false !== strpos( $main, "define( 'SABRI_SHELL_VERSION', '1.4.9' );" ),
     'third hardening loaded' => false !== strpos( $main, 'class-future-shell-v5-third-hardening.php' ) && false !== strpos( $main, 'FutureShellV5ThirdHardening::register();' ),
     'contract 1.0.3' => false !== strpos( $third, "CONTRACT_VERSION  = '1.0.3'" ),
     'privacy registry bounded' => false !== strpos( $third, 'MAX_PRIVATE_PATHS = 128' ) && false !== strpos( $third, "'overflow_count'" ),
@@ -40,4 +40,4 @@ if ( $fail ) {
     fwrite( STDERR, "Future Shell v5 third hardening FAIL: " . implode( '; ', $fail ) . "\n" );
     exit( 1 );
 }
-echo "Future Shell v5 third hardening preserved under 1.4.8: protected routes, overflow fail-closed, single PWA owner and historical third-pass boundaries PASS\n";
+echo "Future Shell v5 third hardening preserved under 1.4.9: protected routes, overflow fail-closed, single PWA owner and historical third-pass boundaries PASS\n";
