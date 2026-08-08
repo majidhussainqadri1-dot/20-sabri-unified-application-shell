@@ -4,7 +4,7 @@ Tags: application shell, navigation, layout, accessibility, pwa, offline
 Requires at least: 6.0
 Tested up to: 7.0.1
 Requires PHP: 7.4
-Stable tag: 1.4.3
+Stable tag: 1.4.4
 License: GPLv2 or later
 Text Domain: sabri-unified-application-shell
 
@@ -20,7 +20,9 @@ Version 1.4.1 completed the first ten-round corrective hardening pass: fail-clos
 
 Version 1.4.2 completed a second independent ten-round review: WordPress-subdirectory privacy, disabled-PWA 410 retirement, File 25 manifest tokens, version-derived cache identity, partial Future Shell settings preservation, bounded circuit metadata, editable Ctrl/Cmd+K protection, dynamic provider paths without option churn, non-immersive Split Workspace and File-20-scoped visual/accessibility changes.
 
-Version 1.4.3 completes a third independent ten-round review after later File 00/01/02 contracts changed. It protects current account-security/passkey/collision-resolution and membership/foundation task routes, applies Minimal/no-store/noindex parity, makes protected-path capacity overflow fail closed, retires older PWA virtual callbacks in favor of one final handler, refreshes File 01/File 02 boundary metadata, and aligns the continuity-only visual fallback to Sabri Green #087A4E when File 25 is unavailable. It adds no nineteenth Future Shell feature and no native-domain backend.
+Version 1.4.3 completed a third independent ten-round review after later File 00/01/02 contracts changed. It protects current account-security/passkey/collision-resolution and membership/foundation task routes, applies Minimal/no-store/noindex parity, makes protected-path capacity overflow fail closed, retires older PWA virtual callbacks in favor of one final handler, refreshes File 01/File 02 boundary metadata, and aligns the continuity-only visual fallback to Sabri Green #087A4E when File 25 is unavailable.
+
+Version 1.4.4 completes a fourth independent ten-round review after newer File 00/01/02/19/21/24 evidence changed the cross-file contract surface. It publishes current compatibility metadata without taking native ownership, keeps File 02's public /.well-known/webauthn standards response out of the visual shell without misclassifying it private, preserves File 19 one-bell ownership, freezes File 21's five native slots, and exposes File 24's eight security conditions as render/routing states while native modules remain the enforcement owners. It adds no nineteenth Future Shell feature and no companion-domain backend.
 
 Hostinger staging testing and Founder acceptance remain required before production deployment.
 
@@ -29,15 +31,26 @@ Hostinger staging testing and Founder acceptance remain required before producti
 1. Back up files and database and prove restore.
 2. Install or upgrade on staging only and flush rewrite rules.
 3. Run Sabri Shell System Check.
-4. Verify File 00 identity/authorization, File 01 foundation registry, File 02 authentication/passkeys, File 19 one-bell, File 21 Home/News, File 25 visual and File 26 search contracts.
+4. Verify File 00 identity/authorization/advanced-trust, File 01 foundation registry, File 02 authentication/passkeys, File 19 one-bell, File 21 Home/News five slots, File 24 security-state integration, File 25 visual and File 26 search contracts.
 5. Test current private routes: account-security, account-passkeys, resolve-account, membership application/status/security, guardian consent, platform system-check/foundation status, plus existing protected surfaces.
-6. Test root and subdirectory PWA install/update/disable/self-removal/offline, low-data mode, privacy exclusions and protected-path overflow fail-closed behavior.
-7. Test keyboard/dialog accessibility, Recent/Resume, Split Workspace provider gating, circuit/LKG recovery and release rings.
-8. Test partial Future Shell setting updates preserve unrelated release-ring state; malformed explicit rules must fail closed.
-9. Test four layout modes across mobile/tablet/foldable/desktop/ultra-wide, RTL/LTR, zoom and reduced motion.
+6. Verify /.well-known/webauthn is File-02-owned public JSON/no-cache, with Minimal/no visual shell and no private-route classification.
+7. Test all eight File 24 security conditions render clearly while enforcement remains with native modules and File 24 governance/assurance.
+8. Test root and subdirectory PWA install/update/disable/self-removal/offline, low-data mode, privacy exclusions and protected-path overflow fail-closed behavior.
+9. Test keyboard/dialog accessibility, Recent/Resume, Split Workspace provider gating, circuit/LKG recovery, release rings, all four layout modes, RTL/LTR, zoom and reduced motion.
 10. Complete Hostinger staging, backup/restore/rollback rehearsal and Founder acceptance before production.
 
 == Changelog ==
+
+= 1.4.4 =
+* Completed a fourth independent ten-round corrective review against newer File 00, File 01, File 02, File 19, File 21 and File 24 contracts.
+* Reconciled File 00 runtime 1.2.13, Public Membership Contract 1.2.0 and Advanced Trust Contract 1.0.0 as claims-only shell dependencies.
+* Reconciled File 01 Future Foundation runtime 2.0.0 and exact 18-enhancement foundation/governance scope without granting shell or Search/Ranking truth.
+* Reconciled File 02 modern-auth 1.3.0, exact 24 enhancements, passkey v1 compatibility and Authentication Assurance Receipt v2 metadata.
+* Added Minimal/no-visual-shell presentation for File 02's public /.well-known/webauthn endpoint without adding it to private/no-store route policy.
+* Reconciled File 19 Intelligent Attention & Notification OS 3.0.0 while preserving one bell/center and no local notification store.
+* Reconciled File 21 NG30 runtime 1.0.1 and its five exact native shell slots.
+* Added File 24's eight current security conditions as shell rendering/routing states; native modules still enforce restrictions and File 20 remains no second security engine.
+* Added permanent fourth-pass regression and deterministic package gates; staging/live/operational status remains separate.
 
 = 1.4.3 =
 * Completed a third independent ten-round corrective review against later-approved File 00, File 01 and File 02 contracts.
