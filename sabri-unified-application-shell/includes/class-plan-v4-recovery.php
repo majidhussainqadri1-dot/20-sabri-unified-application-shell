@@ -8,6 +8,7 @@ final class PlanV4Recovery {
     const LOCK = 'sabri_shell_plan_v4_recovery_lock';
     const MAX_SNAPSHOTS = 10;
     const MAX_DIFF_ROWS = 100;
+    const SNAPSHOT_FORMAT = 2;
 
     public static function register() {
         add_action( 'rest_api_init', array( __CLASS__, 'register_routes' ) );
@@ -35,6 +36,7 @@ final class PlanV4Recovery {
             'provider_health' => PlanV4ContractHealth::health(),
             'last_job' => get_option( PlanV4Jobs::STATE, array() ),
             'snapshot_schema_required' => Defaults::SCHEMA_VERSION,
+            'snapshot_format_required' => self::SNAPSHOT_FORMAT,
         );
         return $sections;
     }
@@ -167,8 +169,8 @@ final class PlanV4Recovery {
     }
 
     /**
-     * Rollback preview is fail-closed across both code-major and settings-schema.
-     * Cross-schema snapshots are read-only evidence requiring a manual migration.
+     * Rollback preview is fail-closed across snapshot format, code-major and settings-schema.
+     * Legacy ambiguous snapshots remain read-only evidence requiring a manual migration.
      */
     public static function preview_rollback( $snapshot_id ) {
         $snapshot = self::find_snapshot( $snapshot_id );
@@ -181,17 +183,22 @@ final class PlanV4Recovery {
         $current_major = (int) strtok( defined( 'SABRI_SHELL_VERSION' ) ? SABRI_SHELL_VERSION : '0', '.' );
         $target_major = (int) strtok( isset( $snapshot['plugin_version'] ) ? $snapshot['plugin_version'] : '0', '.' );
         $target_schema = self::snapshot_schema_version( $snapshot );
+        $target_format = isset( $snapshot['snapshot_format'] ) ? absint( $snapshot['snapshot_format'] ) : 0;
         $version_compatible = $current_major === $target_major;
         $schema_compatible = Defaults::SCHEMA_VERSION === $target_schema;
+        $format_compatible = self::SNAPSHOT_FORMAT === $target_format;
         return array(
             'dry_run' => true,
             'snapshot_id' => $snapshot['id'],
             'created_at' => $snapshot['created_at'],
             'version_compatible' => $version_compatible,
             'schema_compatible' => $schema_compatible,
+            'format_compatible' => $format_compatible,
             'target_schema_version' => $target_schema,
             'current_schema_version' => Defaults::SCHEMA_VERSION,
-            'compatible' => $version_compatible && $schema_compatible,
+            'target_snapshot_format' => $target_format,
+            'current_snapshot_format' => self::SNAPSHOT_FORMAT,
+            'compatible' => $version_compatible && $schema_compatible && $format_compatible,
             'scope' => array_keys( (array) $snapshot['state'] ),
             'pre_rollback_snapshot_required' => true,
         );
@@ -201,18 +208,25 @@ final class PlanV4Recovery {
         $preview = self::preview_rollback( $snapshot_id );
         if ( is_wp_error( $preview ) ) { return $preview; }
         if ( empty( $preview['compatible'] ) ) {
-            return new \WP_Error( 'sabri_shell_snapshot_incompatible', __( 'This snapshot is not compatible with the current code/schema. Keep it read-only and use a manual migration plan.', 'sabri-unified-application-shell' ), array( 'status' => 409, 'preview' => $preview ) );
+            return new \WP_Error( 'sabri_shell_snapshot_incompatible', __( 'This snapshot is not compatible with the current snapshot format/code/schema. Keep it read-only and use a manual migration plan.', 'sabri-unified-application-shell' ), array( 'status' => 409, 'preview' => $preview ) );
         }
         $token = self::lock();
         if ( is_wp_error( $token ) ) { return $token; }
         $pre = self::create_snapshot( 'pre-rollback' );
         $target = self::find_snapshot( $snapshot_id );
         try {
-            foreach ( (array) $target['state'] as $option => $value ) {
+            foreach ( (array) $target['state'] as $option => $entry ) {
                 if ( 0 !== strpos( $option, 'sabri_shell_' ) && 0 !== strpos( $option, 'sabri_unified_shell_' ) ) {
                     continue;
                 }
-                update_option( $option, $value, false );
+                if ( ! is_array( $entry ) || ! array_key_exists( 'exists', $entry ) || ! array_key_exists( 'value', $entry ) ) {
+                    throw new \RuntimeException( 'ambiguous_snapshot_state' );
+                }
+                if ( empty( $entry['exists'] ) ) {
+                    delete_option( $option );
+                } else {
+                    update_option( $option, $entry['value'], false );
+                }
             }
             Navigation::invalidate_cache();
             Integrations::invalidate_cache();
@@ -245,6 +259,7 @@ final class PlanV4Recovery {
                 'created_at' => sanitize_text_field( isset( $snapshot['created_at'] ) ? $snapshot['created_at'] : '' ),
                 'plugin_version' => sanitize_text_field( isset( $snapshot['plugin_version'] ) ? $snapshot['plugin_version'] : '' ),
                 'schema_version' => self::snapshot_schema_version( $snapshot ),
+                'snapshot_format' => isset( $snapshot['snapshot_format'] ) ? absint( $snapshot['snapshot_format'] ) : 0,
                 'integrity' => self::verify_snapshot( $snapshot ) ? 'valid' : 'invalid',
             );
         }
@@ -253,18 +268,8 @@ final class PlanV4Recovery {
 
     public static function create_snapshot( $reason ) {
         $state = array();
-        $owned_options = array(
-            Defaults::OPTION_NAME,
-            'sabri_unified_shell_settings',
-            PlanV4SettingsConcurrency::VERSION_OPTION,
-            FutureShellV5::OPTION,
-            SafeMode::EMERGENCY_META_OPTION,
-            'sabri_shell_four_plan_migration',
-            'sabri_shell_future_rewrite_version',
-            'sabri_shell_flush_rewrite_rules',
-        );
-        foreach ( $owned_options as $option ) {
-            $state[ $option ] = get_option( $option, null );
+        foreach ( self::owned_options() as $option ) {
+            $state[ $option ] = self::capture_option_state( $option );
         }
         $snapshot = array(
             'id' => function_exists( 'wp_generate_uuid4' ) ? wp_generate_uuid4() : uniqid( 'f20-snapshot-', true ),
@@ -272,6 +277,7 @@ final class PlanV4Recovery {
             'created_at' => gmdate( 'c' ),
             'actor_id' => get_current_user_id(),
             'source' => 'file-20-plan-v4-recovery',
+            'snapshot_format' => self::SNAPSHOT_FORMAT,
             'plugin_version' => defined( 'SABRI_SHELL_VERSION' ) ? SABRI_SHELL_VERSION : '0.0.0',
             'schema_version' => Defaults::SCHEMA_VERSION,
             'contract_fingerprint' => hash( 'sha256', wp_json_encode( PlanV4ContractHealth::providers() ) ),
@@ -284,8 +290,32 @@ final class PlanV4Recovery {
         $snapshots = (array) get_option( self::SNAPSHOTS, array() );
         $snapshots[] = $snapshot;
         update_option( self::SNAPSHOTS, array_slice( $snapshots, -self::MAX_SNAPSHOTS ), false );
-        PlanV4Audit::record( 'snapshot_created', array( 'snapshot_id' => $snapshot['id'], 'reason' => $snapshot['reason'], 'schema_version' => Defaults::SCHEMA_VERSION ) );
+        PlanV4Audit::record( 'snapshot_created', array( 'snapshot_id' => $snapshot['id'], 'reason' => $snapshot['reason'], 'schema_version' => Defaults::SCHEMA_VERSION, 'snapshot_format' => self::SNAPSHOT_FORMAT ) );
         return $snapshot;
+    }
+
+    /** File 20-owned option allowlist captured by recovery. */
+    private static function owned_options() {
+        return array(
+            Defaults::OPTION_NAME,
+            'sabri_unified_shell_settings',
+            PlanV4SettingsConcurrency::VERSION_OPTION,
+            FutureShellV5::OPTION,
+            SafeMode::EMERGENCY_META_OPTION,
+            'sabri_shell_four_plan_migration',
+            'sabri_shell_future_rewrite_version',
+            'sabri_shell_flush_rewrite_rules',
+        );
+    }
+
+    /** Capture both existence and value so rollback can exactly restore absence. */
+    private static function capture_option_state( $option ) {
+        $sentinel = new \stdClass();
+        $value = get_option( $option, $sentinel );
+        return array(
+            'exists' => $value !== $sentinel,
+            'value' => $value === $sentinel ? null : $value,
+        );
     }
 
     /** Build a bounded, evidence-oriented dry-run diff for one repair action. */
@@ -396,9 +426,7 @@ final class PlanV4Recovery {
         if ( isset( $snapshot['schema_version'] ) ) {
             return absint( $snapshot['schema_version'] );
         }
-        $state = isset( $snapshot['state'] ) && is_array( $snapshot['state'] ) ? $snapshot['state'] : array();
-        $settings = isset( $state[ Defaults::OPTION_NAME ] ) && is_array( $state[ Defaults::OPTION_NAME ] ) ? $state[ Defaults::OPTION_NAME ] : array();
-        return isset( $settings['schema_version'] ) ? absint( $settings['schema_version'] ) : 0;
+        return 0;
     }
 
     private static function verify_snapshot( array $snapshot ) {
