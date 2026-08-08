@@ -27,18 +27,24 @@ jobs:
           coverage: none
       - name: Syntax-check every plugin PHP file
         run: find sabri-unified-application-shell -type f -name '*.php' -print0 | xargs -0 -n1 php -l
-      - name: Run all File 20 regression suites
-        run: |
-          set -euo pipefail
-          php sabri-unified-application-shell/tests/run.php
-          php sabri-unified-application-shell/tests/run-create-contract-layout.php
-          php sabri-unified-application-shell/tests/run-central-plan-v4.php
-          php sabri-unified-application-shell/tests/run-context-navigation.php
-          php sabri-unified-application-shell/tests/run-plan-v4-adversarial.php
-          php sabri-unified-application-shell/tests/run-plan-v4-completion.php
-          php sabri-unified-application-shell/tests/run-four-plan-harmonization.php
-          php sabri-unified-application-shell/tests/run-future-shell-v5.php
-          php sabri-unified-application-shell/tests/run-future-shell-v5-third-hardening.php
+      - name: Core corrective contracts
+        run: php sabri-unified-application-shell/tests/run.php
+      - name: Create contract and publication layout
+        run: php sabri-unified-application-shell/tests/run-create-contract-layout.php
+      - name: Central-plan v4 contracts
+        run: php sabri-unified-application-shell/tests/run-central-plan-v4.php
+      - name: Context navigation contracts
+        run: php sabri-unified-application-shell/tests/run-context-navigation.php
+      - name: Plan v4 adversarial contracts
+        run: php sabri-unified-application-shell/tests/run-plan-v4-adversarial.php
+      - name: Plan v4 completion contracts
+        run: php sabri-unified-application-shell/tests/run-plan-v4-completion.php
+      - name: Four-plan harmonization contracts
+        run: php sabri-unified-application-shell/tests/run-four-plan-harmonization.php
+      - name: Future Shell v5 three-sweep regression
+        run: php sabri-unified-application-shell/tests/run-future-shell-v5.php
+      - name: Future Shell v5 third-hardening regression
+        run: php sabri-unified-application-shell/tests/run-future-shell-v5-third-hardening.php
 
   static-package:
     name: Ownership privacy security future-shell and deterministic package
