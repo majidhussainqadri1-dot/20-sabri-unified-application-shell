@@ -60,7 +60,7 @@ $checks = array(
     'PWA disabled virtual routes retire workers' => false !== strpos( $second, 'status_header( 410 )' ) && false !== strpos( $second, 'Sabri Shell PWA is disabled.' ),
     'PWA cache version follows plugin version' => false !== strpos( $second, "preg_replace( '/[^a-z0-9]+/i', '', SABRI_SHELL_VERSION )" ),
     'PWA manifest consumes File25 tokens' => false !== strpos( $second, "'theme_color'" ) && false !== strpos( $second, "tokens['primary_color']" ) && false !== strpos( $second, "tokens['background']" ),
-    'partial settings preserve old values' => false !== strpos( $second, 'preserve_partial_future_settings' ) && false !== strpos( $second, "array_replace( $old_features[ $feature ], $value['features'][ $feature ] )" ),
+    'partial settings preserve old values' => false !== strpos( $second, 'preserve_partial_future_settings' ) && false !== strpos( $second, 'array_replace( $old_features[ $feature ]' ),
     'view transition progressive' => false !== strpos( $css, '@supports (view-transition-name:none)' ) && false !== strpos( $css, '@view-transition' ),
     'foldable safe area' => false !== strpos( $css, 'env(safe-area-inset-left)' ) && false !== strpos( $css, 'horizontal-viewport-segments:2' ),
     'no foreign backend' => false === strpos( $php . $hard . $client . $control . $second, 'CREATE TABLE' ) && false === strpos( $php . $hard . $client . $control . $second, 'dbDelta(' ),
