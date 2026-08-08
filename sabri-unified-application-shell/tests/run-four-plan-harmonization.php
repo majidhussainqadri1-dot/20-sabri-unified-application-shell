@@ -8,13 +8,15 @@ $assert = static function ($condition, $label) use (&$checks) {
 $main = file_get_contents($root . '/sabri-unified-application-shell.php');
 $renderer = file_get_contents($root . '/includes/class-renderer.php');
 $harm = file_get_contents($root . '/includes/class-four-plan-harmonization.php');
+$seventh = file_get_contents($root . '/includes/class-future-shell-v5-seventh-hardening.php');
 $central = file_get_contents($root . '/includes/class-central-plan-contract.php');
 $defaults = file_get_contents($root . '/includes/class-defaults.php');
 $settings = file_get_contents($root . '/includes/class-settings.php');
 $css = file_get_contents($root . '/assets/css/four-plan-harmonization.css');
 $basecss = file_get_contents($root . '/assets/css/shell.css');
-$assert(strpos($main, 'Version: 1.4.6') !== false && strpos($main, "SABRI_SHELL_VERSION', '1.4.6") !== false, 'release identity 1.4.6');
+$assert(strpos($main, 'Version: 1.4.7') !== false && strpos($main, "SABRI_SHELL_VERSION', '1.4.7") !== false, 'release identity 1.4.7');
 $assert(strpos($main, 'FourPlanHarmonization::register') !== false, 'harmonization registered');
+$assert(strpos($main, 'FutureShellV5SeventhHardening::register') !== false, 'seventh conditional harmonization registered');
 $assert(strpos($main, 'PublishingDashboardEntry::register') !== false, 'File23 entry registered');
 $assert(strpos($renderer, 'FourPlanHarmonization::render_search();') !== false, 'search delegated to File26 adapter');
 $assert(substr_count($renderer, 'self::render_mobile_bottom_nav(') === 0, 'duplicate mobile bottom nav not invoked');
@@ -23,12 +25,18 @@ $assert(strpos($harm, 'WELCOME_INTERVAL_DAYS  = 30') !== false, '30-day Welcome 
 $assert(strpos($harm, 'single-free-tier') !== false && strpos($harm, "donor_advantage']     = false") !== false, 'single free tier and donor neutrality');
 $assert(strpos($harm, 'sabri_shell_file26_search_contract') !== false && strpos($harm, 'same_origin_url') !== false, 'File26 owner/version/same-origin search contract');
 $assert(strpos($central, "'26' => array( 'Search Discovery and Ranking'") !== false, 'canonical registry includes File26');
+foreach (array('CF-01','CF-02','CF-03','CF-04','CF-05','CF-06') as $cf) {
+    $assert(strpos($seventh, "\$registry['{$cf}']") !== false, 'conditional registry includes ' . $cf);
+}
+$assert(strpos($seventh, 'single-free-tier-voluntary-donation-no-donor-advantage') !== false, 'conditional finance preserves current free/donation law');
+$assert(strpos($seventh, 'file-17-cf-04-after-activation') !== false && strpos($seventh, '1073741824') !== false, 'conditional media transfer boundary and 1GB limit');
+$assert(strpos($seventh, 'file-20-shell-surface-cf-06-locale-provider-after-activation') !== false, 'conditional localization provider boundary');
 $assert(strpos($defaults, 'const SCHEMA_VERSION       = 3;') !== false, 'settings schema migrated');
 $assert(strpos($defaults, "'bottom_nav'               => false") !== false, 'bottom nav default disabled');
 $assert(strpos($settings, "output['bottom_nav']        = false") !== false, 'bottom nav cannot be re-enabled');
 $assert(strpos($css, '.sabri-shell-bottom-nav') !== false && strpos($css, 'display: none !important') !== false, 'CSS duplicate-nav guard');
 $assert(strpos($basecss, '#ff8a1f') === false && strpos($central, '#ff8a1f') === false, 'legacy orange runtime fallback removed');
-$assert(strpos($harm, "'smail'") !== false && strpos($harm, "'verified_file_transfer'") !== false && strpos($harm, "'download_manager'") !== false, 'new UI-only ownership contracts declared');
+$assert(strpos($harm, "'smail'") !== false && strpos($harm, "'verified_file_transfer'") !== false && strpos($harm, "'download_manager'") !== false, 'UI-only ownership contracts declared');
 $js = file_get_contents($root . '/assets/js/four-plan-harmonization.js');
 $readme = file_get_contents($root . '/README.md');
 $readmetxt = file_get_contents($root . '/readme.txt');
@@ -39,6 +47,6 @@ $assert(strpos($js, 'rebalanceNavigation') !== false && strpos($js, 'data-sabri-
 $assert(strpos($renderer, 'get_search_query()') === false && strpos($renderer, 'name="s"') === false, 'dormant native WordPress search fallback removed');
 $assert(strpos($renderer, 'array_slice( $visible, 0, 6 )') !== false && strpos($renderer, 'array_slice( $visible, 6 )') !== false, 'conservative direct navigation set');
 $assert(!preg_match("/'bottom_nav'\s*=>\s*true/", $defaults), 'stale destination bottom-nav metadata removed');
-$assert(strpos($readme, 'Version: `1.4.6`') !== false && strpos($readmetxt, 'Stable tag: 1.4.6') !== false, 'release documentation identity 1.4.6');
+$assert(strpos($readme, 'Version: `1.4.7`') !== false && strpos($readmetxt, 'Stable tag: 1.4.7') !== false, 'release documentation identity 1.4.7');
 $assert(strpos($review, 'green continuity fallback') !== false && stripos($review, '#FF8A1F') === false, 'review register uses current visual-policy truth');
-echo 'Four-plan harmonization assertions: ' . count($checks) . " passed\n";
+echo 'Four-plan plus conditional harmonization assertions: ' . count($checks) . " passed\n";
