@@ -3,7 +3,7 @@
  * Plugin Name: Sabri Unified Application Shell
  * Plugin URI: https://github.com/majidhussainqadri1-dot/20-sabri-unified-application-shell
  * Description: Secure responsive public application shell for the Sabri Social Homeopathy Platform.
- * Version: 1.4.4
+ * Version: 1.4.5
  * Author: Dr. Allamah Majid Hussain Sabri Muhaddith Mursheed
  * Text Domain: sabri-unified-application-shell
  * Domain Path: /languages
@@ -15,7 +15,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'SABRI_SHELL_VERSION', '1.4.4' );
+define( 'SABRI_SHELL_VERSION', '1.4.5' );
 define( 'SABRI_SHELL_FILE', __FILE__ );
 define( 'SABRI_SHELL_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SABRI_SHELL_URL', plugin_dir_url( __FILE__ ) );
@@ -39,6 +39,7 @@ require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-control-guard.ph
 require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-second-hardening.php';
 require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-third-hardening.php';
 require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-fourth-hardening.php';
+require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-fifth-hardening.php';
 
 spl_autoload_register(
     static function ( $class_name ) {
@@ -121,6 +122,7 @@ add_action( 'plugins_loaded', static function () use ( $sabri_shell_corrective_c
     Sabri\UnifiedShell\FutureShellV5SecondHardening::register();
     Sabri\UnifiedShell\FutureShellV5ThirdHardening::register();
     Sabri\UnifiedShell\FutureShellV5FourthHardening::register();
+    Sabri\UnifiedShell\FutureShellV5FifthHardening::register();
 
     /* Upgrade-safe registration of the root/subdirectory PWA virtual routes. */
     add_action( 'init', static function () {
