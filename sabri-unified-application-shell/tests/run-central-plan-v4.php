@@ -1,5 +1,5 @@
 <?php
-/** Static regression checks for File 20 central-plan v4 harmonization. */
+/** Static regression checks for File 20 central-plan harmonization. */
 declare(strict_types=1);
 
 $root = dirname(__DIR__);
@@ -25,18 +25,25 @@ $read = static function (string $relative) use ($root): string {
 
 $main = $read('sabri-unified-application-shell.php');
 $contract = $read('includes/class-central-plan-contract.php');
+$seventh = $read('includes/class-future-shell-v5-seventh-hardening.php');
 $layout = $read('includes/class-layout.php');
 $assets = $read('includes/class-assets.php');
 $css = $read('assets/css/shell-central-plan-v4.css');
 
-$assert(strpos($main, '* Version: 1.4.6') !== false, 'Plugin header must be 1.4.6.');
-$assert(strpos($main, "define( 'SABRI_SHELL_VERSION', '1.4.6' )") !== false, 'Runtime version must be 1.4.6.');
+$assert(strpos($main, '* Version: 1.4.7') !== false, 'Plugin header must be 1.4.7.');
+$assert(strpos($main, "define( 'SABRI_SHELL_VERSION', '1.4.7' )") !== false, 'Runtime version must be 1.4.7.');
 $assert(strpos($main, 'CentralPlanContract::register()') !== false, 'Central-plan contract must register.');
+$assert(strpos($main, 'FutureShellV5SeventhHardening::register()') !== false, 'Seventh conditional-module layer must register.');
 $assert(strpos($main, "SABRI_SHELL_CREATE_CONTRACT_VERSION', '1.0.1'") !== false, 'File 22 Create contract must remain 1.0.1.');
 
 foreach (array('00', '01-A', '01-B', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26') as $file) {
 	$assert(strpos($contract, "'{$file}'") !== false, "Missing canonical contract for File {$file}.");
 }
+foreach (array('CF-01', 'CF-02', 'CF-03', 'CF-04', 'CF-05', 'CF-06') as $file) {
+	$assert(strpos($seventh, "\$registry['{$file}']") !== false, "Missing conditional contract for {$file}.");
+}
+$assert(strpos($seventh, 'declared-conditional-contract-target-not-runtime-detection') !== false, 'Conditional contracts must not imply runtime detection.');
+$assert(strpos($seventh, "'conditional_activation_required'  => true") !== false, 'Conditional modules must require explicit activation.');
 $assert(strpos($contract, 'sabri_shell_file25_visual_contract') !== false, 'File 25 visual contract hook missing.');
 $assert(strpos($contract, 'file-20-continuity-fallback') !== false, 'Truthful continuity fallback missing.');
 $assert(strpos($contract, 'retire_appearance_tab') !== false, 'Legacy Appearance editor retirement missing.');
@@ -65,8 +72,8 @@ if ($failures) {
 	foreach ($failures as $failure) {
 		fwrite(STDERR, "FAIL: {$failure}\n");
 	}
-	fwrite(STDERR, sprintf("File 20 central-plan v4: %d checks, %d failures.\n", $checks, count($failures)));
+	fwrite(STDERR, sprintf("File 20 central-plan: %d checks, %d failures.\n", $checks, count($failures)));
 	exit(1);
 }
 
-echo sprintf("File 20 central-plan v4: %d PASS, 0 FAIL\n", $checks);
+echo sprintf("File 20 central-plan: %d PASS, 0 FAIL\n", $checks);

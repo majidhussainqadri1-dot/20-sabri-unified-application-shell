@@ -16,23 +16,25 @@
 
 ## Production-package constitution
 
-For the **1.4.6 sixth-audit candidate**, the deterministic workflow preserves the 1.4.5 hardened packaging law:
+For the **1.4.7 seventh-audit candidate**, the deterministic workflow:
 
-1. derive a clean production source set from `sabri-unified-application-shell/`;
-2. exclude development-only directories including `tests/`, `node_modules`, `.git`, `.github`, coverage/cache folders and temporary/log files;
-3. write embedded `MANIFEST.sha256` from the clean production source set;
-4. build exactly one canonical top-level plugin folder;
-5. reject absolute paths, `..` traversal, duplicate ZIP names and wrong-root entries before extraction;
-6. verify clean source, staged package tree and extracted ZIP have identical file sets and SHA-256 hashes;
-7. require embedded and external source manifests to be identical;
-8. verify deterministic ZIP SHA-256 and CRC integrity;
-9. require the sixth-pass compatibility/truth-status regression before packaging.
+1. derives a clean production source set from `sabri-unified-application-shell/`;
+2. excludes development-only directories including `tests/`, `node_modules`, `.git`, `.github`, coverage/cache folders and temporary/log files;
+3. writes embedded `MANIFEST.sha256` from the clean production source set;
+4. builds exactly one canonical top-level plugin folder;
+5. rejects absolute paths, `..` traversal, duplicate ZIP names and wrong-root entries before extraction;
+6. verifies clean source, staged package tree and extracted ZIP have identical file sets and SHA-256 hashes;
+7. requires embedded and external source manifests to be identical;
+8. verifies deterministic ZIP SHA-256 and CRC integrity;
+9. requires seventh-pass CF-01..CF-06 conditional-contract, privacy, financial-law, media-cache and ownership regressions before packaging.
 
 Development tests remain in the repository and run in CI but do not ship inside the installable WordPress ZIP.
 
-## Compatibility evidence boundary
+## Conditional-module evidence boundary
 
-File 00/01/02/24 version/schema/contract values recorded by File 20 1.4.6 are **declared compatibility targets, not runtime detection**. The manifest does not prove those companion plugins are installed, healthy, authorized, staging-accepted, live or operational. Those facts require native-owner/runtime evidence.
+CF-01 through CF-06 entries in File 20 1.4.7 are **declared conditional contract targets, not runtime detection**. They do not activate clinical, support, financial, media-processing, analytics or localization modules. Their installation, health, authorization and activation must be verified independently by native owners and Founder change control where required.
+
+File 20 must not turn CF plan metadata into domain truth. In particular, CF-04 owns token-delivery cache/range semantics; CF-03 cannot create paid/premium/donor privilege under the current single-free-tier law; CF-06 owns locale/translation truth.
 
 ## Lifecycle evidence boundary
 

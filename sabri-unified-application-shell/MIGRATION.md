@@ -2,66 +2,55 @@
 
 ## Governing Rule
 
-All installation, upgrade, repair and rollback work must be performed on staging first. Version **1.4.6** is a repository/code/package/automated-QA candidate only until Hostinger staging, real companion integration, backup/restore/rollback rehearsal and Founder acceptance pass.
+All installation, upgrade, repair and rollback work must be performed on staging first. Version **1.4.7** is a repository/code/package/automated-QA candidate only until Hostinger staging, real companion integration, backup/restore/rollback rehearsal and Founder acceptance pass.
 
-## Upgrade to 1.4.6
+## Upgrade to 1.4.7
 
 1. Take and verify a restorable files-and-database backup before upload.
-2. Record the actually deployed File 20 version/commit/package checksum, current shell settings, page mappings, navigation state, active theme and actual companion versions.
-3. Install the exact `1.4.6` deterministic candidate on staging without deleting or mutating companion-owned data.
+2. Record the actually deployed File 20 version/commit/package checksum, current shell settings, page mappings, navigation state, active theme, actual File 00–26 companion versions and any deliberately activated CF modules.
+3. Install the exact `1.4.7` deterministic candidate on staging without deleting or mutating companion-owned data.
 4. Confirm the installable ZIP has one canonical plugin root, excludes repository `tests/`, and has source/stage/extracted file-set and SHA-256 parity evidence plus safe-path checks.
-5. Activate/update File 20. Version 1.4.6 adds no File 20 database table and no companion-domain data store.
+5. Activate/update File 20. Version 1.4.7 adds no File 20 database table and no clinical/support/finance/media/analytics/localization domain data store.
 6. Flush/reconcile rewrite rules so current PWA manifest/service-worker virtual routes are registered.
-7. Run **Sabri Shell > System Check**. The sixth-pass compatibility section must identify its facts as declared compatibility targets, not live detection.
-8. Independently verify the actually installed/runtime companion contracts before enabling dependent actions:
-   - File 00 target: runtime 1.2.13, schema 1.3.0, Public Membership 1.2.0, CF-01 1.0.0, Advanced Trust 1.0.0;
-   - File 01-B target: runtime 2.0.0, schema 1.2.0, Foundation Contract 2.0.0, Future Foundation 18;
-   - File 02 target: runtime 1.3.1, DB 1.3.0, passkey schema 1.1.0, auth-event projection 1.1.0, 24 enhancements;
-   - File 24 target: runtime candidate 0.99.0, schema 0.25.5, 25 Future Security requirements.
-9. Confirm File 02 current task routes remain owner-controlled and `/.well-known/webauthn` remains public JSON/no-cache with Minimal/no visual shell.
-10. Confirm privileged password reset remains a File 02 action requiring the File 00 dual-control receipt; File 20 must never invent or bypass that receipt.
-11. Simulate File 24 unavailability and verify native File 02/other owner security remains enforced while File 20 only renders an honest unavailable/unknown state.
-12. Test all five release-ring states; REST configuration remains `manage_options` only and Internal remains fail closed without manager or explicit approved internal-principal contract.
-13. Test PWA root/subdirectory registration, update, offline public navigation, protected-route bypass, disable/410 retirement and worker self-removal.
-14. Confirm File 04/File 21 output, File 19 one-bell, File 25 visual ownership and File 26 Search/Discovery/Ranking are not duplicated.
-15. Confirm the theme content wrapper/landmarks remain intact and all four File 20 layout modes resolve correctly.
-16. Complete `STAGING-ACCEPTANCE.md` and rollback rehearsal before any production decision.
+7. Run **Sabri Shell > System Check**. Sixth-pass current compatibility facts and seventh-pass CF facts must be identified as declared targets, never live detection.
+8. Independently verify the actually installed/runtime File 00–26 contracts before enabling dependent actions.
+9. For CF-01..CF-06, verify explicit native module activation and required Founder/change-control evidence before surfacing any conditional action. File 20 registry presence alone is never activation.
+10. Verify CF-01 sensitive clinical routes remain private and File 20 performs no clinical authorization, consent, prescription or break-glass action.
+11. Verify CF-02 public help remains public while cases/appeals/admin/API surfaces remain private and native-owner controlled.
+12. Verify CF-03 current law remains single free tier, voluntary donation, zero commission and no donor advantage. Paid collection must remain dormant unless a later Founder decision and native CF-03 activation authorize it.
+13. Verify CF-04 upload/admin/API surfaces are protected. Verify `/media/d/{grant}` receives Minimal/no visual Future Shell treatment but native CF-04 retains token, range and cache semantics.
+14. Verify CF-05 Insights/admin/API surfaces remain authorized/private and File 20 creates no event-ingestion or analytics store.
+15. Verify CF-06 language/direction shell controls consume an approved provider; File 20 creates no locale registry or translation bundle truth.
+16. Verify verified transfer remains File 17 + activated CF-04 with the approved 1 GB per-file limit and eligible download remains native-owner/File-24/CF-04 territory.
+17. Confirm File 02 privileged reset remains a native action requiring the File 00 dual-control receipt where specified; File 20 must never invent or bypass it.
+18. Test all five release-ring states and root/subdirectory PWA lifecycle/privacy behavior.
+19. Confirm File 04/File 21 output, File 19 one-bell, File 25 visual ownership and File 26 Search/Discovery/Ranking are not duplicated.
+20. Complete `STAGING-ACCEPTANCE.md`, backup/restore and rollback rehearsal before any production decision.
 
-## From 1.4.5
+## From 1.4.6
 
-The `1.4.5 → 1.4.6` upgrade is non-destructive and compatibility/evidence focused.
+The `1.4.6 → 1.4.7` upgrade is non-destructive and shell-integration focused.
 
 It:
 
-- adds the sixth hardening contract `1.0.6`;
-- updates declared File 00/01/02/24 compatibility targets;
-- adds missing File 00 CF-01 and File 01 Foundation Contract/schema facts;
-- advances File 02 from the superseded `1.3.0` target to `1.3.1` and records its current schema/event/dual-control boundaries;
-- advances File 24 to `0.99.0`/schema `0.25.5`/25 Future Security requirements;
-- explicitly labels static contract-registry facts as **compatibility targets, not runtime health**;
-- adds sixth-pass regression and deterministic release evidence.
+- adds seventh hardening contract `1.0.7`;
+- declares CF-01 through CF-06 conditional integration targets without activating their backends;
+- adds privacy-aware shell handling for sensitive CF routes;
+- keeps CF-04 token-delivery cache/range authority native while suppressing Future Shell visual/client conveniences on `/media/d/{grant}`;
+- preserves the current single-free-tier, voluntary-donation, zero-commission and donor-neutral financial law;
+- reconciles File 17 + CF-04 verified transfer at the 1 GB per-file limit, native/File-24/CF-04 download ownership and CF-06 localization-provider ownership;
+- adds seventh-pass regressions and deterministic 1.4.7 package evidence.
 
-It does **not** migrate or rewrite File 00, 01, 02, 19, 21, 24, 25 or 26 native records.
+It does **not** migrate, activate or rewrite CF-01..CF-06 native records or File 00–26 native records.
 
-## From 1.4.4 or Earlier 1.4.x
+## From Earlier 1.4.x
 
-Upgrade directly to 1.4.6 on staging. Prior privacy/PWA/release-ring/package hardening is cumulative. Do not manually recreate intermediate packages.
+Upgrade directly to 1.4.7 on staging. Prior privacy/PWA/release-ring/package and compatibility hardening is cumulative. Do not manually recreate intermediate packages.
 
-If a configured/provider private-path registry exceeds the supported bound, the current release intentionally disables privacy-sensitive shell conveniences and service-worker interception until the policy is valid. Do not remove legitimate protected paths merely to re-enable convenience features.
+If the configured/provider private-path registry exceeds the supported bound, the current release intentionally disables privacy-sensitive shell conveniences and service-worker interception until the policy is valid. Do not remove legitimate protected paths merely to re-enable convenience features.
 
-## From Older File 20 Releases
+## From Older File 20 Releases / No Shell / Another Shell
 
-1. Perform the same verified backup and staging-only upgrade.
-2. Run historical File-20-owned settings/schema migrations idempotently through the current plugin.
-3. Validate current identity/authentication/notification/Home-News/security/visual/search owner contracts rather than relying on old role/meta/search fallbacks.
-4. Test Safe Mode, Repair, LKG recovery, PWA retirement, release rings and rollback from the actually deployed baseline.
+Use the same verified backup and staging-only process. Validate current native-owner contracts, run System Check, avoid duplicate pages/databases/backends, test Safe Mode/Repair/LKG/PWA/rollback, and complete staging acceptance before production. Another structural shell must not remain concurrently authoritative.
 
-## From No Shell
-
-Install on staging, activate required companion modules, run System Check, configure unresolved destinations only, and complete full staging acceptance/rollback proof. Do not create duplicate pages or databases when a companion already owns them.
-
-## From Another Shell
-
-Disable the other shell on staging, activate File 20, remove duplicate theme/header rules only after visual inspection, and confirm one header, one primary navigation, one Home feed, one notification output and one canonical Search/Discovery path.
-
-No migration step creates, deletes or mutates membership identity, authentication/passkeys, messaging, notification, appointment, profile, marketplace, clinic, publishing, search/ranking, security-assurance or clinical records owned by companion files.
+No migration step creates, deletes or mutates membership identity, authentication/passkeys, messaging, notification, appointment, profile, marketplace, clinic, publishing, search/ranking, security-assurance, clinical, support-case, financial-ledger, media-processing, analytics or localization records owned by companion files.
