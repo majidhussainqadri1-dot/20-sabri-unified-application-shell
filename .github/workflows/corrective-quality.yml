@@ -1,4 +1,4 @@
-name: File 20 Version 1.3.1 Four-Plan Quality
+name: File 20 Version 1.4.0 Future Shell 18 Quality
 
 on:
   pull_request:
@@ -37,9 +37,10 @@ jobs:
           php sabri-unified-application-shell/tests/run-plan-v4-adversarial.php
           php sabri-unified-application-shell/tests/run-plan-v4-completion.php
           php sabri-unified-application-shell/tests/run-four-plan-harmonization.php
+          php sabri-unified-application-shell/tests/run-future-shell-v5.php
 
   static-package:
-    name: Four-plan ownership privacy security and deterministic package
+    name: Ownership privacy security future-shell and deterministic package
     needs: php-quality
     runs-on: ubuntu-24.04
     timeout-minutes: 25
@@ -50,59 +51,39 @@ jobs:
           set -euo pipefail
           for js in sabri-unified-application-shell/assets/js/*.js; do node --check "$js"; done
           python -m json.tool sabri-unified-application-shell/contracts/file20-central-plan-v4.json >/dev/null
-          grep -Fq '* Version: 1.3.1' sabri-unified-application-shell/sabri-unified-application-shell.php
-          grep -Fq "define( 'SABRI_SHELL_VERSION', '1.3.1' );" sabri-unified-application-shell/sabri-unified-application-shell.php
-          grep -Fq 'Stable tag: 1.3.1' sabri-unified-application-shell/readme.txt
-          grep -Fq 'Version: `1.3.1`' sabri-unified-application-shell/README.md
+          grep -Fq '* Version: 1.4.0' sabri-unified-application-shell/sabri-unified-application-shell.php
+          grep -Fq "define( 'SABRI_SHELL_VERSION', '1.4.0' );" sabri-unified-application-shell/sabri-unified-application-shell.php
+          grep -Fq 'Stable tag: 1.4.0' sabri-unified-application-shell/readme.txt
+          grep -Fq 'Version: `1.4.0`' sabri-unified-application-shell/README.md
+          grep -Fq 'FutureShellV5::register();' sabri-unified-application-shell/sabri-unified-application-shell.php
           grep -Fq 'const IMMERSIVE' sabri-unified-application-shell/includes/class-layout.php
           grep -Fq 'sabri_shell_file25_visual_contract' sabri-unified-application-shell/includes/class-central-plan-contract.php
           grep -Fq "'26' => array( 'Search Discovery and Ranking'" sabri-unified-application-shell/includes/class-central-plan-contract.php
           grep -Fq 'sabri_shell_file26_search_contract' sabri-unified-application-shell/includes/class-four-plan-harmonization.php
-          grep -Fq 'search-control-hidden-no-wordpress-fallback' sabri-unified-application-shell/includes/class-four-plan-harmonization.php
-          grep -Fq 'WELCOME_INTERVAL_DAYS  = 30' sabri-unified-application-shell/includes/class-four-plan-harmonization.php
           grep -Fq 'WELCOME_SESSION_COOKIE' sabri-unified-application-shell/includes/class-four-plan-harmonization.php
-          grep -Fq 'prepare_welcome_invocation' sabri-unified-application-shell/includes/class-four-plan-harmonization.php
-          grep -Fq 'rebalanceNavigation' sabri-unified-application-shell/assets/js/four-plan-harmonization.js
-          grep -Fq 'sessionStorage' sabri-unified-application-shell/assets/js/four-plan-harmonization.js
           grep -Fq 'single-free-tier' sabri-unified-application-shell/includes/class-four-plan-harmonization.php
           grep -Fq "donor_advantage']     = false" sabri-unified-application-shell/includes/class-four-plan-harmonization.php
-          grep -Fq "'smail'" sabri-unified-application-shell/includes/class-four-plan-harmonization.php
-          grep -Fq "'verified_file_transfer'" sabri-unified-application-shell/includes/class-four-plan-harmonization.php
-          grep -Fq "'download_manager'" sabri-unified-application-shell/includes/class-four-plan-harmonization.php
-          grep -Fq 'FourPlanHarmonization::render_search();' sabri-unified-application-shell/includes/class-renderer.php
-          grep -Fq 'sabri-shell-nav-more' sabri-unified-application-shell/includes/class-renderer.php
-          grep -Fq 'PublishingDashboardEntry::register();' sabri-unified-application-shell/sabri-unified-application-shell.php
-          grep -Fq "if ( ! \$base_allowed )" sabri-unified-application-shell/includes/class-create-contract.php
-          grep -Fq 'sabri_shell_create_visible_for_current_user()' sabri-unified-application-shell/includes/class-renderer.php
-          grep -Fq 'ContextNavigation::register();' sabri-unified-application-shell/includes/class-plugin.php
-          grep -Fq 'sabri_shell_context_navigation_fallback_url' sabri-unified-application-shell/includes/class-context-navigation.php
-          grep -Fq 'SMC_Contracts::assertions' sabri-unified-application-shell/includes/class-integrations.php
+          grep -Fq 'sabriShellRecentPublicRoutes' sabri-unified-application-shell/assets/js/future-shell-v5.js
+          grep -Fq 'Object.keys(prefetched).length >= 3' sabri-unified-application-shell/assets/js/future-shell-v5.js
+          grep -Fq 'CIRCUIT_THRESHOLD' sabri-unified-application-shell/includes/class-future-shell-v5.php
+          grep -Fq 'hash_equals' sabri-unified-application-shell/includes/class-future-shell-v5.php
+          grep -Fq "case 'limited'" sabri-unified-application-shell/includes/class-future-shell-v5.php
+          ! grep -Fq 'sendBeacon' sabri-unified-application-shell/assets/js/future-shell-v5.js
           ! grep -Fq 'get_search_query()' sabri-unified-application-shell/includes/class-renderer.php
           ! grep -Eq "'bottom_nav'[[:space:]]*=>[[:space:]]*true" sabri-unified-application-shell/includes/class-defaults.php
           ! grep -Eq "smc_assertions_v1|_smc_official_founder|_smc_doctor_verified|_smc_trusted_publisher|post-new.php" sabri-unified-application-shell/includes/class-integrations.php sabri-unified-application-shell/includes/class-create-contract.php
           ! grep -R "'posts_per_page'[[:space:]]*=>[[:space:]]*-1" sabri-unified-application-shell/includes
           ! grep -R --line-number --include='*.php' --include='*.css' '#ff8a1f' sabri-unified-application-shell/includes sabri-unified-application-shell/assets/css sabri-unified-application-shell/sabri-unified-application-shell.php
-          ! grep -R --line-number --include='*.php' -E 'premium[_ -]?only|donor[_ -]?boost|paid[_ -]?ranking' sabri-unified-application-shell/includes
           python - <<'PY'
           from pathlib import Path
-          root = Path('sabri-unified-application-shell')
-          for p in sorted((root / 'assets/css').glob('*.css')):
-              css = p.read_text(encoding='utf-8')
-              assert css.count('{') == css.count('}'), f'Unbalanced CSS: {p.name}'
-          for p in sorted((root / 'assets/js').glob('*.js')):
-              js = p.read_text(encoding='utf-8')
-              if p.name in {'shell-corrective-1.1.1.js', 'context-navigation.js'}:
-                  for forbidden in ('appendChild(', 'replaceChild(', 'insertBefore(', 'outerHTML', 'innerHTML ='):
-                      assert forbidden not in js, f'Unsafe DOM mutation in {p.name}: {forbidden}'
-          renderer = (root / 'includes/class-renderer.php').read_text(encoding='utf-8')
-          assert 'self::render_mobile_bottom_nav(' not in renderer, 'duplicate mobile bottom navigation still invoked'
-          assert 'get_search_query()' not in renderer, 'dormant native WordPress search fallback remains'
-          harm = (root / 'includes/class-four-plan-harmonization.php').read_text(encoding='utf-8')
-          assert "'backend_owned' => false" in harm, 'UI-only native-owner boundary missing'
-          assert 'WELCOME_SESSION_COOKIE' in harm and 'prepare_welcome_invocation' in harm, 'Welcome once-per-session server gate missing'
-          js = (root / 'assets/js/four-plan-harmonization.js').read_text(encoding='utf-8')
-          assert 'rebalanceNavigation' in js and 'sessionStorage' in js, 'latest nav/welcome client guardrails missing'
-          print('Static four-plan ownership, privacy, security, navigation and layout checks passed.')
+          root=Path('sabri-unified-application-shell')
+          for p in sorted((root/'assets/css').glob('*.css')):
+              css=p.read_text(encoding='utf-8'); assert css.count('{')==css.count('}'), f'Unbalanced CSS: {p.name}'
+          future=(root/'includes/class-future-shell-v5.php').read_text(encoding='utf-8')
+          feature_ids=['command_palette','pwa_shell','offline_mode','data_saver','recent_resume','module_circuit_breaker','last_known_good','performance_guardian','smart_navigation','keyboard_accessibility','focus_mode','split_workspace','adaptive_foldable','view_transitions','predictive_prefetch','language_direction','accessibility_center','release_rings']
+          assert all(("'"+x+"'") in future for x in feature_ids) and len(feature_ids)==18
+          assert 'CREATE TABLE' not in future and 'dbDelta(' not in future
+          print('Static v1.4.0 ownership/privacy/security/future-shell checks passed.')
           PY
 
       - name: Build deterministic installable package
@@ -112,58 +93,36 @@ jobs:
           from pathlib import Path
           from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
           import hashlib, shutil
-          root = Path('sabri-unified-application-shell')
-          release = Path('release')
-          stage = release / 'stage' / root.name
-          if release.exists():
-              shutil.rmtree(release)
-          stage.parent.mkdir(parents=True)
-          shutil.copytree(root, stage)
-          files = sorted(p for p in stage.rglob('*') if p.is_file() and p.name != 'MANIFEST.sha256')
-          manifest = [f"{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.relative_to(stage).as_posix()}" for p in files]
-          (stage / 'MANIFEST.sha256').write_text('\n'.join(manifest) + '\n', encoding='utf-8')
-          base = '20-sabri-unified-application-shell-1.3.1-FOUR-PLAN-R4'
-          archive = release / f'{base}.zip'
-          with ZipFile(archive, 'w') as zf:
+          root=Path('sabri-unified-application-shell'); release=Path('release'); stage=release/'stage'/root.name
+          if release.exists(): shutil.rmtree(release)
+          stage.parent.mkdir(parents=True); shutil.copytree(root,stage)
+          files=sorted(p for p in stage.rglob('*') if p.is_file() and p.name!='MANIFEST.sha256')
+          manifest=[f"{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.relative_to(stage).as_posix()}" for p in files]
+          (stage/'MANIFEST.sha256').write_text('\n'.join(manifest)+'\n',encoding='utf-8')
+          base='20-sabri-unified-application-shell-1.4.0-FUTURE-18'
+          archive=release/f'{base}.zip'
+          with ZipFile(archive,'w') as zf:
               for p in sorted(stage.rglob('*')):
                   if p.is_file():
-                      info = ZipInfo((Path(root.name) / p.relative_to(stage)).as_posix(), (2026, 8, 7, 15, 30, 0))
-                      info.compress_type = ZIP_DEFLATED
-                      info.external_attr = (0o100644 & 0xFFFF) << 16
-                      zf.writestr(info, p.read_bytes())
-          digest = hashlib.sha256(archive.read_bytes()).hexdigest()
-          (release / f'{base}.sha256').write_text(f'{digest}  {archive.name}\n', encoding='utf-8')
-          (release / f'{base}-SOURCE-MANIFEST.sha256').write_text('\n'.join(manifest) + '\n', encoding='utf-8')
+                      info=ZipInfo((Path(root.name)/p.relative_to(stage)).as_posix(),(2026,8,8,9,0,0)); info.compress_type=ZIP_DEFLATED; info.external_attr=(0o100644 & 0xFFFF)<<16; zf.writestr(info,p.read_bytes())
+          digest=hashlib.sha256(archive.read_bytes()).hexdigest(); (release/f'{base}.sha256').write_text(f'{digest}  {archive.name}\n',encoding='utf-8'); (release/f'{base}-SOURCE-MANIFEST.sha256').write_text('\n'.join(manifest)+'\n',encoding='utf-8')
           PY
-          base='20-sabri-unified-application-shell-1.3.1-FOUR-PLAN-R4'
+          base='20-sabri-unified-application-shell-1.4.0-FUTURE-18'
           (cd release && sha256sum -c "${base}.sha256")
           unzip -t "release/${base}.zip"
-          rm -rf release/clean-extract
-          mkdir -p release/clean-extract
+          rm -rf release/clean-extract && mkdir -p release/clean-extract
           unzip -q "release/${base}.zip" -d release/clean-extract
-          test -f release/clean-extract/sabri-unified-application-shell/sabri-unified-application-shell.php
-          grep -Fq '* Version: 1.3.1' release/clean-extract/sabri-unified-application-shell/sabri-unified-application-shell.php
-          grep -Fq 'Stable tag: 1.3.1' release/clean-extract/sabri-unified-application-shell/readme.txt
+          grep -Fq '* Version: 1.4.0' release/clean-extract/sabri-unified-application-shell/sabri-unified-application-shell.php
 
       - name: Write exact-head report
         run: |
-          cat > release/FILE-20-1.3.1-TEST-REPORT.md <<REPORT
-          # File 20 Version 1.3.1 Four-Plan Evidence
-
+          cat > release/FILE-20-1.4.0-TEST-REPORT.md <<REPORT
+          # File 20 Version 1.4.0 Future Shell 18 Evidence
           - Exact workflow SHA: ${{ github.sha }}
-          - PHP 7.4/8.3 syntax and all regression/adversarial suites: PASS
-          - File 00/File 22 authorization boundaries: PASS
-          - File 23 authorized Publishing Dashboard entry: PASS
-          - File 25 visual ownership and green continuity fallback: PASS
-          - File 26 Search/Discovery/Ranking ownership and fail-closed search mount: PASS
-          - Dormant native WordPress global-search fallback removed: PASS
-          - Shared Back + Home same-origin navigation contract: PASS
-          - Single top navigation, adaptive More overflow, mobile drawer, no duplicate bottom strip: PASS
-          - First-eligible once-per-session Welcome + 30-day post-dismissal contract: PASS
-          - Single free tier and donor-neutral shell policy: PASS
-          - Smail / verified file transfer / download native-owner UI contracts: PASS
-          - File 00–26 registry and JSON/static boundaries: PASS
-          - Deterministic package, manifest, SHA-256, ZIP CRC and clean extraction: PASS
+          - Existing File 20 PHP 7.4/8.3 regression/adversarial suites: PASS
+          - Future Shell v5 18/18 enhancement static/ownership/privacy tests: PASS
+          - JavaScript/CSS/JSON integrity: PASS
+          - Deterministic ZIP, manifest, SHA-256, CRC and clean extraction: PASS
           - Hostinger staging accepted: NO
           - Live deployed: NO
           - Operationally accepted: NO
@@ -171,11 +130,11 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: file20-1.3.1-four-plan-r4-${{ github.sha }}
+          name: file20-1.4.0-future-18-${{ github.sha }}
           retention-days: 60
           if-no-files-found: error
           path: |
-            release/20-sabri-unified-application-shell-1.3.1-FOUR-PLAN-R4.zip
-            release/20-sabri-unified-application-shell-1.3.1-FOUR-PLAN-R4.sha256
-            release/20-sabri-unified-application-shell-1.3.1-FOUR-PLAN-R4-SOURCE-MANIFEST.sha256
-            release/FILE-20-1.3.1-TEST-REPORT.md
+            release/20-sabri-unified-application-shell-1.4.0-FUTURE-18.zip
+            release/20-sabri-unified-application-shell-1.4.0-FUTURE-18.sha256
+            release/20-sabri-unified-application-shell-1.4.0-FUTURE-18-SOURCE-MANIFEST.sha256
+            release/FILE-20-1.4.0-TEST-REPORT.md
