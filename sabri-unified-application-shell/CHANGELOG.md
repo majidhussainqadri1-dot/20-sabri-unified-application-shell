@@ -1,5 +1,31 @@
 # Changelog
 
+## 1.4.5 — 2026-08-08 — Fifth Independent Ten-Round Corrective Hardening
+
+- Reopened the merged 1.4.4 baseline for a fifth independent ten-round source/evidence audit.
+- Corrected deterministic packaging so repository `tests/` and declared development-only material do not ship inside the installable WordPress ZIP.
+- Added explicit pre-extraction ZIP rejection for absolute paths, `..` traversal, duplicate entry names and entries outside the single canonical plugin root.
+- Added clean production source → staged tree → extracted ZIP file-set equality and SHA-256 parity verification.
+- Required embedded `MANIFEST.sha256` to exactly equal the external source manifest.
+- Replaced the residual hard-coded Internal release-ring evaluation with a final exact five-state evaluator. `Internal` allows `manage_options` by default or an authenticated principal explicitly approved through the fail-closed `sabri_shell_future_internal_principal_allowed` integration contract.
+- Kept release-ring REST configuration `manage_options` only; the extension contract cannot grant configuration authority.
+- Advanced plugin/readme/repository/status/migration/staging/package evidence to the same `1.4.5` release identity.
+- The approved Future Shell scope remains exactly eighteen enhancements; no nineteenth feature or companion-domain backend was added.
+- Hostinger staging, Founder acceptance, live deployment and operational acceptance remain separate evidence gates.
+
+## 1.4.4 — 2026-08-08 — Fourth Independent Ten-Round Corrective Hardening
+
+- Reopened File 20 after newer File 00, File 01, File 02, File 19, File 21 and File 24 evidence changed the cross-file contract surface.
+- Reconciled File 00 runtime `1.2.13`, Public Membership Contract `1.2.0` and Advanced Trust Contract `1.0.0` as claims-only dependencies; File 20 did not acquire identity or membership writes.
+- Reconciled File 01 Future Foundation runtime `2.0.0` and its 18-enhancement foundation/governance scope without assigning Search/Discovery/Ranking truth to File 01 or File 20.
+- Reconciled File 02 modern-auth `1.3.0`, exact 24-enhancement metadata and current assurance/passkey contracts.
+- Added Minimal/no-visual-shell presentation for File 02's public `/.well-known/webauthn` standards route without misclassifying that endpoint as private.
+- Reconciled File 19 Intelligent Attention & Notification OS `3.0.0` while preserving one bell/one center and no shell-owned notification store.
+- Reconciled File 21 NG30 runtime `1.0.1` and its five exact native shell slots.
+- Added File 24's eight security conditions as File-20 render/routing states while native modules remain enforcement owners and File 24 remains governance/assurance owner.
+- Added a dedicated fourth-pass regression and advanced deterministic package evidence to `1.4.4`.
+- Hostinger staging, Founder acceptance, live deployment and operational acceptance remained separate evidence gates.
+
 ## 1.4.3 — 2026-08-08 — Third Independent Ten-Round Corrective Hardening
 
 - Reopened File 20 after later-approved File 00, File 01 and File 02 plans changed the current integration surface after 1.4.2.
@@ -66,7 +92,6 @@
 - Ported the authorized File 23 Publishing Dashboard entry onto current main.
 - Enforced File 25 visual ownership, green continuity fallback, single-free-tier and donor-neutral shell policy.
 - Added Smail/file-transfer/download UI-only ownership contracts; no duplicate backend.
-
 
 ## Unreleased — Shared Context Navigation
 
