@@ -42,6 +42,7 @@ require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-fourth-hardening
 require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-fifth-hardening.php';
 require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-sixth-hardening.php';
 require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-seventh-hardening.php';
+require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-eighth-hardening.php';
 
 spl_autoload_register(
     static function ( $class_name ) {
@@ -127,6 +128,7 @@ add_action( 'plugins_loaded', static function () use ( $sabri_shell_corrective_c
     Sabri\UnifiedShell\FutureShellV5FifthHardening::register();
     Sabri\UnifiedShell\FutureShellV5SixthHardening::register();
     Sabri\UnifiedShell\FutureShellV5SeventhHardening::register();
+    Sabri\UnifiedShell\FutureShellV5EighthHardening::register();
 
     /* Upgrade-safe registration of the root/subdirectory PWA virtual routes. */
     add_action( 'init', static function () {
