@@ -4,25 +4,19 @@ Independent repository for **File 20 — Sabri Unified Application Shell** of th
 
 ## Current lifecycle
 
-- Preserved original baseline: `SOURCE-ARCHIVE/20-sabri-unified-application-shell-1.0.0-FINAL.zip`
-- Audited main baseline: `1.1.2`
-- Central-plan v4 corrective candidate: `1.2.0`
-- Governing implementation record: `CENTRAL-PLAN-V4-TRACEABILITY.md`
-- Status: repository candidate; Hostinger staging, Founder acceptance and production deployment remain separate gates
+- Current runtime: `1.4.0`
+- Future Shell v5 contract: `1.0.0`
+- Governing implementation records: `CENTRAL-PLAN-V4-TRACEABILITY.md`, `sabri-unified-application-shell/FOUR-PLAN-REVIEW-2026-08-07.md`, and `FUTURE-SHELL-V5-18-ENHANCEMENTS.md`
+- Status: repository/code/package/automated-QA candidate; Hostinger staging, Founder acceptance and production deployment remain separate gates
 
 ## Canonical responsibilities
 
-File 20 owns the shared structural application shell:
+File 20 owns the global structural application shell, navigation/layout resolution, integration slots, degraded/recovery continuity and File-20-owned shell preferences. It does not duplicate native domain backends.
 
-- global header and one horizontal no-wrap primary navigation line;
-- persistent left navigation, contextual right panels, mobile drawers and bottom navigation;
-- exact Three-column, Two-column, Minimal and Immersive layout resolution;
-- route discovery, page mounting and role-aware global controls;
-- settings, System Check, Complete Repair, Safe Mode, activation snapshots and rollback;
-- File 00–25 dependency/ownership registry and failure-state vocabulary.
+Version 1.4.0 adds eighteen modern shell capabilities: Command Palette, PWA, offline/weak-network handling, Data Saver, Recent/Resume, circuit breaker, last-known-good recovery, performance guardian, smart pins, keyboard accessibility, Focus Mode, Split Workspace slot, foldable/tablet/ultra-wide adaptation, View Transitions, bounded prefetch, language/direction quick control, accessibility center and release rings.
 
-File 20 does **not** own native membership, publishing, profiles, messages, notifications, appointments, marketplace, clinic, clinical or security-assurance data. File 25 owns visual tokens, component appearance, profiles/timelines and visual-regression governance; File 20 consumes its versioned visual contract and uses a clearly marked continuity fallback only when File 25 is unavailable.
+File 25 still owns visual tokens; File 26 still owns Search/Discovery/Ranking; File 19 still owns notification delivery; File 17 still owns communication. File 20 only mounts or coordinates their versioned contracts.
 
 ## Quality boundary
 
-Repository checks cover PHP 7.4/8.3 syntax and behavior, Create-contract authorization, central-plan traceability, route/layout invariants, JavaScript/CSS/JSON integrity and deterministic packaging. They do not establish real WordPress/Hostinger staging, cross-browser, accessibility, backup/restore, rollback or production acceptance.
+Repository checks establish source/package/automated-QA status only. Real WordPress/Hostinger staging, real companion contracts, PWA lifecycle, browsers/devices, accessibility, cache, backup/restore, rollback and production acceptance remain separate gates.
