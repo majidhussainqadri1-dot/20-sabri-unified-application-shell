@@ -3,7 +3,7 @@
  * Plugin Name: Sabri Unified Application Shell
  * Plugin URI: https://github.com/majidhussainqadri1-dot/20-sabri-unified-application-shell
  * Description: Secure responsive public application shell for the Sabri Social Homeopathy Platform.
- * Version: 1.4.8
+ * Version: 1.4.9
  * Author: Dr. Allamah Majid Hussain Sabri Muhaddith Mursheed
  * Text Domain: sabri-unified-application-shell
  * Domain Path: /languages
@@ -15,7 +15,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'SABRI_SHELL_VERSION', '1.4.8' );
+define( 'SABRI_SHELL_VERSION', '1.4.9' );
 define( 'SABRI_SHELL_FILE', __FILE__ );
 define( 'SABRI_SHELL_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SABRI_SHELL_URL', plugin_dir_url( __FILE__ ) );
@@ -115,6 +115,7 @@ register_deactivation_hook( __FILE__, array( 'Sabri\\UnifiedShell\\FutureShellV5
 add_action( 'plugins_loaded', static function () use ( $sabri_shell_corrective_classes_are_owned, $sabri_shell_central_plan_contract_is_owned ) {
     load_plugin_textdomain( 'sabri-unified-application-shell', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
     Sabri\UnifiedShell\Plugin::instance()->register();
+    Sabri\UnifiedShell\RouteSecurity::register();
     if ( $sabri_shell_corrective_classes_are_owned ) { Sabri\UnifiedShell\CreateContract::register(); Sabri\UnifiedShell\LayoutCorrection::register(); }
     if ( $sabri_shell_central_plan_contract_is_owned ) { Sabri\UnifiedShell\CentralPlanContract::register(); }
     Sabri\UnifiedShell\FourPlanHarmonization::register();
@@ -130,9 +131,9 @@ add_action( 'plugins_loaded', static function () use ( $sabri_shell_corrective_c
     Sabri\UnifiedShell\FutureShellV5SixthHardening::register();
     Sabri\UnifiedShell\FutureShellV5SeventhHardening::register();
     Sabri\UnifiedShell\FutureShellV5EighthHardening::register();
+    Sabri\UnifiedShell\FutureShellV5NinthHardening::register();
     Sabri\UnifiedShell\SystemCheckDuplicateHardening::register();
 
-    /* Upgrade-safe registration of the root/subdirectory PWA virtual routes. */
     add_action( 'init', static function () {
         $rewrite_version = (string) get_option( 'sabri_shell_future_rewrite_version', '' );
         if ( SABRI_SHELL_VERSION !== $rewrite_version ) {
@@ -141,7 +142,6 @@ add_action( 'plugins_loaded', static function () use ( $sabri_shell_corrective_c
         }
     }, 3 );
 
-    /* Seed an integrity-checked last-known-good snapshot on first 1.4.x request. */
     add_action( 'init', static function () {
         if ( ! get_option( Sabri\UnifiedShell\FutureShellV5::LKG_OPTION, false ) ) {
             Sabri\UnifiedShell\FutureShellV5::capture_lkg( array(), Sabri\UnifiedShell\Settings::get() );

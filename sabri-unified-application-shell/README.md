@@ -2,11 +2,11 @@
 
 Sabri Unified Application Shell is the canonical responsive WordPress application shell for the **Sabri Social Homeopathy Platform**.
 
-- Version: `1.4.8`
+- Version: `1.4.9`
 - File 22 Create contract: `1.0.1`
 - Central-plan contract: `1.0.0`
 - Four-plan harmonization contract: `1.0.0`
-- Future Shell v5 contract: `1.0.0`; corrective layers `1.0.1` through `1.0.8`
+- Future Shell v5 contract: `1.0.0`; corrective layers `1.0.1` through `1.0.9`
 - Approved Future Shell scope: exactly **18 enhancements**
 - Conditional companion set: **CF-01 through CF-06**, declared only; activation/runtime/staging/live status is not implied
 - Status: repository/code/package/automated-QA candidate only after exact-head CI; Hostinger staging acceptance remains separate
@@ -22,11 +22,17 @@ The approved set remains: Command Palette; installable privacy-bounded PWA shell
 
 No corrective release may add a nineteenth feature without a new Founder-approved amendment.
 
-## Version 1.4.8 — eighth independent ten-round hardening
+## Version 1.4.9 — ninth independent ten-round hardening
 
-Version 1.4.8 reopens merged 1.4.7 and corrects File-20-owned post-merge gaps while preserving the 18-feature scope and all CF-01..CF-06 conditional/native-owner boundaries.
+Version 1.4.9 reopens merged 1.4.8 and closes a further set of File-20-owned gaps while preserving the exact 18-feature scope and all native/conditional ownership boundaries.
 
-It retires the stale File 20 Appearance editor under File 25 visual ownership; makes sensitive account/membership/system layout root/subdirectory safe; upgrades System Check to structured ID/severity/evidence/last-run/affected-surface/remediation records with registered hardening sections and authenticated sanitized export; fixes bounded audit-chain retention and privacy-erasure integrity; removes hidden mbstring dependency from operational evidence; makes Complete Repair normalization real with bounded dry-run diffs; requires code-major + exact settings-schema rollback compatibility with File-20/Future-Shell snapshots; replaces legacy activation snapshot behavior with an integrity-protected File-20-only format; nonce-binds administrator query Safe Mode; adds reason/actor/time/review/audit/health/cache-gated Emergency lifecycle; routes admin Repair/Rollback/Emergency actions through hardened controllers; and makes duplicate-shell health truth independent of translated display text.
+Fresh File 20 defaults no longer create an Appearance group; File 25 remains the visual authority while legacy values may survive only as migration evidence. Emergency state has one server-side write authority: generic settings updates cannot toggle it around the reason/actor/review/audit/health lifecycle. Recovery snapshot format 2 records option existence separately from value, revalidates target/repair state under lock, makes stale snapshots read-only when format/code/schema differ, and keeps current Emergency state plus the optimistic settings row counter out of automatic rollback.
+
+Complete Repair now includes a separately selectable stale File 20 Page-ID quarantine action with exact dry-run evidence. It clears only invalid File-20 pointer values and never deletes or claims WordPress/companion content. Authorized programmatic repair and rollback changes advance concurrency evidence monotonically.
+
+Route overrides accept only a safe relative path or HTTPS URL, reject query/fragment/credentials/protocol-relative forms, use same-site by default and require an explicit host allowlist for external destinations. Stored legacy overrides are revalidated on read. Navigation now follows the governing Page ID → shortcode page → archive → approved slug → validated override → unavailable order; arbitrary companion callbacks do not silently preempt it.
+
+Explicit uninstall cleanup remains opt-in and is restricted to File-20-owned operational state. Rollback verifies every restored option after write, preserves the current Emergency safety state, cannot restore Emergency metadata or the settings-row counter, invalidates/purges caches and still requires a post-restore smoke test.
 
 ## Conditional-module law preserved
 
@@ -40,4 +46,4 @@ File 00 identity authority, File 02 authentication ownership, File 19 one-bell, 
 
 ## Staging acceptance
 
-Repository completion is not production acceptance. Hostinger staging must verify the exact `1.4.8` package/head/checksum, real File 00–26 and any activated CF contracts, root/subdirectory privacy/layout, System Check export, audit retention, repair/rollback, Safe Mode/Emergency lifecycle, PWA, browsers/devices, accessibility, RTL/LTR, low-data/offline behavior, backup/restore and Founder acceptance before production promotion.
+Repository completion is not production acceptance. Hostinger staging must verify the exact `1.4.9` package/head/checksum, real File 00–26 and any activated CF contracts, strict route precedence/overrides, repair/rollback/Emergency behavior, root/subdirectory privacy/layout, System Check, PWA, browsers/devices, accessibility, RTL/LTR, low-data/offline behavior, backup/restore and Founder acceptance before production promotion.

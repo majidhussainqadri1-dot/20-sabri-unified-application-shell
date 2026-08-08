@@ -18,7 +18,7 @@ final class Defaults {
 	const OPTION_NAME          = 'sabri_shell_settings';
 	const SNAPSHOT_OPTION_NAME = 'sabri_shell_activation_snapshot';
 	const NAV_CACHE_KEY        = 'sabri_shell_navigation_cache_v1';
-	const SCHEMA_VERSION       = 3;
+	const SCHEMA_VERSION       = 4;
 
 	/**
 	 * Return all default navigation destinations.
@@ -215,6 +215,10 @@ final class Defaults {
 	/**
 	 * Default settings.
 	 *
+	 * File 25 is the sole visual-design authority. Existing legacy `appearance`
+	 * values are intentionally not deleted by Settings::deep_merge(); they may
+	 * survive as migration evidence, but File 20 no longer creates visual state.
+	 *
 	 * @return array<string,mixed>
 	 */
 	public static function settings() {
@@ -346,13 +350,6 @@ final class Defaults {
 					'help'          => '',
 					'whatsapp'      => '',
 				),
-			),
-			'appearance'           => array(
-				'color_mode'    => 'system',
-				'density'       => 'comfortable',
-				'primary_color' => '#15803d',
-				'border_radius' => 8,
-				'font_scale'    => 1,
 			),
 		);
 	}

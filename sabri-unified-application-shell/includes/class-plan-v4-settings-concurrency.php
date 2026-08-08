@@ -43,11 +43,38 @@ final class PlanV4SettingsConcurrency {
         if ( ! self::$accepted_update || ! in_array( $option, array( 'sabri_shell_settings', 'sabri_unified_shell_settings' ), true ) ) {
             return;
         }
+        self::$accepted_update = false;
+        self::record_change( (array) $old_value, (array) $value, 'settings-api' );
+    }
+
+    /**
+     * Record an already-authorized File 20 programmatic settings mutation.
+     * Recovery holds its own lock/nonce/capability gates; this method only
+     * advances optimistic concurrency evidence after a real value change.
+     */
+    public static function record_programmatic_change( $old_value, $new_value, $reason ) {
+        $old_value = is_array( $old_value ) ? $old_value : array();
+        $new_value = is_array( $new_value ) ? $new_value : array();
+        if ( $old_value === $new_value ) {
+            return self::current_version();
+        }
+        return self::record_change( $old_value, $new_value, sanitize_key( (string) $reason ) );
+    }
+
+    private static function record_change( array $old_value, array $value, $reason ) {
         $next = self::current_version() + 1;
         update_option( self::VERSION_OPTION, $next, false );
-        $changed = array_values( array_unique( array_merge( array_keys( (array) $old_value ), array_keys( (array) $value ) ) ) );
-        PlanV4Audit::record( 'settings_updated', array( 'row_version' => $next, 'changed_groups' => array_slice( $changed, 0, 30 ) ) );
+        $changed = array_values( array_unique( array_merge( array_keys( $old_value ), array_keys( $value ) ) ) );
+        PlanV4Audit::record(
+            'settings_updated',
+            array(
+                'row_version'    => $next,
+                'changed_groups' => array_slice( $changed, 0, 30 ),
+                'reason'         => sanitize_key( (string) $reason ),
+            )
+        );
         PlanV4ContractHealth::invalidate();
+        return $next;
     }
 
     public static function inject_version_field() {

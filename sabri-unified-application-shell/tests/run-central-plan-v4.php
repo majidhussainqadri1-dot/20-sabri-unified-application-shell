@@ -12,15 +12,17 @@ $main = $read('sabri-unified-application-shell.php');
 $contract = $read('includes/class-central-plan-contract.php');
 $seventh = $read('includes/class-future-shell-v5-seventh-hardening.php');
 $eighth = $read('includes/class-future-shell-v5-eighth-hardening.php');
+$ninth = $read('includes/class-future-shell-v5-ninth-hardening.php');
 $layout = $read('includes/class-layout.php');
 $assets = $read('includes/class-assets.php');
 $css = $read('assets/css/shell-central-plan-v4.css');
 
-$assert(strpos($main, '* Version: 1.4.8') !== false, 'Plugin header must be 1.4.8.');
-$assert(strpos($main, "define( 'SABRI_SHELL_VERSION', '1.4.8' )") !== false, 'Runtime version must be 1.4.8.');
+$assert(strpos($main, '* Version: 1.4.9') !== false, 'Plugin header must be 1.4.9.');
+$assert(strpos($main, "define( 'SABRI_SHELL_VERSION', '1.4.9' )") !== false, 'Runtime version must be 1.4.9.');
 $assert(strpos($main, 'CentralPlanContract::register()') !== false, 'Central-plan contract must register.');
 $assert(strpos($main, 'FutureShellV5SeventhHardening::register()') !== false, 'Seventh conditional-module layer must register.');
-$assert(strpos($main, 'FutureShellV5EighthHardening::register()') !== false && strpos($eighth, "CONTRACT_VERSION = '1.0.8'") !== false, 'Eighth corrective layer must register.');
+$assert(strpos($main, 'FutureShellV5EighthHardening::register()') !== false && strpos($eighth, "CONTRACT_VERSION = '1.0.8'") !== false, 'Eighth corrective layer must remain registered.');
+$assert(strpos($main, 'FutureShellV5NinthHardening::register()') !== false && strpos($ninth, "CONTRACT_VERSION = '1.0.9'") !== false, 'Ninth corrective layer must register.');
 $assert(strpos($main, "SABRI_SHELL_CREATE_CONTRACT_VERSION', '1.0.1'") !== false, 'File 22 Create contract must remain 1.0.1.');
 
 foreach (array('00', '01-A', '01-B', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26') as $file) {
@@ -62,4 +64,4 @@ if ($failures) {
 	fwrite(STDERR, sprintf("File 20 central-plan: %d checks, %d failures.\n", $checks, count($failures)));
 	exit(1);
 }
-echo sprintf("File 20 central-plan/eighth harmonization: %d PASS, 0 FAIL\n", $checks);
+echo sprintf("File 20 central-plan/ninth harmonization: %d PASS, 0 FAIL\n", $checks);

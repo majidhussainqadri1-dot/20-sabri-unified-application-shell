@@ -40,7 +40,7 @@ $GLOBALS['test_permalinks'][101] = 'https://example.test/platform-home/';
 Integrations::invalidate_cache();
 Navigation::invalidate_cache();
 $item = Navigation::resolve_item( 'home', $dest['home'], Defaults::settings()['navigation']['home'] );
-$assert( 'https://example.test/platform-home/' === $item['url'] && 'companion_contract' === $item['reason'], 'Companion page-map contract precedes guessed slugs.' );
+$assert( 'https://example.test/platform-home/' === $item['url'] && 'registered_page_map' === $item['reason'] && 1 === $item['source_priority'], 'Registered companion Page ID participates in canonical priority-1 page-map resolution.' );
 
 $GLOBALS['test_options']['spf_page_map'] = array();
 Integrations::invalidate_cache();
@@ -192,7 +192,6 @@ $GLOBALS['test_profiles'][11] = array( 'phone' => '+923009999999', 'whatsapp' =>
 $GLOBALS['test_public_contact'][11] = false;
 $raw_profile_contact = Integrations::doctor_public_data( 11 );
 $assert( '' === $raw_profile_contact['phone'] && '' === $raw_profile_contact['whatsapp'], 'Raw Membership profile contact never becomes public data without the File 03 consent contract.' );
-
 
 $GLOBALS['test_users'][12] = new WP_User( 12, array( 'sabri_doctor_verified' ), 'Stale Legacy Doctor' );
 $GLOBALS['test_user_meta'][12]['_smc_doctor_verified'] = 1;
