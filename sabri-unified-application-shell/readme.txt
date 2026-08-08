@@ -4,7 +4,7 @@ Tags: application shell, navigation, layout, accessibility, pwa, offline
 Requires at least: 6.0
 Tested up to: 7.0.1
 Requires PHP: 7.4
-Stable tag: 1.4.6
+Stable tag: 1.4.7
 License: GPLv2 or later
 Text Domain: sabri-unified-application-shell
 
@@ -12,43 +12,49 @@ Responsive canonical application shell and integration layer for the Sabri Socia
 
 == Description ==
 
-File 20 owns the global structural shell and continuity layer; native-domain data, authorization and enforcement remain with canonical companion files.
+File 20 owns the global structural shell and continuity layer; native-domain data, authorization, enforcement and activation remain with canonical companion files.
 
 Future Shell v5 contains exactly eighteen approved enhancements: Command Palette, PWA, offline/weak-network mode, Data Saver, Recent & Resume, module circuit breaker, last-known-good recovery, performance guardian, smart navigation, keyboard accessibility, Focus Mode, native-owner Split Workspace, foldable/tablet/ultra-wide adaptation, progressive View Transitions, bounded safe prefetch, language/direction quick control, accessibility preference center and five-state release rings.
 
-Version 1.4.6 completes a sixth independent ten-round compatibility/truth-status review after newer File 00, File 01, File 02 and File 24 evidence changed. The shell now declares current compatibility targets without pretending they are live runtime detection: File 00 runtime 1.2.13/schema 1.3.0/Public 1.2.0/CF-01 1.0.0/Advanced Trust 1.0.0; File 01 runtime 2.0.0/schema 1.2.0/Foundation Contract 2.0.0/Future 18; File 02 runtime 1.3.1/schema 1.3.0/passkey schema 1.1.0/auth-event projection 1.1.0/24 enhancements; File 24 runtime candidate 0.99.0/schema 0.25.5/25 Future Security requirements.
+Version 1.4.7 completes a seventh independent ten-round harmonization over merged 1.4.6. It adds the later central-plan CF-01 through CF-06 conditional-module contract surface without activating any conditional backend or adding a nineteenth Future Shell feature.
 
-Every such registry entry is marked as a declared compatibility target, not proof that the provider is installed, healthy or staging accepted. Native owners still perform authorization/security/business decisions. File 02 privileged reset still requires its File 00 dual-control receipt, and File 24 unavailability never transfers security enforcement into File 20.
+CF-01 clinical records, CF-02 support/appeals, CF-03 financial operations, CF-04 secure media, CF-05 analytics and CF-06 localization remain native owners. File 20 contributes route/layout/UI/privacy integration only. Every CF entry is marked as a declared conditional target, requires explicit activation and runtime verification, and never implies staging acceptance or live deployment.
 
-The 1.4.5 production-package hardening remains mandatory: repository tests/development material do not ship; CI rejects unsafe ZIP roots/traversal/duplicates and proves clean-source/stage/extracted SHA-256 parity plus manifest equality.
+Current platform financial law remains one free tier, voluntary donation, zero commission and no donor advantage. Paid collection is dormant unless a new Founder change-control decision and native CF-03 activation evidence authorize it.
+
+Sensitive CF routes are protected from File 20 Recent/Resume, Smart Navigation and predictive prefetch. CF-04 `/media/d/{grant}` remains native cache/range territory and receives Minimal/no Future Shell client surface rather than a File-20-owned cache policy. Verified transfer remains File 17 + CF-04 after activation with a 1 GB per-file limit; eligible download remains native-owner/File-24/CF-04 territory. CF-06 localization remains provider-owned; File 20 supplies only language-preference/direction presentation.
 
 Hostinger staging testing and Founder acceptance remain required before production deployment.
 
 == Installation ==
 
 1. Back up files and database and prove restore.
-2. Install or upgrade the exact 1.4.6 candidate on staging only and flush rewrite rules.
-3. Verify the package has one canonical root, no tests, and matching embedded/external source manifests.
-4. Run Sabri Shell System Check and confirm sixth-pass compatibility targets are shown as targets, not runtime detection.
-5. Verify actual File 00, File 01, File 02, File 19, File 21, File 24, File 25 and File 26 runtime contracts independently.
-6. Verify File 02 public /.well-known/webauthn remains public JSON/no-cache with Minimal/no visual shell.
-7. Test all five release rings; configuration remains manage_options-only.
-8. Test root/subdirectory PWA install/update/disable/self-removal/offline and private-path fail-closed behavior.
+2. Install or upgrade the exact 1.4.7 candidate on staging only and flush rewrite rules.
+3. Verify the package has one canonical root, no tests/development-only material, and matching embedded/external source manifests.
+4. Run Sabri Shell System Check and confirm sixth-pass current compatibility targets plus seventh-pass CF conditional targets are shown as targets, not runtime detection.
+5. Verify actual File 00-26 contracts and any activated CF-01..CF-06 contracts independently.
+6. Verify sensitive CF private routes never enter local Recent/Resume, Smart Navigation or prefetch; verify `/media/d/{grant}` remains native cache/range authority with Minimal/no visual shell.
+7. Verify CF-03 does not create paid/premium/donor privilege under the current single-free-tier law.
+8. Test all five release rings and root/subdirectory PWA lifecycle/privacy behavior.
 9. Test keyboard/accessibility, all four layout modes, RTL/LTR, zoom, weak network, Split Workspace and recovery.
 10. Complete Hostinger staging, backup/restore/rollback rehearsal and Founder acceptance before production.
 
 == Changelog ==
 
+= 1.4.7 =
+* Completed a seventh independent ten-round corrective review over merged 1.4.6.
+* Added FutureShellV5SeventhHardening contract 1.0.7.
+* Added CF-01 through CF-06 as conditional contract targets without activating their backends.
+* Added bounded private-route protection for clinical, support-case, financial, media-admin/API, analytics and localization administration/API surfaces.
+* Kept CF-04 token delivery out of File 20 cache ownership and forced Minimal/no Future Shell client surface instead.
+* Preserved single-free-tier, voluntary donation, zero commission and donor-neutral law; paid collection remains dormant absent new Founder change control and native CF-03 activation.
+* Reconciled File17/CF04 1 GB transfer, native/File24/CF04 download and CF06 localization-provider boundaries.
+* Advanced permanent regression and deterministic package gates to the 1.4.7 conditional-module surface.
+* Added no nineteenth Future Shell feature and no conditional-domain backend.
+
 = 1.4.6 =
-* Completed a sixth independent ten-round corrective review after newer companion plans/evidence changed compatibility facts.
-* Added FutureShellV5SixthHardening contract 1.0.6.
-* Added File 00 CF-01 1.0.0 and schema 1.3.0 compatibility metadata.
-* Added File 01 Foundation Contract 2.0.0 and schema 1.2.0 metadata.
-* Advanced File 02 target to runtime 1.3.1 with current schema/event/dual-control boundaries.
-* Advanced File 24 target to runtime candidate 0.99.0, schema 0.25.5 and exact 25 Future Security requirements.
-* Marked static registry facts as declared compatibility targets, never runtime health/staging claims.
-* Added permanent sixth-pass regression and 1.4.6 deterministic package gates.
-* Added no nineteenth Future Shell feature and no companion-domain backend.
+* Completed a sixth independent ten-round corrective review after newer File 00/01/02/24 evidence changed compatibility facts.
+* Added FutureShellV5SixthHardening contract 1.0.6 and current compatibility-target truth boundaries.
 
 = 1.4.5 =
 * Completed the fifth ten-round corrective review, production-only packaging hardening and final five-state Internal release-ring contract.
