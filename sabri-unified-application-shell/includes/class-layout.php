@@ -185,8 +185,9 @@ final class Layout {
 		$task_slugs = array(
 			'wp-login.php', 'login', 'signup', 'register', 'lostpassword', 'password-reset', 'account-verification',
 			'account-login', 'create-account', 'complete-profile', 'forgot-password', 'account-access-required',
-			'verification', 'verify-email', 'doctor-verification',
-			'safe-mode', 'repair', 'maintenance',
+			'verification', 'verify-email', 'doctor-verification', 'account-security', 'account-passkeys', 'resolve-account',
+			'membership-application', 'membership-status', 'guardian-consent', 'membership-security',
+			'platform-system-check', 'platform-foundation', 'safe-mode', 'repair', 'maintenance',
 		);
 		$segments = array_values( array_filter( explode( '/', trim( strtolower( $path ), '/' ) ) ) );
 		if ( array_intersect( $segments, $task_slugs ) ) {
