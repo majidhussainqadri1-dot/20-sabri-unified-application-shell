@@ -2,17 +2,17 @@
 
 Sabri Unified Application Shell is the canonical responsive WordPress application shell for the **Sabri Social Homeopathy Platform**.
 
-- Version: `1.4.2`
+- Version: `1.4.3`
 - File 22 Create contract: `1.0.1`
 - Central-plan contract: `1.0.0`
 - Four-plan harmonization contract: `1.0.0`
-- Future Shell v5 contract: `1.0.0`; first corrective hardening: `1.0.1`; second corrective hardening: `1.0.2`
+- Future Shell v5 contract: `1.0.0`; first corrective hardening: `1.0.1`; second: `1.0.2`; third: `1.0.3`
 - Status: repository/code/package/automated-QA candidate; Hostinger staging acceptance required
 - Plugin slug/text domain: `sabri-unified-application-shell`
 
 ## Canonical scope
 
-File 20 owns the shared application frame and structural continuity. Native membership, publishing, profile, communication, notification, clinic, marketplace, clinical, Search/Discovery/Ranking and assurance backends remain with their canonical files.
+File 20 owns the shared application frame and structural continuity. Native membership, authentication/passkeys, publishing, profile, communication, notification, clinic, marketplace, clinical, Search/Discovery/Ranking, foundation-governance and assurance backends remain with their canonical files.
 
 ## Version 1.4.0 — Future Shell v5 / 18 enhancements
 
@@ -43,24 +43,26 @@ The first ten-round post-implementation audit corrected residual defects without
 
 ## Version 1.4.2 — second independent ten-round corrective hardening
 
-A fresh second review did not assume the first green CI was sufficient. New checks against the governing File 20/Future Shell plans and File 00/01/02/19/21/24/25/26 boundaries produced the following corrections:
+The second fresh sweep added WordPress-subdirectory privacy, disabled-PWA `410` retirement, File 25 manifest tokens, version-derived service-worker cache identity, partial Future Shell settings preservation, bounded circuit state, editable `Ctrl/Cmd+K` protection, dynamic privacy paths without option churn, non-immersive Split Workspace and File-20-scoped accessibility visuals.
 
-- protected routes are converted to the actual WordPress home scope, so `/subdir/messages`, `/subdir/account`, `/subdir/wp-json`, etc. remain private in subdirectory installations as well as root installations;
-- PWA virtual routes return `410` when PWA is disabled, allowing previously installed workers to self-retire rather than accepting a misleading 200 HTML fallback;
-- manifest/theme colors are consumed from File 25's validated visual-token contract, while the service-worker cache identity follows `SABRI_SHELL_VERSION` rather than a hard-coded release string;
-- partial Future Shell settings updates preserve omitted feature/recovery/privacy values, while explicitly malformed feature rules are converted to Disabled/0 before persistence;
-- circuit-breaker metadata is bounded and expired states are removed before health is reported;
-- an editable-context guard runs before the global Command Palette listener so `Ctrl/Cmd+K` does not hijack inputs, textareas, selects or contenteditable editors;
-- dynamic protected-path provider output is consumed per request instead of being silently written into File 20 options;
-- Split Workspace is rejected in both Minimal and Immersive layout modes;
-- File 20 CSS consumes File 25 border/radius/shadow/focus tokens and applies spacing/reduced-motion visual changes only to File-20-owned controls, leaving native-domain component styling to File 25/native owners.
+## Version 1.4.3 — third independent ten-round corrective hardening
 
-The PWA service worker does not cache authenticated/sensitive module routes, WordPress admin/login/REST, messages, network, appointments, security, verification, account, notification, publishing-dashboard, newsroom and other protected paths. Split Workspace renders only when a native owner explicitly provides a slot and the layout is non-Minimal/non-Immersive. Platform search continues to use File 26's validated contract.
+The third sweep was opened because later-approved File 00, File 01 and File 02 plans changed the integration surface after 1.4.2. It does not add a nineteenth Future Shell feature. It closes the following residual compatibility/privacy gaps:
+
+- adds current File 02 private authentication routes such as `/account-security/`, `/account-passkeys/` and `/resolve-account/`, plus current File 00 membership/security and File 01 system routes, to the protected shell policy;
+- forces newly approved sensitive task surfaces into Minimal/no-distraction shell presentation and the common private/no-store/noindex header policy;
+- replaces silent protected-path truncation with an explicit bounded policy; if provider/configuration paths exceed the supported bound, local Recent/Resume, Smart Navigation and predictive prefetch fail closed and the service worker declines all caching/interception rather than guessing privacy;
+- removes the three older Future Shell virtual-asset callbacks at runtime and installs one final PWA manifest/service-worker handler, eliminating stale fallback ownership after later hardening layers;
+- reconciles File 01 as the foundation/registry/contracts/activation/shared-conventions owner without assigning search truth to File 01 or File 20, and records File 02's current credentials/passkeys/sessions/risk/recovery boundary without creating authentication authority in the shell;
+- preserves File 25 as visual owner while aligning the **continuity-only** fallback primary token to current Sabri Green `#087A4E` when no valid File 25 contract is available;
+- moves exact source/readme/workflow/package evidence to patch release `1.4.3` and adds a permanent third-pass regression gate.
+
+The PWA worker remains same-origin and privacy bounded. It never treats protected-path policy overflow as permission to cache. File 20 still creates no membership, authentication, notification, publishing, search, marketplace, clinical or other companion-domain database.
 
 ## Existing guarantees preserved
 
-The four exact layout modes, File 00/22 authorization, File 19 one-bell, File 25 visual ownership, File 26 fail-closed search, single top navigation, Back/Home controls, single free tier, donor-neutral policy, Welcome session/30-day law, Safe Mode, Repair, snapshots and rollback remain intact.
+The four exact layout modes, File 00 authorization/identity authority, File 02 authentication ownership, File 19 one-bell, File 21 Home/News ownership, File 25 visual ownership, File 26 fail-closed Search/Discovery/Ranking, single top navigation, Back/Home controls, single free tier, donor-neutral policy, Welcome session/30-day law, Safe Mode, Repair, snapshots and rollback remain intact.
 
 ## Staging acceptance
 
-Repository completion is not production acceptance. Hostinger staging must test root/subdirectory PWA registration/update/disable/self-removal, offline behavior, low-data mode, all dialogs/keyboard paths, local privacy exclusions, partial release-ring updates, circuit cleanup, split workspace integration, LKG recovery, responsive/foldable layouts, supported browsers, accessibility, cache, backup/restore and rollback before Founder-approved production promotion.
+Repository completion is not production acceptance. Hostinger staging must test root/subdirectory PWA registration/update/disable/self-removal, current File 00/01/02 private routes, overflow fail-closed behavior, offline/low-data modes, all dialogs/keyboard paths, partial release-ring updates, circuit cleanup, Split Workspace integration, LKG recovery, responsive/foldable layouts, supported browsers, accessibility, cache, backup/restore and rollback before Founder-approved production promotion.

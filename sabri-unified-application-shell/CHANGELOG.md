@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.4.3 — 2026-08-08 — Third Independent Ten-Round Corrective Hardening
+
+- Reopened File 20 after later-approved File 00, File 01 and File 02 plans changed the current integration surface after 1.4.2.
+- Added current File 02 `/account-security`, `/account-passkeys` and `/resolve-account` routes plus current File 00 membership/security and File 01 system/status routes to File 20's privacy policy.
+- Forced newly approved sensitive task routes into Minimal/no-distraction layout and the common private/no-store/noindex header path.
+- Replaced silent protected-path truncation with an explicit 128-prefix bound and overflow state; privacy-sensitive local Recent/Resume, Smart Navigation, predictive prefetch and service-worker interception fail closed if the complete policy cannot be represented.
+- Removed the base, first-hardening and second-hardening virtual-asset callbacks at runtime and registered one final PWA manifest/service-worker owner.
+- Reconciled File 01 to foundation bootstrap/registry/contracts/activation/shared conventions without assigning search truth to File 01/File 20, and reconciled File 02 to current credentials/passkeys/sessions/risk/recovery ownership without creating authentication authority in the shell.
+- Preserved File 25 visual ownership and aligned only the File-25-missing continuity fallback to current Sabri Green `#087A4E`.
+- Added a dedicated third-pass regression suite and moved plugin/readmes/traceability/workflow/deterministic package identity to `1.4.3`.
+- The approved Future Shell scope remains exactly eighteen enhancements; no nineteenth feature or duplicate native-domain backend was added.
+- Hostinger staging, Founder acceptance, live deployment and operational acceptance remain separate evidence gates.
+
 ## 1.4.2 — 2026-08-08 — Second Independent Ten-Round Corrective Hardening
 
 - Completed a second independent ten-round review over the merged 1.4.1 baseline; this pass did not reuse the first audit as proof of completion.
