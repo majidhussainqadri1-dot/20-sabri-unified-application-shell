@@ -16,6 +16,9 @@ final class FutureShellV5TenthHardening {
         /* Supersede stale sixth-pass File 00 compatibility metadata with the latest reviewed evidence. */
         add_filter( 'sabri_shell_contract_registry', array( __CLASS__, 'harmonize_latest_file00_audit_truth' ), PHP_INT_MAX - 100 );
 
+        /* File 26 owns search/discovery/ranking; a local WordPress fallback is not a canonical substitute. */
+        add_filter( 'sabri_shell_search_surface', array( __CLASS__, 'file26_search_surface_only' ), PHP_INT_MAX );
+
         NativeContentSlots::register();
 
         /* Replace the legacy health endpoint whose overall state could be green while required providers were unavailable. */
@@ -85,6 +88,30 @@ final class FutureShellV5TenthHardening {
             )
         );
         return $registry;
+    }
+
+    /** Final Search surface is either a validated File 26 contract or unavailable. */
+    public static function file26_search_surface_only( $surface ) {
+        unset( $surface );
+        $contract = FourPlanHarmonization::file26_search_contract();
+        if ( empty( $contract ) ) {
+            return array(
+                'owner' => 'file-26',
+                'url' => '',
+                'status' => 'unavailable',
+                'scope' => 'none',
+                'file20_fallback' => false,
+            );
+        }
+        return array(
+            'owner' => sanitize_key( (string) $contract['owner'] ),
+            'url' => esc_url_raw( (string) $contract['url'] ),
+            'status' => 'available',
+            'scope' => 'file-26-federated-search',
+            'version' => sanitize_text_field( (string) $contract['version'] ),
+            'query_param' => sanitize_key( (string) $contract['query_param'] ),
+            'file20_fallback' => false,
+        );
     }
 
     /** Replace only File 20's own authenticated health endpoint. */
@@ -164,6 +191,7 @@ final class FutureShellV5TenthHardening {
     public static function system_check( $sections ) {
         $sections = is_array( $sections ) ? $sections : array();
         $providers = PlanV4ContractHealth::health();
+        $search = self::file26_search_surface_only( array() );
         $sections['future_shell_v5_tenth_hardening'] = array(
             'label' => __( 'Future Shell v5 tenth fresh ten-round hardening', 'sabri-unified-application-shell' ),
             'contract_version' => self::CONTRACT_VERSION,
@@ -183,6 +211,9 @@ final class FutureShellV5TenthHardening {
             'file21_native_slot_runtime' => 'published-by-native-content-slots',
             'authoritative_health_state' => self::authoritative_health_state( $providers ),
             'healthy_truth_rule' => 'all-critical-contracts-must-be-verified',
+            'search_surface_owner' => $search['owner'],
+            'search_surface_status' => $search['status'],
+            'search_native_fallback' => false,
             'staging_accepted' => false,
             'live_deployed' => false,
         );
