@@ -4,7 +4,7 @@ Tags: application shell, navigation, layout, accessibility, pwa, offline
 Requires at least: 6.0
 Tested up to: 7.0.1
 Requires PHP: 7.4
-Stable tag: 1.4.8
+Stable tag: 1.4.9
 License: GPLv2 or later
 Text Domain: sabri-unified-application-shell
 
@@ -16,15 +16,13 @@ File 20 owns the global structural shell and continuity layer; native-domain dat
 
 Future Shell v5 contains exactly eighteen approved enhancements: Command Palette, PWA, offline/weak-network mode, Data Saver, Recent & Resume, module circuit breaker, last-known-good recovery, performance guardian, smart navigation, keyboard accessibility, Focus Mode, native-owner Split Workspace, foldable/tablet/ultra-wide adaptation, progressive View Transitions, bounded safe prefetch, language/direction quick control, accessibility preference center and five-state release rings.
 
-Version 1.4.8 completes an eighth independent ten-round corrective review over merged 1.4.7. It retains the exact eighteen-feature Future Shell scope and the conditional CF-01 through CF-06 contract surface while closing post-merge File-20-owned recovery, diagnostics, admin-control, audit-integrity and subdirectory-layout gaps.
+Version 1.4.9 completes a ninth independent ten-round corrective review over merged 1.4.8. It does not add a nineteenth Future Shell feature. File 25 visual ownership is enforced at the persisted-default level, direct Emergency state writes are blocked, recovery snapshots are presence-aware, repair/rollback concurrency is revalidated under lock, stale File 20 Page-ID bindings have a dry-run repair path, route overrides use a strict HTTPS/relative contract, canonical route precedence is exact, explicit uninstall cleanup is File-20-only and comprehensive, and rollback preserves the current Emergency safety state while keeping the settings row version monotonic.
 
-File 25 remains the visual owner; File 20's historical Appearance editor is retired. Sensitive account/membership/system task layout is site-relative so WordPress subdirectory installs receive the same Minimal presentation as root installs. System Check now consumes registered hardening sections and emits bounded ID/severity/evidence/last-run/affected-surface/remediation records plus an authenticated sanitized export.
+Legacy File 20 appearance values may survive only as migration evidence; File 20 no longer creates visual appearance state. Route overrides reject raw HTTP, unauthorized external hosts, credentials, query strings, fragments and protocol-relative forms. Stored legacy overrides are revalidated on read.
 
-Operational audit retention now uses a bounded chain anchor, fails closed before appending to an invalid chain, and rehashes authorized privacy erasures without silently breaking evidence. Assurance and audit sanitizers no longer require mbstring to exist.
+Recovery snapshot format 2 records option existence separately from value so absent options are restored as absent. Automatic rollback requires matching snapshot format, File 20 code major and current settings schema. The target is revalidated under the recovery lock and held before the pre-rollback snapshot can affect retention. Emergency lifecycle evidence and the monotonic settings-row counter are deliberately not rolled backward.
 
-Complete Repair now performs real settings normalization and exposes bounded dry-run diffs. Recovery snapshots include current File 20 settings, Future Shell feature state, source/version/schema and contract/route/feature fingerprints. Automatic rollback requires both compatible code major and exact current settings schema. Activation snapshots use an integrity-protected File-20-only format and no longer restore shared WordPress front-page ownership.
-
-Safe Mode query access is nonce-bound for administrators. Emergency Disable records reason, actor, time and review evidence; re-enable is blocked by invalid audit/provider health and purges shell/cache state before rendering resumes. File 20 admin Repair/Rollback/Emergency controls are routed through these hardened lifecycles instead of the legacy one-click handlers.
+Complete Repair now includes a separately selectable stale Page-ID quarantine action. It changes only File 20's configured pointer from an invalid/non-published Page ID to zero; it never deletes or commandeers pages or companion state. Programmatic repair writes advance audited concurrency evidence.
 
 CF-01 clinical records, CF-02 support/appeals, CF-03 financial operations, CF-04 secure media, CF-05 analytics and CF-06 localization remain native owners. File 20 contributes route/layout/UI/privacy integration only. Current platform financial law remains one free tier, voluntary donation, zero commission and no donor advantage. Paid collection remains dormant absent new Founder change control and native CF-03 activation.
 
@@ -33,17 +31,31 @@ Hostinger staging testing and Founder acceptance remain required before producti
 == Installation ==
 
 1. Back up files and database and prove restore.
-2. Install or upgrade the exact 1.4.8 candidate on staging only and flush rewrite rules.
+2. Install or upgrade the exact 1.4.9 candidate on staging only and flush rewrite rules.
 3. Verify the package has one canonical root, no tests/development-only material, and matching embedded/external source manifests.
-4. Run Sabri Shell System Check and export the sanitized evidence report; Unknown/Unavailable/Incompatible states must not be treated as PASS.
-5. Verify actual File 00-26 contracts and any activated CF-01..CF-06 contracts independently.
-6. Verify root and WordPress-subdirectory sensitive routes resolve to their governed Minimal/private behavior.
-7. Exercise the dry-run repair diff before repair, then verify pre-repair snapshot, audit evidence and post-repair health.
-8. Verify rollback rejects code/schema-incompatible snapshots and creates a pre-rollback snapshot before a compatible rollback.
-9. Test nonce-bound Safe Mode plus Emergency Disable reason/review evidence and health/cache-gated re-enable.
+4. Run Sabri Shell System Check; Unknown/Unavailable/Incompatible states must not be treated as PASS.
+5. Verify File 25 owns visual truth and fresh File 20 defaults contain no Appearance group.
+6. Test direct Emergency state writes, canonical Emergency Disable/re-enable, and nonce-bound Safe Mode.
+7. Exercise repair preview, stale Page-ID quarantine, settings normalization and settings-row concurrency.
+8. Verify rollback rejects legacy/ambiguous/code/schema-incompatible snapshots, preserves current Emergency state, keeps row versions monotonic and restores absent options as absent.
+9. Test exact route precedence and strict route overrides, including hostile external/query/fragment inputs.
 10. Complete Hostinger staging, backup/restore/rollback rehearsal, accessibility/browser/device checks and Founder acceptance before production.
 
 == Changelog ==
+
+= 1.4.9 =
+* Completed a ninth independent ten-round corrective review over merged 1.4.8.
+* Added FutureShellV5NinthHardening contract 1.0.9 without adding a nineteenth Future Shell feature.
+* Advanced File 20 settings schema to 4 and stopped creating visual Appearance state; File 25 remains sole visual owner.
+* Added a fail-closed option-level guard so Emergency state can change only through the canonical audited lifecycle.
+* Added presence-aware recovery snapshot format 2; legacy ambiguous snapshots are read-only for automatic rollback.
+* Revalidated rollback target under lock and held it before pre-rollback snapshot retention can evict it.
+* Revalidated repair settings-row version under lock to close preview-to-execute TOCTOU.
+* Added separately selectable dry-run stale File 20 Page-ID quarantine plus audited programmatic settings-row advancement.
+* Added strict route override security: relative or HTTPS, same-site by default, explicit external allowlist, no query/fragment/credentials.
+* Enforced canonical route precedence: Page ID, shortcode page, archive, approved slug, validated override, unavailable.
+* Completed explicit delete-on-uninstall cleanup for File-20-owned operational state without deleting companion data/pages.
+* Preserved current Emergency safety state during rollback, prevented settings-row version rollback and verified each restored option after write.
 
 = 1.4.8 =
 * Completed an eighth independent ten-round corrective review over merged 1.4.7.
@@ -58,7 +70,6 @@ Hostinger staging testing and Founder acceptance remain required before producti
 * Replaced legacy activation snapshot behavior with integrity-protected File-20-only state; shared WordPress front-page options are never restored by File 20.
 * Added nonce-bound query Safe Mode and audited Emergency Disable/re-enable lifecycle with reason, actor, time, review, health and cache gates.
 * Routed File 20 admin Repair/Rollback/Emergency actions through hardened recovery/emergency controllers.
-* Added dedicated eighth-pass adversarial regression and advanced release identity to 1.4.8.
 
 = 1.4.7 =
 * Completed a seventh independent ten-round corrective review over merged 1.4.6.
@@ -66,16 +77,15 @@ Hostinger staging testing and Founder acceptance remain required before producti
 
 = 1.4.6 =
 * Completed a sixth independent ten-round corrective review after newer File 00/01/02/24 evidence changed compatibility facts.
-* Added FutureShellV5SixthHardening contract 1.0.6 and current compatibility-target truth boundaries.
 
 = 1.4.5 =
 * Completed the fifth ten-round corrective review, production-only packaging hardening and final five-state Internal release-ring contract.
 
 = 1.4.4 =
-* Reconciled File 00/01/02/19/21/24 contracts, File 02 public WebAuthn route, File 19 one-bell, File 21 five slots and File 24 render states.
+* Reconciled File 00/01/02/19/21/24 contracts and current owner boundaries.
 
 = 1.4.3 =
-* Protected current private task routes, fail-closed protected-path overflow and one final PWA owner.
+* Protected private task routes, fail-closed protected-path overflow and one final PWA owner.
 
 = 1.4.2 =
 * Added subdirectory privacy, PWA retirement, bounded circuits, partial-setting preservation and editable shortcut protection.
