@@ -16,6 +16,7 @@ final class FutureShellV5TenthHardening {
         /* Supersede stale sixth-pass File 00 compatibility metadata with the latest reviewed evidence. */
         add_filter( 'sabri_shell_contract_registry', array( __CLASS__, 'harmonize_latest_file00_audit_truth' ), PHP_INT_MAX - 100 );
 
+        NativeContentSlots::register();
         add_filter( 'sabri_shell_system_check_sections', array( __CLASS__, 'system_check' ), 95 );
     }
 
@@ -94,6 +95,14 @@ final class FutureShellV5TenthHardening {
             'file00_latest_reviewed_evidence' => 'runtime-1.2.18/schema-1.3.0/contract-1.2.0/audit-known-blockers',
             'file00_production_safe_implied' => false,
             'file00_runtime_health_must_be_verified' => true,
+            'file21_native_slots' => array(
+                'sabri_shell_home_before_main',
+                'sabri_shell_home_main',
+                'sabri_shell_home_after_main',
+                'sabri_shell_home_right_sidebar',
+                'sabri_shell_news_main',
+            ),
+            'file21_native_slot_runtime' => 'published-by-native-content-slots',
             'staging_accepted' => false,
             'live_deployed' => false,
         );
