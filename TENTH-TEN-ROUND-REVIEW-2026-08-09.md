@@ -21,7 +21,7 @@
 | 7 | Defect found | File25/File01-B provider rows used `0.0.0`, causing generic version comparison to be skipped and potentially allowing too-old contracts to appear healthy. | Bound provider rows to actually advertised semantic versions and required expected owner/version shape before health evaluation. |
 | 8 | Defect found | Emergency re-enable blocked only collision/error/invalid provider states; File00 unavailable/incompatible could still permit re-enable. | Re-enable now requires critical File20 + File00 health to be exactly Healthy, in addition to audit integrity and cache purge. |
 | 9 | Defect found | Initial native-slot correction could render File21 native Home/News output and legacy page/shortcode content together. | Native main output now replaces legacy main content when present; legacy content is fallback only when native output is absent. |
-| 10 | Defect found | Residual defaults/configuration still created `home_feed.auto_insert=true` and a configured `sabri_shell_home_feed` source, so Round1 retirement was not state-complete. | Final settings invariant forces retired/inert feed state, quarantines configured local-feed shortcode, migrates installed settings idempotently, advances release/tests/docs/workflow to 1.4.10. |
+| 10 | Defect found | Residual defaults/configuration still created `home_feed.auto_insert=true` and a configured `sabri_shell_home_feed` source; release-evidence closure also found six stale preservation suites hard-coded to the preceding `1.4.9` current-release identity. | Forced local feed state/configuration inert, migrated installed settings idempotently, advanced runtime/docs/workflow to `1.4.10`, and updated the six historical preservation suites to assert the current release while keeping their historical contracts unchanged. |
 
 ## Release candidate after corrections
 
@@ -32,23 +32,21 @@
 - Dedicated tenth regression: `tests/run-future-shell-v5-tenth-hardening.php`.
 - Deterministic package target: `20-sabri-unified-application-shell-1.4.10-TENTH-TEN-ROUND-HARDENED.zip`.
 
-## Final repository gate
+## Final-closure QA record
 
-The exact final PR head must pass:
+The first PR closure run on head `4c255f8af45fd308e6085f6965948e97a4763bc4` passed PHP syntax but correctly failed the full regression step because six preservation suites still asserted the old current release `1.4.9`. The static/package job was therefore skipped. This was treated as a Round-10 QA defect, not bypassed.
 
-- PHP 7.4 and PHP 8.3 syntax for every source/test PHP file;
-- every repository `tests/run*.php` regression/adversarial suite;
-- JavaScript syntax, JSON validation and CSS structural checks;
-- File21 feed/native-slot ownership tests;
-- File25 visual and File26 search ownership tests;
-- latest File00 evidence/no-false-assurance tests;
-- provider-version and critical-health/Emergency tests;
-- inherited route/recovery/privacy/PWA/release-ring/uninstall/CF-owner tests;
-- deterministic clean production package, safe ZIP paths/root, exact source/stage/extracted SHA-256 parity, embedded/external manifest equality and ZIP CRC;
-- Baseline Archive Integrity on the same exact head.
+After those preservation assertions were corrected without changing their historical contract expectations, head `4773cb2cd9b4cd9757193e11f1f3b06b431c95a7` passed:
 
-Any failure discovered during this final closure belongs to Round 10 and must be corrected and rerun before merge.
+- PHP 7.4 syntax + every repository regression/adversarial suite;
+- PHP 8.3 syntax + every repository regression/adversarial suite;
+- JavaScript/JSON/CSS and tenth-pass ownership/native-slot/health/privacy static checks;
+- deterministic production-only package build and source/stage/extracted parity;
+- exact-head tenth-audit report and artifact upload;
+- Baseline Archive Integrity.
+
+A final documentation-only evidence commit follows this record; therefore the **merge-eligible exact head must again pass the same quality and baseline workflows**. No earlier run is accepted as proof for that final head.
 
 ## Lifecycle truth
 
-This audit can establish repository/code/package/automated-QA evidence only after the final gates are green. Hostinger staging, real browser/device/accessibility behavior, actual companion runtime contracts, backup/restore/rollback rehearsal, Founder acceptance, live deployment and operational acceptance remain separate and are not claimed by this record.
+This audit establishes repository/code/package/automated-QA evidence only after the final exact-head gates are green. Hostinger staging, real browser/device/accessibility behavior, actual companion runtime contracts, backup/restore/rollback rehearsal, Founder acceptance, live deployment and operational acceptance remain separate and are not claimed by this record.
