@@ -14,19 +14,19 @@ $assert = static function ( $condition, $label ) use ( &$fail ): void {
 	}
 };
 
-$assert( false !== strpos( $main, '* Version: 1.4.5' ) && false !== strpos( $main, "SABRI_SHELL_VERSION', '1.4.5" ), 'current release identity 1.4.5 preserves fourth hardening' );
+$assert( false !== strpos( $main, '* Version: 1.4.6' ) && false !== strpos( $main, "SABRI_SHELL_VERSION', '1.4.6" ), 'current release identity 1.4.6 preserves fourth hardening' );
 $assert( false !== strpos( $main, 'class-future-shell-v5-fourth-hardening.php' ) && false !== strpos( $main, 'FutureShellV5FourthHardening::register();' ), 'fourth hardening loaded and registered' );
 $assert( false !== strpos( $fourth, "CONTRACT_VERSION = '1.0.4'" ), 'fourth contract 1.0.4' );
 
-$assert( false !== strpos( $fourth, 'membership-core-1.2.13' ), 'File 00 runtime 1.2.13 compatibility' );
-$assert( false !== strpos( $fourth, "'public_membership_contract' => '1.2.0'" ), 'File 00 public membership contract 1.2.0' );
-$assert( false !== strpos( $fourth, "'advanced_trust_contract'    => '1.0.0'" ), 'File 00 advanced trust contract 1.0.0' );
+$assert( false !== strpos( $fourth, 'membership-core-1.2.13' ), 'File 00 runtime 1.2.13 compatibility preserved' );
+$assert( false !== strpos( $fourth, "'public_membership_contract' => '1.2.0'" ), 'File 00 public membership contract 1.2.0 preserved' );
+$assert( false !== strpos( $fourth, "'advanced_trust_contract'    => '1.0.0'" ), 'File 00 advanced trust contract 1.0.0 preserved' );
 
-$assert( false !== strpos( $fourth, 'foundation-runtime-2.0.0-future-foundation-18' ), 'File 01 Future Foundation v2 compatibility' );
-$assert( false !== strpos( $fourth, "'future_feature_count'  => 18" ), 'File 01 exact 18 enhancements' );
+$assert( false !== strpos( $fourth, 'foundation-runtime-2.0.0-future-foundation-18' ), 'File 01 Future Foundation v2 compatibility preserved' );
+$assert( false !== strpos( $fourth, "'future_feature_count'  => 18" ), 'File 01 exact 18 enhancements preserved' );
 
-$assert( false !== strpos( $fourth, 'modern-auth-1.3.0-candidate' ), 'File 02 1.3.0 compatibility' );
-$assert( false !== strpos( $fourth, "'modern_feature_count'          => 24" ), 'File 02 exact 24 enhancements' );
+$assert( false !== strpos( $fourth, 'modern-auth-1.3.0-candidate' ), 'historical fourth-pass File 02 1.3.0 compatibility preserved for traceability' );
+$assert( false !== strpos( $fourth, "'modern_feature_count'          => 24" ), 'File 02 exact 24 enhancements preserved' );
 $assert( false !== strpos( $fourth, "'passkey_assurance_v1_compat'   => '1.0.0'" ), 'File 02/File 00 passkey v1 compatibility' );
 $assert( false !== strpos( $fourth, "'authentication_assurance_v2'   => '2.0.0'" ), 'File 02 authentication assurance v2' );
 $assert( false !== strpos( $fourth, "'public_standard_route'         => '/.well-known/webauthn'" ), 'File 02 public WebAuthn standards route' );
@@ -70,4 +70,4 @@ if ( $fail ) {
 	exit( 1 );
 }
 
-echo "Future Shell v5 fourth ten-round hardening preserved under 1.4.5: File 00/01/02/19/21/24 contracts, public WebAuthn standards route and File 24 security states PASS\n";
+echo "Future Shell v5 fourth ten-round hardening preserved under 1.4.6: historical File 00/01/02/19/21/24 contracts, public WebAuthn route and security states PASS\n";

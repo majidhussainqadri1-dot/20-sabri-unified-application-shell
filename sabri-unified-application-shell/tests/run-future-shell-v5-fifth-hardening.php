@@ -6,7 +6,7 @@ $future = file_get_contents( $root . '/includes/class-future-shell-v5.php' );
 $fail   = array();
 
 $checks = array(
-    'release 1.4.5' => false !== strpos( $main, '* Version: 1.4.5' ) && false !== strpos( $main, "define( 'SABRI_SHELL_VERSION', '1.4.5' );" ),
+    'release 1.4.6 preserves fifth hardening' => false !== strpos( $main, '* Version: 1.4.6' ) && false !== strpos( $main, "define( 'SABRI_SHELL_VERSION', '1.4.6' );" ),
     'fifth hardening loaded' => false !== strpos( $main, 'class-future-shell-v5-fifth-hardening.php' ) && false !== strpos( $main, 'FutureShellV5FifthHardening::register();' ),
     'contract 1.0.5' => false !== strpos( $fifth, "CONTRACT_VERSION = '1.0.5'" ),
     'old final evaluator retired' => false !== strpos( $fifth, "remove_filter( 'sabri_shell_future_feature_enabled', array( FutureShellV5Hardening::class, 'narrow_feature_enablement' ), 999999 )" ),
@@ -30,4 +30,4 @@ if ( $fail ) {
     exit( 1 );
 }
 
-echo "Future Shell v5 fifth ten-round hardening: exact five-state rings, explicit internal-principal contract, manager-only configuration and no foreign backend PASS\n";
+echo "Future Shell v5 fifth ten-round hardening preserved under 1.4.6: exact five-state rings, explicit internal-principal contract, manager-only configuration and no foreign backend PASS\n";

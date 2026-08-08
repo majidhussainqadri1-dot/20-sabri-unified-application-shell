@@ -29,8 +29,8 @@ $layout = $read('includes/class-layout.php');
 $assets = $read('includes/class-assets.php');
 $css = $read('assets/css/shell-central-plan-v4.css');
 
-$assert(strpos($main, '* Version: 1.4.5') !== false, 'Plugin header must be 1.4.5.');
-$assert(strpos($main, "define( 'SABRI_SHELL_VERSION', '1.4.5' )") !== false, 'Runtime version must be 1.4.5.');
+$assert(strpos($main, '* Version: 1.4.6') !== false, 'Plugin header must be 1.4.6.');
+$assert(strpos($main, "define( 'SABRI_SHELL_VERSION', '1.4.6' )") !== false, 'Runtime version must be 1.4.6.');
 $assert(strpos($main, 'CentralPlanContract::register()') !== false, 'Central-plan contract must register.');
 $assert(strpos($main, "SABRI_SHELL_CREATE_CONTRACT_VERSION', '1.0.1'") !== false, 'File 22 Create contract must remain 1.0.1.');
 
