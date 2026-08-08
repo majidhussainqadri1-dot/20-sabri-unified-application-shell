@@ -25,6 +25,9 @@ final class FutureShellV5EighthHardening {
 		/* Final route classifier must work at web root and WordPress subdirectories. */
 		add_filter( 'sabri_shell_layout_mode', array( __CLASS__, 'force_subdirectory_safe_sensitive_layout' ), 1500, 2 );
 
+		/* Controlled, sanitized operator evidence export. */
+		add_action( 'rest_api_init', array( __CLASS__, 'register_rest_routes' ) );
+
 		add_filter( 'sabri_shell_system_check_sections', array( __CLASS__, 'system_check' ), 80 );
 	}
 
@@ -93,6 +96,32 @@ final class FutureShellV5EighthHardening {
 		return $mode;
 	}
 
+	/** Register a versioned, authenticated sanitized System Check export. */
+	public static function register_rest_routes() {
+		register_rest_route(
+			'sabri-shell/v1',
+			'/system-check/export',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( __CLASS__, 'rest_system_check_export' ),
+				'permission_callback' => array( __CLASS__, 'can_manage' ),
+			)
+		);
+	}
+
+	public static function can_manage() {
+		return is_user_logged_in() && current_user_can( 'manage_options' );
+	}
+
+	public static function rest_system_check_export() {
+		$response = rest_ensure_response( SystemCheck::export() );
+		if ( is_object( $response ) && is_callable( array( $response, 'header' ) ) ) {
+			$response->header( 'Cache-Control', 'private, no-store, max-age=0' );
+			$response->header( 'X-Robots-Tag', 'noindex, noarchive' );
+		}
+		return $response;
+	}
+
 	public static function system_check( $sections ) {
 		$sections = is_array( $sections ) ? $sections : array();
 		$sections['future_shell_v5_eighth_hardening'] = array(
@@ -102,6 +131,7 @@ final class FutureShellV5EighthHardening {
 			'file20_appearance_editor'         => 'retired',
 			'legacy_appearance_data'           => 'preserved-migration-only',
 			'sensitive_task_subdirectory_safe' => true,
+			'system_check_export'              => 'authenticated-sanitized-bounded-no-store',
 			'staging_accepted'                 => false,
 			'live_deployed'                    => false,
 		);
