@@ -1,5 +1,5 @@
-/* File 20 Future Shell v5 — structural only; File 25 remains visual-token owner. */
-:root{--sabri-shell-v5-accent:var(--sabri-primary,#16803a);--sabri-visual-height:100vh}
+/* File 20 Future Shell v5 — structural/accessibility signals only; File 25 remains visual-token owner. */
+:root{--sabri-visual-height:100vh}
 .sabri-shell-connectivity{position:fixed;inset-inline:1rem;bottom:1rem;z-index:99999;padding:.65rem 1rem;border:1px solid currentColor;border-radius:.65rem;background:Canvas;color:CanvasText;text-align:center}
 .sabri-shell-command-palette,.sabri-shell-accessibility-center,.sabri-shell-recent-center{width:min(44rem,calc(100vw - 2rem));max-height:min(80vh,44rem);border:1px solid color-mix(in srgb,currentColor 25%,transparent);border-radius:1rem;padding:1rem;background:Canvas;color:CanvasText}
 .sabri-shell-command-palette::backdrop,.sabri-shell-accessibility-center::backdrop,.sabri-shell-recent-center::backdrop{background:rgb(0 0 0/.45)}
@@ -7,12 +7,16 @@
 #sabri-shell-command-results{display:grid;gap:.35rem}.sabri-shell-command-item,.sabri-shell-pref-grid button{min-height:44px;text-align:start;padding:.65rem .8rem;border:1px solid color-mix(in srgb,currentColor 20%,transparent);border-radius:.55rem;background:Canvas;color:CanvasText}
 .sabri-shell-pref-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(10rem,1fr));gap:.5rem}.sabri-shell-recent-link{display:block;padding:.7rem 0;border-bottom:1px solid color-mix(in srgb,currentColor 15%,transparent)}
 .sabri-shell-pin{border:0;background:transparent;min-width:32px;min-height:32px;cursor:pointer}.sabri-shell-primary-nav li{position:relative}
-.sabri-shell-focus-mode .sabri-shell-left-sidebar,.sabri-shell-focus-mode .sabri-shell-right-sidebar,.sabri-shell-focus-mode .sabri-shell-context-button{display:none!important}.sabri-shell-focus-mode{--sabri-shell-content-max:80rem}
+.sabri-shell-focus-mode .sabri-shell-left-sidebar,.sabri-shell-focus-mode .sabri-shell-right-sidebar,.sabri-shell-focus-mode .sabri-context-navigation{display:none!important}.sabri-shell-focus-mode{--sabri-shell-content-max:80rem}
 .sabri-shell-split-workspace{position:fixed;inset-block:var(--sabri-shell-header-height,4rem) 0;inset-inline-end:0;width:min(38rem,46vw);z-index:9990;overflow:auto;background:Canvas;color:CanvasText;border-inline-start:1px solid color-mix(in srgb,currentColor 20%,transparent);padding:1rem;box-shadow:0 0 2rem rgb(0 0 0/.16)}
-.sabri-shell-split-workspace[hidden]{display:none!important}.sabri-shell-a11y-large{font-size:112.5%}.sabri-shell-a11y-contrast{filter:contrast(1.12)}.sabri-shell-a11y-focus :focus-visible{outline:3px solid var(--sabri-shell-v5-accent)!important;outline-offset:3px!important}.sabri-shell-a11y-spacing p,.sabri-shell-a11y-spacing li{line-height:1.8}.sabri-shell-data-saver *{background-image:none!important}
+.sabri-shell-split-workspace[hidden]{display:none!important}
+.sabri-shell-a11y-large{font-size:112.5%}.sabri-shell-a11y-contrast{--sabri-a11y-contrast-request:1}.sabri-shell-a11y-contrast .sabri-shell-command-palette,.sabri-shell-a11y-contrast .sabri-shell-accessibility-center,.sabri-shell-a11y-contrast .sabri-shell-recent-center,.sabri-shell-a11y-contrast .sabri-shell-split-workspace{border-width:2px}.sabri-shell-a11y-focus :focus-visible{outline:3px solid var(--sabri-primary,currentColor)!important;outline-offset:3px!important}.sabri-shell-a11y-spacing p,.sabri-shell-a11y-spacing li{line-height:1.8}
+/* Data Saver may remove only explicitly decorative backgrounds. Native content/media owners retain authority. */
+.sabri-shell-data-saver [data-sabri-decorative-background]{background-image:none!important}
 .sabri-shell-adaptive-v5 .sabri-shell-header-inner{padding-inline:max(1rem,env(safe-area-inset-left)) max(1rem,env(safe-area-inset-right))}.sabri-shell-adaptive-v5 .sabri-shell-drawer{padding-bottom:max(1rem,env(safe-area-inset-bottom))}
 .sabri-shell-ultrawide:not(.sabri-shell-focus-mode) .sabri-shell-main-anchor{max-width:110rem}.sabri-shell-tablet-landscape .sabri-shell-split-workspace{width:50vw}
-@media (max-width:767px){.sabri-shell-split-workspace{width:100vw;inset-block-start:0}.sabri-shell-command-palette,.sabri-shell-accessibility-center,.sabri-shell-recent-center{width:calc(100vw - 1rem)}}
-@media (horizontal-viewport-segments:2){.sabri-shell-split-workspace{width:env(viewport-segment-width 1 0)}}
+@media (max-width:1023px){.sabri-shell-split-workspace{display:none!important}}
+@media (max-width:767px){.sabri-shell-command-palette,.sabri-shell-accessibility-center,.sabri-shell-recent-center{width:calc(100vw - 1rem)}}
+@media (horizontal-viewport-segments:2) and (min-width:1024px){.sabri-shell-split-workspace{width:env(viewport-segment-width 1 0)}}
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}.sabri-shell-a11y-reduce-motion *{scroll-behavior:auto!important;animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
 @supports (view-transition-name:none){@view-transition{navigation:auto}.sabri-shell-view-transitions .sabri-shell-header{view-transition-name:sabri-shell-header}.sabri-shell-view-transitions .sabri-shell-primary-nav{view-transition-name:sabri-shell-nav}}
