@@ -3,7 +3,7 @@
  * Plugin Name: Sabri Unified Application Shell
  * Plugin URI: https://github.com/majidhussainqadri1-dot/20-sabri-unified-application-shell
  * Description: Secure responsive public application shell for the Sabri Social Homeopathy Platform.
- * Version: 1.4.0
+ * Version: 1.4.1
  * Author: Dr. Allamah Majid Hussain Sabri Muhaddith Mursheed
  * Text Domain: sabri-unified-application-shell
  * Domain Path: /languages
@@ -15,7 +15,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'SABRI_SHELL_VERSION', '1.4.0' );
+define( 'SABRI_SHELL_VERSION', '1.4.1' );
 define( 'SABRI_SHELL_FILE', __FILE__ );
 define( 'SABRI_SHELL_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SABRI_SHELL_URL', plugin_dir_url( __FILE__ ) );
@@ -33,6 +33,7 @@ require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-recovery.php';
 require_once SABRI_SHELL_PATH . 'includes/class-four-plan-harmonization.php';
 require_once SABRI_SHELL_PATH . 'includes/class-publishing-dashboard-entry.php';
 require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5.php';
+require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-hardening.php';
 
 spl_autoload_register(
     static function ( $class_name ) {
@@ -99,6 +100,7 @@ $sabri_shell_central_plan_contract_is_owned = $sabri_shell_central_plan_contract
 
 register_activation_hook( __FILE__, array( 'Sabri\\UnifiedShell\\Plugin', 'activate' ) );
 register_deactivation_hook( __FILE__, array( 'Sabri\\UnifiedShell\\Plugin', 'deactivate' ) );
+register_deactivation_hook( __FILE__, array( 'Sabri\\UnifiedShell\\FutureShellV5Hardening', 'deactivate' ) );
 
 add_action( 'plugins_loaded', static function () use ( $sabri_shell_corrective_classes_are_owned, $sabri_shell_central_plan_contract_is_owned ) {
     load_plugin_textdomain( 'sabri-unified-application-shell', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
@@ -108,8 +110,9 @@ add_action( 'plugins_loaded', static function () use ( $sabri_shell_corrective_c
     Sabri\UnifiedShell\FourPlanHarmonization::register();
     Sabri\UnifiedShell\PublishingDashboardEntry::register();
     Sabri\UnifiedShell\FutureShellV5::register();
+    Sabri\UnifiedShell\FutureShellV5Hardening::register();
 
-    /* Upgrade-safe registration of the new root PWA virtual routes. */
+    /* Upgrade-safe registration of the root/subdirectory PWA virtual routes. */
     add_action( 'init', static function () {
         $rewrite_version = (string) get_option( 'sabri_shell_future_rewrite_version', '' );
         if ( SABRI_SHELL_VERSION !== $rewrite_version ) {
