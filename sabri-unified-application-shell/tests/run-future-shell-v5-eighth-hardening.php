@@ -17,7 +17,7 @@ $assert = static function ( $ok, $label ) use ( &$fail ): void {
     if ( ! $ok ) { $fail[] = $label; }
 };
 
-$assert( false !== strpos( $main, '* Version: 1.4.8' ) && false !== strpos( $main, "SABRI_SHELL_VERSION', '1.4.8" ), 'release identity 1.4.8' );
+$assert( false !== strpos( $main, '* Version: 1.4.9' ) && false !== strpos( $main, "SABRI_SHELL_VERSION', '1.4.9" ), 'current release identity 1.4.9 preserves eighth hardening' );
 $assert( false !== strpos( $main, 'class-future-shell-v5-eighth-hardening.php' ) && false !== strpos( $main, 'FutureShellV5EighthHardening::register();' ), 'eighth hardening loaded/registered' );
 $assert( false !== strpos( $eighth, "CONTRACT_VERSION = '1.0.8'" ), 'eighth contract 1.0.8' );
 
@@ -54,4 +54,4 @@ if ( $fail ) {
     exit( 1 );
 }
 
-echo "Future Shell v5 eighth hardening: File25 ownership, subdirectory privacy/layout, structured System Check/export, audit retention integrity, safe repair/rollback, emergency lifecycle and activation snapshot PASS\n";
+echo "Future Shell v5 eighth hardening preserved under 1.4.9: File25 ownership, subdirectory privacy/layout, structured System Check/export, audit retention integrity, safe repair/rollback, emergency lifecycle and activation snapshot PASS\n";
