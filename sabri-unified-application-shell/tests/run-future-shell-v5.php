@@ -8,6 +8,7 @@ $second  = file_get_contents( $root . '/includes/class-future-shell-v5-second-ha
 $third   = file_get_contents( $root . '/includes/class-future-shell-v5-third-hardening.php' );
 $fourth  = file_get_contents( $root . '/includes/class-future-shell-v5-fourth-hardening.php' );
 $fifth   = file_get_contents( $root . '/includes/class-future-shell-v5-fifth-hardening.php' );
+$sixth   = file_get_contents( $root . '/includes/class-future-shell-v5-sixth-hardening.php' );
 $js      = file_get_contents( $root . '/assets/js/future-shell-v5.js' );
 $guard   = file_get_contents( $root . '/assets/js/future-shell-v5-editable-guard.js' );
 $css     = file_get_contents( $root . '/assets/css/future-shell-v5.css' );
@@ -24,12 +25,14 @@ foreach ( $features as $feature ) {
 }
 $checks = array(
     '18 features' => count( $features ) === 18,
-    'release 1.4.5' => false !== strpos( $main, '* Version: 1.4.5' ) && false !== strpos( $main, "define( 'SABRI_SHELL_VERSION', '1.4.5' );" ),
-    'seven hardening layers registered' => false !== strpos( $main, 'FutureShellV5Hardening::register();' ) && false !== strpos( $main, 'FutureShellV5ClientContext::register();' ) && false !== strpos( $main, 'FutureShellV5ControlGuard::register();' ) && false !== strpos( $main, 'FutureShellV5SecondHardening::register();' ) && false !== strpos( $main, 'FutureShellV5ThirdHardening::register();' ) && false !== strpos( $main, 'FutureShellV5FourthHardening::register();' ) && false !== strpos( $main, 'FutureShellV5FifthHardening::register();' ),
+    'release 1.4.6' => false !== strpos( $main, '* Version: 1.4.6' ) && false !== strpos( $main, "define( 'SABRI_SHELL_VERSION', '1.4.6' );" ),
+    'eight hardening/support layers registered' => false !== strpos( $main, 'FutureShellV5Hardening::register();' ) && false !== strpos( $main, 'FutureShellV5ClientContext::register();' ) && false !== strpos( $main, 'FutureShellV5ControlGuard::register();' ) && false !== strpos( $main, 'FutureShellV5SecondHardening::register();' ) && false !== strpos( $main, 'FutureShellV5ThirdHardening::register();' ) && false !== strpos( $main, 'FutureShellV5FourthHardening::register();' ) && false !== strpos( $main, 'FutureShellV5FifthHardening::register();' ) && false !== strpos( $main, 'FutureShellV5SixthHardening::register();' ),
     'File26 search preserved' => false !== strpos( $php, 'FourPlanHarmonization::file26_search_contract()' ),
     'release rings present' => false !== strpos( $php, "case 'limited'" ) && false !== strpos( $php, "case 'staging'" ),
     'stored ring sanitizer fails closed' => false !== strpos( $hard, "\$ring    = 'disabled';" ),
     'fifth final release-ring evaluator' => false !== strpos( $fifth, "CONTRACT_VERSION = '1.0.5'" ) && false !== strpos( $fifth, 'sabri_shell_future_internal_principal_allowed' ) && false !== strpos( $fifth, 'PHP_INT_MAX' ),
+    'sixth latest companion truth layer' => false !== strpos( $sixth, "CONTRACT_VERSION = '1.0.6'" ) && false !== strpos( $sixth, 'modern-auth-runtime-1.3.1-third-ten-round-reviewed' ) && false !== strpos( $sixth, 'future-security-runtime-0.99.0' ),
+    'sixth compatibility not runtime claim' => false !== strpos( $sixth, 'declared-compatibility-target-not-runtime-detection' ) && false !== strpos( $sixth, "'runtime_presence_must_be_verified' => true" ),
     'invalid REST ring rejected' => false !== strpos( $control, "'/sabri-shell/v1/future/features'" ) && false !== strpos( $control, 'sabri_shell_invalid_release_ring' ) && false !== strpos( $control, "'status' => 400" ),
     'legacy auto recovery blocked' => false !== strpos( $control, "add_filter( 'sabri_shell_auto_recovery_allowed'" ) && false !== strpos( $control, 'PHP_INT_MAX' ) && false !== strpos( $control, 'block_legacy_auto_restore' ),
     'guarded recovery finally' => false !== strpos( $control, 'try {' ) && false !== strpos( $control, 'catch ( \\Throwable $error )' ) && false !== strpos( $control, 'finally {' ),
@@ -47,7 +50,11 @@ $checks = array(
     'third latest auth routes private' => false !== strpos( $third, "'/account-security'" ) && false !== strpos( $third, "'/account-passkeys'" ) && false !== strpos( $third, "'/resolve-account'" ),
     'third single final PWA owner' => false !== strpos( $third, "remove_action( 'template_redirect', array( FutureShellV5::class, 'serve_virtual_assets' ), 0 )" ) && false !== strpos( $third, "remove_action( 'template_redirect', array( FutureShellV5SecondHardening::class, 'serve_virtual_assets' ), -30 )" ),
     'third current Sabri Green fallback' => false !== strpos( $third, "BRAND_FALLBACK    = '#087a4e'" ),
-    'fourth latest companion contracts' => false !== strpos( $fourth, 'membership-core-1.2.13' ) && false !== strpos( $fourth, 'foundation-runtime-2.0.0-future-foundation-18' ) && false !== strpos( $fourth, 'modern-auth-1.3.0-candidate' ) && false !== strpos( $fourth, 'notifications-runtime-3.0.0-intelligent-attention-os' ) && false !== strpos( $fourth, 'home-news-runtime-1.0.1-ng30-amended' ),
+    'fourth preserved companion contracts' => false !== strpos( $fourth, 'membership-core-1.2.13' ) && false !== strpos( $fourth, 'foundation-runtime-2.0.0-future-foundation-18' ) && false !== strpos( $fourth, 'modern-auth-1.3.0-candidate' ) && false !== strpos( $fourth, 'notifications-runtime-3.0.0-intelligent-attention-os' ) && false !== strpos( $fourth, 'home-news-runtime-1.0.1-ng30-amended' ),
+    'sixth supersedes File02 compatibility target' => false !== strpos( $sixth, 'modern-auth-runtime-1.3.1-third-ten-round-reviewed' ) && false !== strpos( $sixth, "'auth_event_projection_contract'    => '1.1.0'" ),
+    'sixth adds File00 CF01 target' => false !== strpos( $sixth, "'cf01_contract'              => '1.0.0'" ),
+    'sixth adds File01 current contract' => false !== strpos( $sixth, "'foundation_contract'      => '2.0.0'" ),
+    'sixth adds File24 future count' => false !== strpos( $sixth, "'future_feature_count'     => 25" ) && false !== strpos( $sixth, 'F24-FUT-001..F24-FUT-025' ),
     'fourth File24 state boundary' => false !== strpos( $fourth, "'incident-containment'" ) && false !== strpos( $fourth, 'native-modules-enforce' ),
     'fourth public WebAuthn standard route' => false !== strpos( $fourth, '/.well-known/webauthn' ) && false === strpos( $third, "'/.well-known/webauthn'" ),
     'fifth internal principal extension remains fail-closed' => false !== strpos( $fifth, "case 'internal':" ) && false !== strpos( $fifth, "current_user_can( 'manage_options' )" ) && false !== strpos( $fifth, 'get_current_user_id()' ),
@@ -75,11 +82,11 @@ $checks = array(
     'partial settings preserve old values' => false !== strpos( $second, 'preserve_partial_future_settings' ) && false !== strpos( $second, 'array_replace( $old_features[ $feature ]' ),
     'view transition progressive' => false !== strpos( $css, '@supports (view-transition-name:none)' ) && false !== strpos( $css, '@view-transition' ),
     'foldable safe area' => false !== strpos( $css, 'env(safe-area-inset-left)' ) && false !== strpos( $css, 'horizontal-viewport-segments:2' ),
-    'no foreign backend' => false === strpos( $php . $hard . $client . $control . $second . $third . $fourth . $fifth, 'CREATE TABLE' ) && false === strpos( $php . $hard . $client . $control . $second . $third . $fourth . $fifth, 'dbDelta(' ),
+    'no foreign backend' => false === strpos( $php . $hard . $client . $control . $second . $third . $fourth . $fifth . $sixth, 'CREATE TABLE' ) && false === strpos( $php . $hard . $client . $control . $second . $third . $fourth . $fifth . $sixth, 'dbDelta(' ),
 );
 foreach ( $checks as $name => $ok ) { if ( ! $ok ) { $fail[] = $name; } }
 if ( $fail ) {
     fwrite( STDERR, "Future Shell v5 FAIL: " . implode( '; ', $fail ) . "\n" );
     exit( 1 );
 }
-echo "Future Shell v5: 18/18 enhancements + five ten-round corrective passes PASS\n";
+echo "Future Shell v5: 18/18 enhancements + six ten-round corrective passes PASS\n";
