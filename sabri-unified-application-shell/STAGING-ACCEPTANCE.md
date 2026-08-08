@@ -4,7 +4,9 @@ Hostinger staging acceptance is mandatory before production promotion or live ac
 
 ## Exact Candidate and Backup
 
-- Record File 20 version `1.4.3`, exact GitHub head, deterministic package name, SHA-256 and source manifest.
+- Record File 20 version `1.4.5`, exact GitHub head, deterministic package name, SHA-256 and source manifest.
+- Confirm the installable ZIP contains one `sabri-unified-application-shell/` root and **does not contain `tests/` or other declared development-only material**.
+- Verify the embedded `MANIFEST.sha256` equals the external CI source manifest and package/source parity report is green.
 - Verify a restorable files-and-database backup before installation.
 - Test both fresh installation and real upgrade from the actually deployed File 20 baseline.
 - Verify schema/settings preservation, cache invalidation and rewrite flushing.
@@ -29,9 +31,22 @@ Verify exact privacy/cache/index/layout behavior for current routes, including:
 - `/resolve-account/` — no-store/noindex collision-resolution task flow, Minimal presentation;
 - `/membership-application/`, `/membership-status/`, `/guardian-consent/`, `/membership-security/` — File 00 private/task semantics;
 - `/platform-system-check/` and `/platform-foundation/status/` — restricted/private system surfaces;
-- existing messages, appointments, security, verification, settings, notification center, publishing dashboard, newsroom and marketplace participant routes remain protected.
+- existing messages, appointments, security, verification, settings, notification center, publishing dashboard, newsroom and marketplace participant routes remain protected;
+- `/.well-known/webauthn` remains File-02-owned public standards JSON/no-cache and receives Minimal/no visual shell without being added to File 20's private-route list.
 
 Test the same routes on both a root installation and an equivalent WordPress subdirectory installation. No sensitive route may enter Recent/Resume, Smart Navigation or predictive prefetch.
+
+## Future Shell Release Rings
+
+Verify all five exact states: `disabled`, `internal`, `staging`, `limited`, `general`.
+
+- Invalid/malformed ring input must be rejected/fail closed.
+- REST release-ring configuration remains restricted to `manage_options`.
+- `internal` is available to `manage_options` by default.
+- Exercise the explicit `sabri_shell_future_internal_principal_allowed` integration with a controlled non-manager account approved by the canonical identity/entitlement owner; the same account must remain denied when that owner contract is absent/false.
+- An unauthenticated account must never pass the Internal ring.
+- Staging ring must not auto-enable in production.
+- Limited rollout must remain authenticated and deterministic for the same user+feature bucket.
 
 ## PWA and Privacy-Policy Acceptance
 
@@ -70,6 +85,7 @@ Test at 320, 360, 390, 480, 768, 900, 1024, 1100, 1280, 1366, 1440, 1600 and 192
 - 200%/400% zoom/reflow;
 - reduced-motion behavior;
 - RTL Urdu/Arabic plus mixed LTR English;
+- language provider renders in the Language/Direction quick center without File 20 inventing a locale/translation backend;
 - no clipping, sidebar overlap or inaccessible fixed content.
 
 ## Runtime and Browser Matrix
