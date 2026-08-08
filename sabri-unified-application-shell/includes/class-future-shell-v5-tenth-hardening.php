@@ -16,6 +16,9 @@ final class FutureShellV5TenthHardening {
         /* Supersede stale sixth-pass File 00 compatibility metadata with the latest reviewed evidence. */
         add_filter( 'sabri_shell_contract_registry', array( __CLASS__, 'harmonize_latest_file00_audit_truth' ), PHP_INT_MAX - 100 );
 
+        /* Provider health must compare the versions actually advertised by native owners. */
+        add_filter( 'sabri_shell_provider_registry', array( __CLASS__, 'bind_actual_provider_versions' ), PHP_INT_MAX - 100 );
+
         /* File 26 owns search/discovery/ranking; a local WordPress fallback is not a canonical substitute. */
         add_filter( 'sabri_shell_search_surface', array( __CLASS__, 'file26_search_surface_only' ), PHP_INT_MAX );
 
@@ -88,6 +91,50 @@ final class FutureShellV5TenthHardening {
             )
         );
         return $registry;
+    }
+
+    /** Bind File 25/File 01-B health rows to the actual advertised version. */
+    public static function bind_actual_provider_versions( $providers ) {
+        $providers = is_array( $providers ) ? $providers : array();
+
+        if ( isset( $providers['file-25-visual'] ) && is_array( $providers['file-25-visual'] ) ) {
+            $contract = apply_filters( 'sabri_shell_file25_visual_contract', null );
+            $providers['file-25-visual']['version'] = is_array( $contract ) && isset( $contract['version'] )
+                ? sanitize_text_field( (string) $contract['version'] )
+                : '0.0.0';
+            $providers['file-25-visual']['probe'] = array( __CLASS__, 'probe_file25_contract_shape' );
+        }
+
+        if ( isset( $providers['file-01b-registry-search'] ) && is_array( $providers['file-01b-registry-search'] ) ) {
+            $manifest = apply_filters( 'sabri_platform_foundation_manifest', null );
+            $providers['file-01b-registry-search']['version'] = is_array( $manifest ) && isset( $manifest['version'] )
+                ? sanitize_text_field( (string) $manifest['version'] )
+                : '0.0.0';
+            $providers['file-01b-registry-search']['probe'] = array( __CLASS__, 'probe_file01b_contract_shape' );
+        }
+
+        return $providers;
+    }
+
+    public static function probe_file25_contract_shape() {
+        $contract = apply_filters( 'sabri_shell_file25_visual_contract', null );
+        if ( ! is_array( $contract ) || empty( $contract['owner'] ) || empty( $contract['version'] ) ) {
+            return false;
+        }
+        $owner = sanitize_key( (string) $contract['owner'] );
+        $version = sanitize_text_field( (string) $contract['version'] );
+        return in_array( $owner, array( 'file-25', 'sabri-public-experience', 'sabri-unified-global-visual-experience' ), true )
+            && 1 === preg_match( '/^\d+\.\d+\.\d+$/', $version );
+    }
+
+    public static function probe_file01b_contract_shape() {
+        $manifest = apply_filters( 'sabri_platform_foundation_manifest', null );
+        if ( ! is_array( $manifest ) || empty( $manifest['owner'] ) || empty( $manifest['version'] ) ) {
+            return false;
+        }
+        $owner = sanitize_key( (string) $manifest['owner'] );
+        $version = sanitize_text_field( (string) $manifest['version'] );
+        return 'file-01-b' === $owner && 1 === preg_match( '/^\d+\.\d+\.\d+$/', $version );
     }
 
     /** Final Search surface is either a validated File 26 contract or unavailable. */
@@ -214,6 +261,7 @@ final class FutureShellV5TenthHardening {
             'search_surface_owner' => $search['owner'],
             'search_surface_status' => $search['status'],
             'search_native_fallback' => false,
+            'provider_versions_bound_to_native_evidence' => true,
             'staging_accepted' => false,
             'live_deployed' => false,
         );
