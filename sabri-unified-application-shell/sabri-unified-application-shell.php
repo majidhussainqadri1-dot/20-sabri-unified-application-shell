@@ -34,6 +34,7 @@ require_once SABRI_SHELL_PATH . 'includes/class-four-plan-harmonization.php';
 require_once SABRI_SHELL_PATH . 'includes/class-publishing-dashboard-entry.php';
 require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5.php';
 require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-hardening.php';
+require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-client-context.php';
 
 spl_autoload_register(
     static function ( $class_name ) {
@@ -111,6 +112,7 @@ add_action( 'plugins_loaded', static function () use ( $sabri_shell_corrective_c
     Sabri\UnifiedShell\PublishingDashboardEntry::register();
     Sabri\UnifiedShell\FutureShellV5::register();
     Sabri\UnifiedShell\FutureShellV5Hardening::register();
+    Sabri\UnifiedShell\FutureShellV5ClientContext::register();
 
     /* Upgrade-safe registration of the root/subdirectory PWA virtual routes. */
     add_action( 'init', static function () {
