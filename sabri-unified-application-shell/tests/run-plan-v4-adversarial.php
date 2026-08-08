@@ -26,8 +26,8 @@ $settings = (string) file_get_contents($root . '/includes/class-plan-v4-settings
 foreach (array('current_user_can', 'expected_settings_version', "'status' => 409", 'verify_snapshot', 'hash_equals', 'finally') as $needle) {
     $assert(strpos($recovery, $needle) !== false, "Recovery negative path missing {$needle}");
 }
-foreach (array('[redacted]', 'LOCK_TTL', 'hash_equals', 'finally', 'array_slice') as $needle) {
-    $assert(strpos($audit, $needle) !== false, "Audit negative path missing {$needle}");
+foreach (array('[redacted]', 'LOCK_TTL', 'hash_equals', 'finally', 'array_slice', 'ANCHOR_OPTION', 'verify_events', 'rehash_events') as $needle) {
+    $assert(strpos($audit, $needle) !== false, "Audit negative/integrity path missing {$needle}");
 }
 foreach (array('Throwable', 'unavailable', 'incompatible', 'collision', 'bounded_fallback') as $needle) {
     $assert(strpos($contracts, $needle) !== false, "Contract failure path missing {$needle}");
@@ -39,11 +39,12 @@ foreach (array('return $old_value', 'settings_conflict', '$expected !== $current
     $assert(strpos($settings, $needle) !== false, "Stale settings path missing {$needle}");
 }
 
-/* Real assurance/privacy assertions: this replaces the historical always-true placeholder. */
+/* Real assurance/privacy assertions: no always-true placeholder and no hidden mbstring requirement. */
 $assert(strpos($assurance, "preg_match( '/secret|token|nonce|cookie|password|key|document|phone|email/i'") !== false, 'Assurance redaction key matcher missing.');
 $assert(strpos($assurance, "'[redacted]'" ) !== false, 'Assurance sensitive values are not redacted.');
 $assert(strpos($assurance, 'array_slice( $context, 0, 30, true )') !== false, 'Assurance context is not bounded to 30 fields.');
-$assert(strpos($assurance, "mb_substr( sanitize_text_field( (string) \$value ), 0, 300 )") !== false, 'Assurance scalar values are not sanitized/bounded.');
+$assert(strpos($assurance, "function_exists( 'mb_substr' ) ? mb_substr( \$text, 0, 300 ) : substr( \$text, 0, 300 )") !== false, 'Assurance scalar values are not sanitized/bounded with mbstring-safe fallback.');
+$assert(strpos($assurance, 'while ( array_key_exists( $key, $safe ) )') !== false, 'Assurance sanitized-key collisions can overwrite evidence.');
 $assert(strpos($assurance, 'const MAX_EVENTS = 100;') !== false, 'Assurance queue lacks a hard event bound.');
 $assert(strpos($assurance, 'array_slice( $queue, -self::MAX_EVENTS )') !== false, 'Assurance queue append is not bounded.');
 $assert(strpos($assurance, 'catch ( \\Throwable $exception )') !== false, 'Assurance provider exception path missing.');
