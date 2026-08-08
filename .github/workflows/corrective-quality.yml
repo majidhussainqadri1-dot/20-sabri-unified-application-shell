@@ -57,8 +57,10 @@ jobs:
           grep -Fq 'Version: `1.4.1`' sabri-unified-application-shell/README.md
           grep -Fq 'FutureShellV5::register();' sabri-unified-application-shell/sabri-unified-application-shell.php
           grep -Fq 'FutureShellV5Hardening::register();' sabri-unified-application-shell/sabri-unified-application-shell.php
+          grep -Fq 'FutureShellV5ClientContext::register();' sabri-unified-application-shell/sabri-unified-application-shell.php
           grep -Fq 'capture_previous_lkg' sabri-unified-application-shell/includes/class-future-shell-v5-hardening.php
-          grep -Fq 'currentRoutePublic' sabri-unified-application-shell/includes/class-future-shell-v5-hardening.php
+          grep -Fq 'currentRoutePublic' sabri-unified-application-shell/includes/class-future-shell-v5-client-context.php
+          grep -Fq 'Object.assign({},window.SabriShellFutureV5||{},window.SabriShellFutureV5Hardening)' sabri-unified-application-shell/includes/class-future-shell-v5-client-context.php
           grep -Fq 'self.registration.unregister()' sabri-unified-application-shell/includes/class-future-shell-v5-hardening.php
           grep -Fq 'const IMMERSIVE' sabri-unified-application-shell/includes/class-layout.php
           grep -Fq 'sabri_shell_file25_visual_contract' sabri-unified-application-shell/includes/class-central-plan-contract.php
@@ -67,7 +69,7 @@ jobs:
           grep -Fq 'WELCOME_SESSION_COOKIE' sabri-unified-application-shell/includes/class-four-plan-harmonization.php
           grep -Fq 'single-free-tier' sabri-unified-application-shell/includes/class-four-plan-harmonization.php
           grep -Fq "donor_advantage']     = false" sabri-unified-application-shell/includes/class-four-plan-harmonization.php
-          grep -Fq 'SabriShellRecentPublicRoutesV' sabri-unified-application-shell/assets/js/future-shell-v5.js
+          grep -Fq 'sabriShellRecentPublicRoutesV' sabri-unified-application-shell/assets/js/future-shell-v5.js
           grep -Fq 'Object.keys(prefetched).length >= 3' sabri-unified-application-shell/assets/js/future-shell-v5.js
           grep -Fq 'CIRCUIT_THRESHOLD' sabri-unified-application-shell/includes/class-future-shell-v5.php
           grep -Fq 'hash_equals' sabri-unified-application-shell/includes/class-future-shell-v5.php
@@ -88,9 +90,10 @@ jobs:
               css=p.read_text(encoding='utf-8'); assert css.count('{')==css.count('}'), f'Unbalanced CSS: {p.name}'
           future=(root/'includes/class-future-shell-v5.php').read_text(encoding='utf-8')
           hard=(root/'includes/class-future-shell-v5-hardening.php').read_text(encoding='utf-8')
+          client=(root/'includes/class-future-shell-v5-client-context.php').read_text(encoding='utf-8')
           feature_ids=['command_palette','pwa_shell','offline_mode','data_saver','recent_resume','module_circuit_breaker','last_known_good','performance_guardian','smart_navigation','keyboard_accessibility','focus_mode','split_workspace','adaptive_foldable','view_transitions','predictive_prefetch','language_direction','accessibility_center','release_rings']
           assert all(("'"+x+"'") in future for x in feature_ids) and len(feature_ids)==18
-          assert 'CREATE TABLE' not in future+hard and 'dbDelta(' not in future+hard
+          assert 'CREATE TABLE' not in future+hard+client and 'dbDelta(' not in future+hard+client
           assert "'disabled'" in hard and 'return (bool) $enabled && $allowed;' in hard
           print('Static v1.4.1 ownership/privacy/security/future-shell hardening checks passed.')
           PY
@@ -123,6 +126,7 @@ jobs:
           unzip -q "release/${base}.zip" -d release/clean-extract
           grep -Fq '* Version: 1.4.1' release/clean-extract/sabri-unified-application-shell/sabri-unified-application-shell.php
           grep -Fq 'FutureShellV5Hardening::register();' release/clean-extract/sabri-unified-application-shell/sabri-unified-application-shell.php
+          grep -Fq 'FutureShellV5ClientContext::register();' release/clean-extract/sabri-unified-application-shell/sabri-unified-application-shell.php
 
       - name: Write exact-head report
         run: |
