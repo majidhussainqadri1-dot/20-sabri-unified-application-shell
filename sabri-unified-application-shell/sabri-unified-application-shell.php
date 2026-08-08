@@ -108,6 +108,22 @@ add_action( 'plugins_loaded', static function () use ( $sabri_shell_corrective_c
     Sabri\UnifiedShell\FourPlanHarmonization::register();
     Sabri\UnifiedShell\PublishingDashboardEntry::register();
     Sabri\UnifiedShell\FutureShellV5::register();
+
+    /* Upgrade-safe registration of the new root PWA virtual routes. */
+    add_action( 'init', static function () {
+        $rewrite_version = (string) get_option( 'sabri_shell_future_rewrite_version', '' );
+        if ( SABRI_SHELL_VERSION !== $rewrite_version ) {
+            update_option( 'sabri_shell_future_rewrite_version', SABRI_SHELL_VERSION, false );
+            update_option( 'sabri_shell_flush_rewrite_rules', 1, false );
+        }
+    }, 3 );
+
+    /* Seed an integrity-checked last-known-good snapshot on first 1.4.x request. */
+    add_action( 'init', static function () {
+        if ( ! get_option( Sabri\UnifiedShell\FutureShellV5::LKG_OPTION, false ) ) {
+            Sabri\UnifiedShell\FutureShellV5::capture_lkg( array(), Sabri\UnifiedShell\Settings::get() );
+        }
+    }, 4 );
 } );
 
 unset( $sabri_shell_corrective_classes_owned, $sabri_shell_corrective_classes_are_owned, $sabri_shell_create_contract_unclaimed, $sabri_shell_central_plan_contract_owned, $sabri_shell_central_plan_contract_is_owned );
