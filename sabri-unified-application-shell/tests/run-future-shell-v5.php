@@ -6,6 +6,7 @@ $client  = file_get_contents( $root . '/includes/class-future-shell-v5-client-co
 $control = file_get_contents( $root . '/includes/class-future-shell-v5-control-guard.php' );
 $second  = file_get_contents( $root . '/includes/class-future-shell-v5-second-hardening.php' );
 $third   = file_get_contents( $root . '/includes/class-future-shell-v5-third-hardening.php' );
+$fourth  = file_get_contents( $root . '/includes/class-future-shell-v5-fourth-hardening.php' );
 $js      = file_get_contents( $root . '/assets/js/future-shell-v5.js' );
 $guard   = file_get_contents( $root . '/assets/js/future-shell-v5-editable-guard.js' );
 $css     = file_get_contents( $root . '/assets/css/future-shell-v5.css' );
@@ -22,11 +23,11 @@ foreach ( $features as $feature ) {
 }
 $checks = array(
     '18 features' => count( $features ) === 18,
-    'release 1.4.3' => false !== strpos( $main, '* Version: 1.4.3' ) && false !== strpos( $main, "define( 'SABRI_SHELL_VERSION', '1.4.3' );" ),
-    'five hardening layers registered' => false !== strpos( $main, 'FutureShellV5Hardening::register();' ) && false !== strpos( $main, 'FutureShellV5ClientContext::register();' ) && false !== strpos( $main, 'FutureShellV5ControlGuard::register();' ) && false !== strpos( $main, 'FutureShellV5SecondHardening::register();' ) && false !== strpos( $main, 'FutureShellV5ThirdHardening::register();' ),
+    'release 1.4.4' => false !== strpos( $main, '* Version: 1.4.4' ) && false !== strpos( $main, "define( 'SABRI_SHELL_VERSION', '1.4.4' );" ),
+    'six hardening layers registered' => false !== strpos( $main, 'FutureShellV5Hardening::register();' ) && false !== strpos( $main, 'FutureShellV5ClientContext::register();' ) && false !== strpos( $main, 'FutureShellV5ControlGuard::register();' ) && false !== strpos( $main, 'FutureShellV5SecondHardening::register();' ) && false !== strpos( $main, 'FutureShellV5ThirdHardening::register();' ) && false !== strpos( $main, 'FutureShellV5FourthHardening::register();' ),
     'File26 search preserved' => false !== strpos( $php, 'FourPlanHarmonization::file26_search_contract()' ),
     'release rings present' => false !== strpos( $php, "case 'limited'" ) && false !== strpos( $php, "case 'staging'" ),
-    'stored rings fail closed' => false !== strpos( $hard, "$ring    = 'disabled';" ) && false !== strpos( $hard, 'return (bool) $enabled && $allowed;' ),
+    'stored rings fail closed' => false !== strpos( $hard, "\$ring    = 'disabled';" ) && false !== strpos( $hard, 'return (bool) $enabled && $allowed;' ),
     'invalid REST ring rejected' => false !== strpos( $control, "'/sabri-shell/v1/future/features'" ) && false !== strpos( $control, 'sabri_shell_invalid_release_ring' ) && false !== strpos( $control, "'status' => 400" ),
     'legacy auto recovery blocked' => false !== strpos( $control, "add_filter( 'sabri_shell_auto_recovery_allowed'" ) && false !== strpos( $control, 'PHP_INT_MAX' ) && false !== strpos( $control, 'block_legacy_auto_restore' ),
     'guarded recovery finally' => false !== strpos( $control, 'try {' ) && false !== strpos( $control, 'catch ( \\Throwable $error )' ) && false !== strpos( $control, 'finally {' ),
@@ -44,6 +45,9 @@ $checks = array(
     'third latest auth routes private' => false !== strpos( $third, "'/account-security'" ) && false !== strpos( $third, "'/account-passkeys'" ) && false !== strpos( $third, "'/resolve-account'" ),
     'third single final PWA owner' => false !== strpos( $third, "remove_action( 'template_redirect', array( FutureShellV5::class, 'serve_virtual_assets' ), 0 )" ) && false !== strpos( $third, "remove_action( 'template_redirect', array( FutureShellV5SecondHardening::class, 'serve_virtual_assets' ), -30 )" ),
     'third current Sabri Green fallback' => false !== strpos( $third, "BRAND_FALLBACK    = '#087a4e'" ),
+    'fourth latest companion contracts' => false !== strpos( $fourth, 'membership-core-1.2.13' ) && false !== strpos( $fourth, 'foundation-runtime-2.0.0-future-foundation-18' ) && false !== strpos( $fourth, 'modern-auth-1.3.0-candidate' ) && false !== strpos( $fourth, 'notifications-runtime-3.0.0-intelligent-attention-os' ) && false !== strpos( $fourth, 'home-news-runtime-1.0.1-ng30-amended' ),
+    'fourth File24 state boundary' => false !== strpos( $fourth, "'incident-containment'" ) && false !== strpos( $fourth, 'native-modules-enforce' ),
+    'fourth public WebAuthn standard route' => false !== strpos( $fourth, '/.well-known/webauthn' ) && false === strpos( $third, "'/.well-known/webauthn'" ),
     'LKG previous state' => false !== strpos( $hard, 'capture_previous_lkg' ) && false !== strpos( $hard, 'FutureShellV5::capture_lkg( array(), $old_value )' ),
     'LKG compatibility' => false !== strpos( $hard, "snapshot['plugin_version']" ) && false !== strpos( $hard, 'Defaults::SCHEMA_VERSION === absint' ) && false !== strpos( $control, 'Defaults::SCHEMA_VERSION !== absint' ),
     'circuit breaker bounded' => false !== strpos( $php, 'CIRCUIT_THRESHOLD' ) && false !== strpos( $second, 'MAX_CIRCUITS' ) && false !== strpos( $second, 'bound_circuit_state' ) && false !== strpos( $second, 'circuit_state_count' ),
@@ -68,11 +72,11 @@ $checks = array(
     'partial settings preserve old values' => false !== strpos( $second, 'preserve_partial_future_settings' ) && false !== strpos( $second, 'array_replace( $old_features[ $feature ]' ),
     'view transition progressive' => false !== strpos( $css, '@supports (view-transition-name:none)' ) && false !== strpos( $css, '@view-transition' ),
     'foldable safe area' => false !== strpos( $css, 'env(safe-area-inset-left)' ) && false !== strpos( $css, 'horizontal-viewport-segments:2' ),
-    'no foreign backend' => false === strpos( $php . $hard . $client . $control . $second . $third, 'CREATE TABLE' ) && false === strpos( $php . $hard . $client . $control . $second . $third, 'dbDelta(' ),
+    'no foreign backend' => false === strpos( $php . $hard . $client . $control . $second . $third . $fourth, 'CREATE TABLE' ) && false === strpos( $php . $hard . $client . $control . $second . $third . $fourth, 'dbDelta(' ),
 );
 foreach ( $checks as $name => $ok ) { if ( ! $ok ) { $fail[] = $name; } }
 if ( $fail ) {
     fwrite( STDERR, "Future Shell v5 FAIL: " . implode( '; ', $fail ) . "\n" );
     exit( 1 );
 }
-echo "Future Shell v5: 18/18 enhancements + three ten-round corrective passes PASS\n";
+echo "Future Shell v5: 18/18 enhancements + four ten-round corrective passes PASS\n";
