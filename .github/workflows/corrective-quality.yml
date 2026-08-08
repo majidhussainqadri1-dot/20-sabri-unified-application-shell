@@ -1,4 +1,4 @@
-name: File 20 Version 1.4.0 Future Shell 18 Quality
+name: File 20 Version 1.4.1 Ten-Round Hardened Quality
 
 on:
   pull_request:
@@ -51,11 +51,25 @@ jobs:
           set -euo pipefail
           for js in sabri-unified-application-shell/assets/js/*.js; do node --check "$js"; done
           python -m json.tool sabri-unified-application-shell/contracts/file20-central-plan-v4.json >/dev/null
-          grep -Fq '* Version: 1.4.0' sabri-unified-application-shell/sabri-unified-application-shell.php
-          grep -Fq "define( 'SABRI_SHELL_VERSION', '1.4.0' );" sabri-unified-application-shell/sabri-unified-application-shell.php
-          grep -Fq 'Stable tag: 1.4.0' sabri-unified-application-shell/readme.txt
-          grep -Fq 'Version: `1.4.0`' sabri-unified-application-shell/README.md
+          grep -Fq '* Version: 1.4.1' sabri-unified-application-shell/sabri-unified-application-shell.php
+          grep -Fq "define( 'SABRI_SHELL_VERSION', '1.4.1' );" sabri-unified-application-shell/sabri-unified-application-shell.php
+          grep -Fq 'Stable tag: 1.4.1' sabri-unified-application-shell/readme.txt
+          grep -Fq 'Version: `1.4.1`' sabri-unified-application-shell/README.md
           grep -Fq 'FutureShellV5::register();' sabri-unified-application-shell/sabri-unified-application-shell.php
+          grep -Fq 'FutureShellV5Hardening::register();' sabri-unified-application-shell/sabri-unified-application-shell.php
+          grep -Fq 'FutureShellV5ClientContext::register();' sabri-unified-application-shell/sabri-unified-application-shell.php
+          grep -Fq 'FutureShellV5ControlGuard::register();' sabri-unified-application-shell/sabri-unified-application-shell.php
+          grep -Fq 'capture_previous_lkg' sabri-unified-application-shell/includes/class-future-shell-v5-hardening.php
+          grep -Fq 'currentRoutePublic' sabri-unified-application-shell/includes/class-future-shell-v5-client-context.php
+          grep -Fq "'/login'" sabri-unified-application-shell/includes/class-future-shell-v5-client-context.php
+          grep -Fq "'/notifications'" sabri-unified-application-shell/includes/class-future-shell-v5-client-context.php
+          grep -Fq "'/publishing-dashboard'" sabri-unified-application-shell/includes/class-future-shell-v5-client-context.php
+          grep -Fq 'sabri_shell_future_private_path_fragments' sabri-unified-application-shell/includes/class-future-shell-v5-client-context.php
+          grep -Fq 'Object.assign({},window.SabriShellFutureV5||{},window.SabriShellFutureV5Hardening)' sabri-unified-application-shell/includes/class-future-shell-v5-client-context.php
+          grep -Fq 'sabri_shell_invalid_release_ring' sabri-unified-application-shell/includes/class-future-shell-v5-control-guard.php
+          grep -Fq 'PHP_INT_MAX' sabri-unified-application-shell/includes/class-future-shell-v5-control-guard.php
+          grep -Fq 'finally {' sabri-unified-application-shell/includes/class-future-shell-v5-control-guard.php
+          grep -Fq 'self.registration.unregister()' sabri-unified-application-shell/includes/class-future-shell-v5-hardening.php
           grep -Fq 'const IMMERSIVE' sabri-unified-application-shell/includes/class-layout.php
           grep -Fq 'sabri_shell_file25_visual_contract' sabri-unified-application-shell/includes/class-central-plan-contract.php
           grep -Fq "'26' => array( 'Search Discovery and Ranking'" sabri-unified-application-shell/includes/class-central-plan-contract.php
@@ -63,12 +77,15 @@ jobs:
           grep -Fq 'WELCOME_SESSION_COOKIE' sabri-unified-application-shell/includes/class-four-plan-harmonization.php
           grep -Fq 'single-free-tier' sabri-unified-application-shell/includes/class-four-plan-harmonization.php
           grep -Fq "donor_advantage']     = false" sabri-unified-application-shell/includes/class-four-plan-harmonization.php
-          grep -Fq 'sabriShellRecentPublicRoutes' sabri-unified-application-shell/assets/js/future-shell-v5.js
+          grep -Fq 'sabriShellRecentPublicRoutesV' sabri-unified-application-shell/assets/js/future-shell-v5.js
           grep -Fq 'Object.keys(prefetched).length >= 3' sabri-unified-application-shell/assets/js/future-shell-v5.js
           grep -Fq 'CIRCUIT_THRESHOLD' sabri-unified-application-shell/includes/class-future-shell-v5.php
           grep -Fq 'hash_equals' sabri-unified-application-shell/includes/class-future-shell-v5.php
           grep -Fq "case 'limited'" sabri-unified-application-shell/includes/class-future-shell-v5.php
           ! grep -Fq 'sendBeacon' sabri-unified-application-shell/assets/js/future-shell-v5.js
+          ! grep -Fq 'history.back()' sabri-unified-application-shell/assets/js/future-shell-v5.js
+          ! grep -Fq '.sabri-shell-data-saver *' sabri-unified-application-shell/assets/css/future-shell-v5.css
+          ! grep -Fq -- '--sabri-shell-v5-accent' sabri-unified-application-shell/assets/css/future-shell-v5.css
           ! grep -Fq 'get_search_query()' sabri-unified-application-shell/includes/class-renderer.php
           ! grep -Eq "'bottom_nav'[[:space:]]*=>[[:space:]]*true" sabri-unified-application-shell/includes/class-defaults.php
           ! grep -Eq "smc_assertions_v1|_smc_official_founder|_smc_doctor_verified|_smc_trusted_publisher|post-new.php" sabri-unified-application-shell/includes/class-integrations.php sabri-unified-application-shell/includes/class-create-contract.php
@@ -80,10 +97,15 @@ jobs:
           for p in sorted((root/'assets/css').glob('*.css')):
               css=p.read_text(encoding='utf-8'); assert css.count('{')==css.count('}'), f'Unbalanced CSS: {p.name}'
           future=(root/'includes/class-future-shell-v5.php').read_text(encoding='utf-8')
+          hard=(root/'includes/class-future-shell-v5-hardening.php').read_text(encoding='utf-8')
+          client=(root/'includes/class-future-shell-v5-client-context.php').read_text(encoding='utf-8')
+          control=(root/'includes/class-future-shell-v5-control-guard.php').read_text(encoding='utf-8')
           feature_ids=['command_palette','pwa_shell','offline_mode','data_saver','recent_resume','module_circuit_breaker','last_known_good','performance_guardian','smart_navigation','keyboard_accessibility','focus_mode','split_workspace','adaptive_foldable','view_transitions','predictive_prefetch','language_direction','accessibility_center','release_rings']
           assert all(("'"+x+"'") in future for x in feature_ids) and len(feature_ids)==18
-          assert 'CREATE TABLE' not in future and 'dbDelta(' not in future
-          print('Static v1.4.0 ownership/privacy/security/future-shell checks passed.')
+          assert 'CREATE TABLE' not in future+hard+client+control and 'dbDelta(' not in future+hard+client+control
+          assert "'disabled'" in hard and 'return (bool) $enabled && $allowed;' in hard
+          assert 'sabri_shell_invalid_release_ring' in control and 'finally {' in control
+          print('Static v1.4.1 ownership/privacy/security/future-shell control-plane hardening checks passed.')
           PY
 
       - name: Build deterministic installable package
@@ -99,28 +121,32 @@ jobs:
           files=sorted(p for p in stage.rglob('*') if p.is_file() and p.name!='MANIFEST.sha256')
           manifest=[f"{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.relative_to(stage).as_posix()}" for p in files]
           (stage/'MANIFEST.sha256').write_text('\n'.join(manifest)+'\n',encoding='utf-8')
-          base='20-sabri-unified-application-shell-1.4.0-FUTURE-18'
+          base='20-sabri-unified-application-shell-1.4.1-TEN-ROUND-HARDENED'
           archive=release/f'{base}.zip'
           with ZipFile(archive,'w') as zf:
               for p in sorted(stage.rglob('*')):
                   if p.is_file():
-                      info=ZipInfo((Path(root.name)/p.relative_to(stage)).as_posix(),(2026,8,8,9,0,0)); info.compress_type=ZIP_DEFLATED; info.external_attr=(0o100644 & 0xFFFF)<<16; zf.writestr(info,p.read_bytes())
+                      info=ZipInfo((Path(root.name)/p.relative_to(stage)).as_posix(),(2026,8,8,9,30,0)); info.compress_type=ZIP_DEFLATED; info.external_attr=(0o100644 & 0xFFFF)<<16; zf.writestr(info,p.read_bytes())
           digest=hashlib.sha256(archive.read_bytes()).hexdigest(); (release/f'{base}.sha256').write_text(f'{digest}  {archive.name}\n',encoding='utf-8'); (release/f'{base}-SOURCE-MANIFEST.sha256').write_text('\n'.join(manifest)+'\n',encoding='utf-8')
           PY
-          base='20-sabri-unified-application-shell-1.4.0-FUTURE-18'
+          base='20-sabri-unified-application-shell-1.4.1-TEN-ROUND-HARDENED'
           (cd release && sha256sum -c "${base}.sha256")
           unzip -t "release/${base}.zip"
           rm -rf release/clean-extract && mkdir -p release/clean-extract
           unzip -q "release/${base}.zip" -d release/clean-extract
-          grep -Fq '* Version: 1.4.0' release/clean-extract/sabri-unified-application-shell/sabri-unified-application-shell.php
+          grep -Fq '* Version: 1.4.1' release/clean-extract/sabri-unified-application-shell/sabri-unified-application-shell.php
+          grep -Fq 'FutureShellV5Hardening::register();' release/clean-extract/sabri-unified-application-shell/sabri-unified-application-shell.php
+          grep -Fq 'FutureShellV5ClientContext::register();' release/clean-extract/sabri-unified-application-shell/sabri-unified-application-shell.php
+          grep -Fq 'FutureShellV5ControlGuard::register();' release/clean-extract/sabri-unified-application-shell/sabri-unified-application-shell.php
 
       - name: Write exact-head report
         run: |
-          cat > release/FILE-20-1.4.0-TEST-REPORT.md <<REPORT
-          # File 20 Version 1.4.0 Future Shell 18 Evidence
+          cat > release/FILE-20-1.4.1-TEN-ROUND-TEST-REPORT.md <<REPORT
+          # File 20 Version 1.4.1 Ten-Round Corrective Evidence
           - Exact workflow SHA: ${{ github.sha }}
           - Existing File 20 PHP 7.4/8.3 regression/adversarial suites: PASS
-          - Future Shell v5 18/18 enhancement static/ownership/privacy tests: PASS
+          - Future Shell v5 18/18 enhancement + ten-round hardening tests: PASS
+          - Release-ring/PWA/LKG/privacy/accessibility control-plane gates: PASS
           - JavaScript/CSS/JSON integrity: PASS
           - Deterministic ZIP, manifest, SHA-256, CRC and clean extraction: PASS
           - Hostinger staging accepted: NO
@@ -130,11 +156,11 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: file20-1.4.0-future-18-${{ github.sha }}
+          name: file20-1.4.1-ten-round-${{ github.sha }}
           retention-days: 60
           if-no-files-found: error
           path: |
-            release/20-sabri-unified-application-shell-1.4.0-FUTURE-18.zip
-            release/20-sabri-unified-application-shell-1.4.0-FUTURE-18.sha256
-            release/20-sabri-unified-application-shell-1.4.0-FUTURE-18-SOURCE-MANIFEST.sha256
-            release/FILE-20-1.4.0-TEST-REPORT.md
+            release/20-sabri-unified-application-shell-1.4.1-TEN-ROUND-HARDENED.zip
+            release/20-sabri-unified-application-shell-1.4.1-TEN-ROUND-HARDENED.sha256
+            release/20-sabri-unified-application-shell-1.4.1-TEN-ROUND-HARDENED-SOURCE-MANIFEST.sha256
+            release/FILE-20-1.4.1-TEN-ROUND-TEST-REPORT.md

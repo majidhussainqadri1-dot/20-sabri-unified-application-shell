@@ -1,0 +1,140 @@
+<?php
+/**
+ * Pre-boot client context for Future Shell v5 hardening.
+ *
+ * @package SabriUnifiedApplicationShell
+ */
+
+namespace Sabri\UnifiedShell;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * Publishes privacy and scope facts before future-shell-v5.js executes.
+ */
+final class FutureShellV5ClientContext {
+	/** Register the pre-boot context after the main Future Shell enqueue. */
+	public static function register() {
+		add_action( 'init', array( __CLASS__, 'ensure_private_path_policy' ), 6 );
+		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_context' ), 132 );
+	}
+
+	/**
+	 * Canonical privacy baseline. Public modules may add stricter prefixes through
+	 * sabri_shell_future_private_path_fragments; they may not remove this baseline.
+	 *
+	 * @return array<int,string>
+	 */
+	private static function baseline_private_paths() {
+		return array(
+			'/messages', '/network', '/smail', '/appointments', '/security', '/verification',
+			'/doctor-onboarding', '/doctor-verification', '/account', '/notifications', '/settings',
+			'/login', '/register', '/signup', '/logout', '/forgot-password', '/reset-password',
+			'/complete-profile', '/publishing-dashboard', '/newsroom', '/notes',
+			'/marketplace/dashboard', '/marketplace/deal', '/wp-admin', '/wp-login.php', '/wp-json',
+		);
+	}
+
+	/** @return array<int,string> */
+	private static function private_paths() {
+		$settings = FutureShellV5::settings();
+		$external = apply_filters( 'sabri_shell_future_private_path_fragments', array() );
+		$paths = array_merge(
+			self::baseline_private_paths(),
+			isset( $settings['private_path_fragments'] ) && is_array( $settings['private_path_fragments'] ) ? $settings['private_path_fragments'] : array(),
+			is_array( $external ) ? $external : array()
+		);
+		$out = array();
+		foreach ( $paths as $path ) {
+			if ( ! is_string( $path ) ) { continue; }
+			$path = wp_parse_url( $path, PHP_URL_PATH );
+			if ( ! is_string( $path ) || '' === $path ) { continue; }
+			$path = untrailingslashit( '/' . ltrim( $path, '/' ) );
+			if ( '' !== $path && strlen( $path ) <= 160 ) { $out[ $path ] = $path; }
+		}
+		return array_values( array_slice( $out, 0, 64, true ) );
+	}
+
+	/**
+	 * Persist the unified protected-prefix policy so the server-generated service
+	 * worker and the browser-local shell consume the same list on the same request.
+	 *
+	 * @return void
+	 */
+	public static function ensure_private_path_policy() {
+		$current = get_option( FutureShellV5::OPTION, array() );
+		$current = is_array( $current ) ? $current : array();
+		$desired = self::private_paths();
+		$stored  = isset( $current['private_path_fragments'] ) && is_array( $current['private_path_fragments'] ) ? $current['private_path_fragments'] : array();
+		$normalize = static function ( $items ) {
+			$out = array();
+			foreach ( $items as $item ) {
+				if ( is_string( $item ) && '' !== $item ) { $out[] = untrailingslashit( '/' . ltrim( $item, '/' ) ); }
+			}
+			sort( $out );
+			return array_values( array_unique( $out ) );
+		};
+		if ( $normalize( $stored ) === $normalize( $desired ) ) { return; }
+		$current['private_path_fragments'] = $desired;
+		update_option( FutureShellV5::OPTION, $current, false );
+	}
+
+	/** @return string */
+	private static function scope_path() {
+		$path = wp_parse_url( home_url( '/' ), PHP_URL_PATH );
+		$path = is_string( $path ) && '' !== $path ? $path : '/';
+		return trailingslashit( '/' . ltrim( $path, '/' ) );
+	}
+
+	/**
+	 * Conservative public-route classification for browser-local history.
+	 *
+	 * @return bool
+	 */
+	private static function current_route_public() {
+		if ( is_admin() || wp_doing_ajax() || Layout::MINIMAL === Layout::current_mode() || is_404() || is_preview() || ! empty( $_GET ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only route classification.
+			return false;
+		}
+		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- path only.
+		$path = wp_parse_url( $request_uri, PHP_URL_PATH );
+		$path = is_string( $path ) ? '/' . ltrim( $path, '/' ) : '/';
+		foreach ( self::private_paths() as $private ) {
+			if ( $path === $private || 0 === strpos( $path, trailingslashit( $private ) ) ) { return false; }
+		}
+		if ( is_singular() ) {
+			$post = get_queried_object();
+			if ( ! $post instanceof \WP_Post || 'publish' !== get_post_status( $post ) ) { return false; }
+			$type = get_post_type_object( $post->post_type );
+			return $type && ! empty( $type->publicly_queryable );
+		}
+		return is_front_page() || is_home() || is_archive();
+	}
+
+	/**
+	 * Add a separate pre-boot object and merge it into the already-localized
+	 * base object before future-shell-v5.js executes.
+	 *
+	 * WordPress prints localization data before "before" inline data for the
+	 * same handle; the separate object is retained as an auditable fallback.
+	 *
+	 * @return void
+	 */
+	public static function enqueue_context() {
+		if ( ! wp_script_is( 'sabri-shell-future-v5', 'enqueued' ) ) { return; }
+		$payload = array(
+			'hardeningVersion'   => FutureShellV5Hardening::CONTRACT_VERSION,
+			'currentRoutePublic' => self::current_route_public(),
+			'swScope'            => self::scope_path(),
+			'privatePaths'       => self::private_paths(),
+			'recentsVersion'     => FutureShellV5Hardening::RECENTS_VERSION,
+		);
+		$encoded = wp_json_encode( $payload );
+		wp_add_inline_script(
+			'sabri-shell-future-v5',
+			'window.SabriShellFutureV5Hardening=' . $encoded . ';window.SabriShellFutureV5=Object.assign({},window.SabriShellFutureV5||{},window.SabriShellFutureV5Hardening);',
+			'before'
+		);
+	}
+}
