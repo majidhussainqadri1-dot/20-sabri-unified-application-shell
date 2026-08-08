@@ -11,7 +11,7 @@ $assert = static function ( $condition, $label ) use ( &$fail ): void {
 	if ( ! $condition ) { $fail[] = $label; }
 };
 
-$assert( false !== strpos( $main, '* Version: 1.4.8' ) && false !== strpos( $main, "SABRI_SHELL_VERSION', '1.4.8" ), 'release identity 1.4.8 preserves seventh hardening' );
+$assert( false !== strpos( $main, '* Version: 1.4.9' ) && false !== strpos( $main, "SABRI_SHELL_VERSION', '1.4.9" ), 'release identity 1.4.9 preserves seventh hardening' );
 $assert( false !== strpos( $main, 'class-future-shell-v5-seventh-hardening.php' ) && false !== strpos( $main, 'FutureShellV5SeventhHardening::register();' ), 'seventh hardening loaded and registered' );
 $assert( false !== strpos( $seventh, "CONTRACT_VERSION = '1.0.7'" ) && false !== strpos( $seventh, 'CONDITIONAL_COUNT = 6' ), 'seventh contract and exact conditional count' );
 
@@ -59,4 +59,4 @@ if ( $fail ) {
 	exit( 1 );
 }
 
-echo "Future Shell v5 seventh hardening preserved under 1.4.8: CF-01..CF-06 conditional contracts, privacy boundaries, financial law, media cache authority and no foreign backend PASS\n";
+echo "Future Shell v5 seventh hardening preserved under 1.4.9: CF-01..CF-06 conditional contracts, privacy boundaries, financial law, media cache authority and no foreign backend PASS\n";
