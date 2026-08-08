@@ -6,6 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 final class RouteSecurity {
     public static function register() {
         add_filter( 'pre_update_option_' . Defaults::OPTION_NAME, array( __CLASS__, 'sanitize_persisted_overrides' ), PHP_INT_MAX - 20, 3 );
+        add_filter( 'option_' . Defaults::OPTION_NAME, array( __CLASS__, 'sanitize_read_overrides' ), PHP_INT_MAX );
         add_filter( 'sabri_shell_system_check_sections', array( __CLASS__, 'system_check' ), 85 );
     }
 
@@ -51,12 +52,21 @@ final class RouteSecurity {
     /** Quarantine invalid overrides before they can be persisted. */
     public static function sanitize_persisted_overrides( $value, $old_value, $option ) {
         unset( $old_value, $option );
+        return self::sanitize_settings_overrides( $value, true );
+    }
+
+    /** Revalidate stored/legacy values on every read so old unsafe state is inert. */
+    public static function sanitize_read_overrides( $value ) {
+        return self::sanitize_settings_overrides( $value, false );
+    }
+
+    private static function sanitize_settings_overrides( $value, $audit_rejection ) {
         if ( ! is_array( $value ) || empty( $value['navigation'] ) || ! is_array( $value['navigation'] ) ) { return $value; }
         foreach ( $value['navigation'] as $key => &$config ) {
             if ( ! is_array( $config ) || ! array_key_exists( 'url_override', $config ) ) { continue; }
             $raw = trim( (string) $config['url_override'] );
             $clean = self::sanitize_override( $raw );
-            if ( '' !== $raw && '' === $clean && class_exists( __NAMESPACE__ . '\\PlanV4Audit', false ) ) {
+            if ( $audit_rejection && '' !== $raw && '' === $clean && class_exists( __NAMESPACE__ . '\\PlanV4Audit', false ) ) {
                 PlanV4Audit::record( 'route_override_rejected', array( 'route_key' => sanitize_key( (string) $key ), 'reason_code' => 'strict-route-override-policy' ) );
             }
             $config['url_override'] = $clean;
