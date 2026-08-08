@@ -14,7 +14,7 @@ $assert = static function ( $condition, $label ) use ( &$fail ): void {
 	}
 };
 
-$assert( false !== strpos( $main, '* Version: 1.4.4' ) && false !== strpos( $main, "SABRI_SHELL_VERSION', '1.4.4" ), 'release identity 1.4.4' );
+$assert( false !== strpos( $main, '* Version: 1.4.5' ) && false !== strpos( $main, "SABRI_SHELL_VERSION', '1.4.5" ), 'current release identity 1.4.5 preserves fourth hardening' );
 $assert( false !== strpos( $main, 'class-future-shell-v5-fourth-hardening.php' ) && false !== strpos( $main, 'FutureShellV5FourthHardening::register();' ), 'fourth hardening loaded and registered' );
 $assert( false !== strpos( $fourth, "CONTRACT_VERSION = '1.0.4'" ), 'fourth contract 1.0.4' );
 
@@ -70,4 +70,4 @@ if ( $fail ) {
 	exit( 1 );
 }
 
-echo "Future Shell v5 fourth ten-round hardening: latest File 00/01/02/19/21/24 contracts, public WebAuthn standards route and File 24 security states PASS\n";
+echo "Future Shell v5 fourth ten-round hardening preserved under 1.4.5: File 00/01/02/19/21/24 contracts, public WebAuthn standards route and File 24 security states PASS\n";

@@ -2,35 +2,37 @@
 
 ## Current state
 
-The exact **Sabri Unified Application Shell 1.0.0 FINAL** archive remains preserved in `SOURCE-ARCHIVE/`. Main currently contains the repeatedly reviewed **1.1.2** authorization/privacy correction. The central-plan harmonization branch targets **1.2.0** and reconciles runtime architecture with the approved File 20 v4.0 specification and Definitive Master Plan v3.0.
+The exact historical **Sabri Unified Application Shell 1.0.0 FINAL** archive remains preserved in `SOURCE-ARCHIVE/` for provenance. It is not the current runtime candidate.
 
-## 1.2.0 corrective scope
+The merged `main` baseline entering the fifth independent ten-round audit is **1.4.4** at commit `a7cc344901473d5a45ec2fed53044385b049e200`. Pull request **#20** advances the repository candidate to **1.4.5** on `audit/file20-fifth-ten-round-2026-08-08`.
 
-- exact Four-mode layout constitution: Three, Two, Minimal and Immersive;
-- profile/timeline and Publishing Dashboard correction to Two-column contexts;
-- one-line no-wrap primary navigation with bounded accessible horizontal overflow;
-- File 25 canonical visual-token ownership and retired File 20 Appearance editor;
-- complete File 00–25 machine-readable ownership/dependency registry;
-- operational-state and failure-behavior vocabulary;
-- retained File 22 Create contract `1.0.1` and File 00 fail-closed authority;
-- new static and CI regression evidence.
+Version 1.4.5 keeps the approved Future Shell scope at exactly eighteen enhancements and adds no companion-domain backend. The fifth audit corrects production packaging/evidence and the Internal release-ring extension contract while preserving manager-only configuration authority.
 
 ## Truthful lifecycle status
 
 | Stage | State |
 |---|---|
-| Specified | Complete in File 20 v4.0 |
-| Coded | 1.2.0 candidate branch |
-| Packaged | Deterministic CI artifact after successful run |
-| Automated QA | Pending exact PR-head CI |
-| Staging accepted | No |
-| Live deployed | No |
-| Operational | No |
+| Specified | File 20 v4.1 + Founder-approved Future Shell v5 18-enhancement amendment |
+| Coded | `1.4.5` fifth-audit candidate in PR #20 |
+| Packaged | Deterministic production-only 1.4.5 package built successfully in candidate CI |
+| Automated QA | **Green** on fifth-audit code/package closure run `31258339589`; final documentation/merge heads must pass the same workflow |
+| Staging accepted | **No** |
+| Live deployed | **No** |
+| Operational | **No** |
 
-## Remaining gates
+## Fifth-audit release gates
 
-Hostinger staging fresh install and upgrade, real File 00/21/22/24/25 contracts, responsive and RTL visual acceptance, keyboard/screen-reader testing, browser matrix, Safe Mode/Repair, backup/restore, rollback rehearsal, Founder acceptance and controlled production deployment remain mandatory. No staging or live website change is authorized by this repository status.
+- PHP 7.4 and PHP 8.3 syntax plus every repository regression/adversarial suite: passed on candidate closure run.
+- Exact eighteen Future Shell feature IDs; no nineteenth feature.
+- No `CREATE TABLE`, `dbDelta()` or foreign-domain write backend in Future Shell hardening.
+- Five exact release-ring states with invalid state fail-closed behavior.
+- Explicit internal-principal extension contract; default manager behavior retained; REST configuration remains `manage_options` only.
+- Production package excludes `tests/` and declared development-only material.
+- ZIP entries are duplicate-free, relative, traversal-free and under one canonical plugin root.
+- Clean production source, staging tree and extracted ZIP have matching file sets and SHA-256 hashes.
+- Embedded `MANIFEST.sha256` equals the external source manifest.
+- Deterministic ZIP SHA-256, CRC and artifact upload passed.
 
+## Remaining non-repository gates
 
-## Plan-v4 repository completion batch
-The 1.2.0 branch now includes context evidence, contract health, settings concurrency, privacy/cache controls, assurance queuing, scheduled reconciliation, audit evidence, dry-run repair and compatible rollback. Hostinger staging and production gates remain pending.
+Hostinger staging fresh install and real upgrade, active production theme, real File 00–26 contracts, responsive/RTL visual acceptance, keyboard/screen-reader testing, browser/device matrix, PWA lifecycle, Safe Mode/Repair, backup/restore, rollback rehearsal, Founder acceptance and controlled production promotion remain mandatory. Repository completion does not authorize a live website change.

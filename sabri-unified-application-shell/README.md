@@ -2,21 +2,20 @@
 
 Sabri Unified Application Shell is the canonical responsive WordPress application shell for the **Sabri Social Homeopathy Platform**.
 
-- Version: `1.4.4`
+- Version: `1.4.5`
 - File 22 Create contract: `1.0.1`
 - Central-plan contract: `1.0.0`
 - Four-plan harmonization contract: `1.0.0`
-- Future Shell v5 contract: `1.0.0`; first corrective hardening: `1.0.1`; second: `1.0.2`; third: `1.0.3`; fourth: `1.0.4`
-- Status: repository/code/package/automated-QA candidate; Hostinger staging acceptance required
+- Future Shell v5 contract: `1.0.0`; corrective hardening: `1.0.1`; second: `1.0.2`; third: `1.0.3`; fourth: `1.0.4`; fifth: `1.0.5`
+- Approved Future Shell scope: exactly **18 enhancements**
+- Status: repository/code/package/automated-QA candidate only after exact-head CI; Hostinger staging acceptance remains separate
 - Plugin slug/text domain: `sabri-unified-application-shell`
 
 ## Canonical scope
 
-File 20 owns the shared application frame and structural continuity. Native membership, authentication/passkeys, publishing, profile, communication, notification, clinic, marketplace, clinical, Search/Discovery/Ranking, foundation-governance and assurance backends remain with their canonical files.
+File 20 owns the shared application frame and structural continuity. Native membership, authentication/passkeys, publishing, profile, communication, notification, clinic, marketplace, clinical, Search/Discovery/Ranking, foundation-governance, security enforcement and assurance backends remain with their canonical files.
 
-## Version 1.4.0 — Future Shell v5 / 18 enhancements
-
-All eighteen approved shell enhancements were implemented without creating duplicate domain backends:
+## Future Shell v5 — exact 18 enhancements
 
 1. Global Command Palette (`Ctrl/Cmd+K`).
 2. Installable PWA shell with privacy-bounded service worker.
@@ -37,39 +36,28 @@ All eighteen approved shell enhancements were implemented without creating dupli
 17. Local accessibility preference center.
 18. Five-state release rings: disabled, internal, staging, limited percentage, general.
 
-## Version 1.4.1 — first ten-round corrective hardening
+No corrective release may add a nineteenth feature without a new Founder-approved scope amendment.
 
-The first ten-round post-implementation audit corrected residual defects without changing the approved eighteen-feature scope. It hardened release rings, PWA/private-route lifecycle, local history/pins/prefetch, previous-state LKG recovery, dialog/keyboard accessibility, desktop Split Workspace, bounded performance sampling and File 25/Data Saver ownership.
+## 1.4.1–1.4.4 corrective history
 
-## Version 1.4.2 — second independent ten-round corrective hardening
+- `1.4.1` hardened release rings, PWA privacy/lifecycle, recents/pins/prefetch, LKG recovery, accessibility, Split Workspace and File 25/Data Saver boundaries.
+- `1.4.2` added WordPress-subdirectory privacy, disabled-PWA `410`, File 25 manifest tokens, partial-settings preservation, bounded circuit state, editable shortcut protection and non-immersive Split Workspace.
+- `1.4.3` reconciled current File 00/01/02 sensitive routes, protected-path overflow fail-closed behavior, one final PWA virtual-asset owner and Sabri Green continuity fallback.
+- `1.4.4` reconciled current File 00/01/02/19/21/24 contracts, File 02 public WebAuthn standards-route presentation, File 19 one-bell, File 21 five native slots and File 24 eight render/routing states without moving native enforcement into File 20.
 
-The second fresh sweep added WordPress-subdirectory privacy, disabled-PWA `410` retirement, File 25 manifest tokens, version-derived service-worker cache identity, partial Future Shell settings preservation, bounded circuit state, editable `Ctrl/Cmd+K` protection, dynamic privacy paths without option churn, non-immersive Split Workspace and File-20-scoped accessibility visuals.
+## Version 1.4.5 — fifth independent ten-round hardening
 
-## Version 1.4.3 — third independent ten-round corrective hardening
+The fifth audit reopens the merged 1.4.4 baseline and corrects release packaging, evidence and the residual Internal release-ring contract gap without changing the eighteen-feature product scope.
 
-The third sweep was opened because later-approved File 00, File 01 and File 02 plans changed the integration surface after 1.4.2. It does not add a nineteenth Future Shell feature. It closes the following residual compatibility/privacy gaps:
+### Release-ring correction
 
-- adds current File 02 private authentication routes such as `/account-security/`, `/account-passkeys/` and `/resolve-account/`, plus current File 00 membership/security and File 01 system routes, to the protected shell policy;
-- forces newly approved sensitive task surfaces into Minimal/no-distraction shell presentation and the common private/no-store/noindex header policy;
-- replaces silent protected-path truncation with an explicit bounded policy; if provider/configuration paths exceed the supported bound, local Recent/Resume, Smart Navigation and predictive prefetch fail closed and the service worker declines all caching/interception rather than guessing privacy;
-- removes the three older Future Shell virtual-asset callbacks at runtime and installs one final PWA manifest/service-worker handler, eliminating stale fallback ownership after later hardening layers;
-- reconciles File 01 as the foundation/registry/contracts/activation/shared-conventions owner without assigning search truth to File 01 or File 20, and records File 02's current credentials/passkeys/sessions/risk/recovery boundary without creating authentication authority in the shell;
-- preserves File 25 as visual owner while aligning the **continuity-only** fallback primary token to current Sabri Green `#087A4E` when no valid File 25 contract is available;
-- moves exact source/readme/workflow/package evidence to patch release `1.4.3` and adds a permanent third-pass regression gate.
+The final five-state evaluator remains fail closed. `Internal` is available to `manage_options` by default and can also consume the explicit `sabri_shell_future_internal_principal_allowed` hook for an authenticated principal approved by the canonical identity/entitlement layer. The hook defaults to `false`; File 20 does not create internal identity truth. REST configuration of release rings remains `manage_options` only.
 
-## Version 1.4.4 — fourth independent ten-round corrective hardening
+### Production-package correction
 
-The fourth sweep was reopened after newer companion evidence changed the contract surface again. The approved Future Shell feature count remains exactly **18**; this release adds compatibility facts and presentation/routing safeguards only.
+The deterministic installable ZIP is now built from a clean production source set. Repository `tests/` and declared development-only directories/files are excluded from the ZIP. Before extraction, CI rejects absolute paths, `..` traversal, duplicate names and entries outside the canonical plugin root. After extraction, clean source, staged files and extracted package must have an identical file set and SHA-256 values. The embedded `MANIFEST.sha256` must exactly equal the external source manifest.
 
-- File 00 is now advertised to shell consumers at runtime baseline `1.2.13`, Public Membership Contract `1.2.0`, and Advanced Trust Contract `1.0.0`, while File 20 remains a claims consumer and never owns membership, identity, consent or reverification writes.
-- File 01-B is reconciled to Future Foundation runtime `2.0.0` and its exact 18-enhancement foundation/governance scope; File 20 consumes registries/contracts but never receives Search/Discovery/Ranking truth.
-- File 02 is reconciled to the `1.3.0` modern-auth candidate and exact 24-enhancement surface, including passkey-assurance v1 compatibility and additive Authentication Assurance Receipt v2 metadata. The public `/.well-known/webauthn` standards endpoint is presented with Minimal/no-visual-shell layout but is deliberately **not** classified as private; File 02 owns its public JSON and no-cache response semantics.
-- File 19 is reconciled to Intelligent Attention & Notification OS `3.0.0`, while the one-bell/one-center rule remains absolute and File 20 creates no notification store or delivery channel.
-- File 21 NG30 is reconciled to runtime `1.0.1` and the exact five native shell slots: `sabri_shell_home_before_main`, `sabri_shell_home_main`, `sabri_shell_home_after_main`, `sabri_shell_home_right_sidebar`, and `sabri_shell_news_main`.
-- File 24's eight current security conditions are exposed as shell presentation/routing states: Normal, Elevated Monitoring, Restricted High-Risk Actions, Upload Lockdown, Identity Lockdown, Publishing Read-Only, Platform Read-Only, and Incident Containment. File 24 recommends/audits and native modules enforce; File 20 does not become a second security engine or Safe Mode authority.
-- Release identity, regressions, deterministic package evidence and review records are advanced to `1.4.4`.
-
-The PWA worker remains same-origin and privacy bounded. File 20 still creates no membership, authentication, notification, publishing, search, marketplace, clinical, security-governance or other companion-domain database.
+The PWA worker remains same-origin/privacy-bounded. File 20 creates no membership, authentication, notification, publishing, search, marketplace, clinical, security-governance or other companion-domain database.
 
 ## Existing guarantees preserved
 
@@ -77,4 +65,4 @@ The four exact layout modes, File 00 authorization/identity authority, File 02 a
 
 ## Staging acceptance
 
-Repository completion is not production acceptance. Hostinger staging must test root/subdirectory PWA registration/update/disable/self-removal, current File 00/01/02/19/21/24 contracts, File 02 public WebAuthn standards route, File 24 security-state rendering without native-enforcement duplication, protected-route overflow fail-closed behavior, offline/low-data modes, all dialogs/keyboard paths, partial release-ring updates, circuit cleanup, Split Workspace integration, LKG recovery, responsive/foldable layouts, supported browsers, accessibility, cache, backup/restore and rollback before Founder-approved production promotion.
+Repository completion is not production acceptance. Hostinger staging must test the exact 1.4.5 package/head/checksum, root/subdirectory PWA lifecycle, current companion contracts, protected-route overflow, all five release rings including explicit Internal-principal allow/deny cases, browsers/devices, keyboard/screen-reader accessibility, RTL/LTR, low-data/offline behavior, File 25 visual ownership, Safe Mode/Repair, backup/restore and rollback before Founder-approved production promotion.
