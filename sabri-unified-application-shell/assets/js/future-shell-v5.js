@@ -13,10 +13,11 @@
   function sameOrigin(url) { try { return new URL(url, location.href).origin === location.origin; } catch (e) { return false; } }
   function openDialog(el) { if (!el) return; if (typeof el.showModal === 'function') el.showModal(); else el.setAttribute('open', 'open'); var input = el.querySelector('input,button,[tabindex]'); if (input) setTimeout(function () { input.focus(); }, 0); }
   function closeDialog(el) { if (!el) return; if (typeof el.close === 'function') el.close(); else el.removeAttribute('open'); }
+  function safeBack() { var back = document.querySelector('[data-sabri-context-back]'); if (back && back.href && sameOrigin(back.href)) { back.click(); } else { location.href = cfg.homeUrl || '/'; } }
 
   var installPrompt = null;
   if (features.pwa_shell && 'serviceWorker' in navigator) {
-    window.addEventListener('load', function () { navigator.serviceWorker.register(cfg.swUrl, { scope: '/' }).catch(function () {}); });
+    window.addEventListener('load', function () { var scope = '/'; try { scope = new URL(cfg.homeUrl || '/', location.href).pathname || '/'; } catch (e) {} navigator.serviceWorker.register(cfg.swUrl, { scope: scope }).catch(function () {}); });
     window.addEventListener('beforeinstallprompt', function (event) { event.preventDefault(); installPrompt = event; document.documentElement.classList.add('sabri-shell-installable'); });
   }
 
@@ -40,16 +41,16 @@
   applyConnectivity();
 
   var recentKey = 'sabriShellRecentPublicRoutes';
-  if (features.recent_resume && !privatePath(location.pathname)) {
+  if (features.recent_resume && !privatePath(location.pathname) && !location.search) {
     var recents = safeParse(recentKey, []);
-    recents = recents.filter(function (item) { return item && item.url !== location.href && sameOrigin(item.url) && !privatePath(new URL(item.url).pathname); });
+    recents = recents.filter(function (item) { if (!item || item.url === location.href || !sameOrigin(item.url)) return false; var u = new URL(item.url); return !u.search && !privatePath(u.pathname); });
     recents.unshift({ url: location.href, title: document.title || location.pathname, at: Date.now() });
     safeSet(recentKey, recents.slice(0, 12));
   }
   function renderRecents() {
     var box = document.getElementById('sabri-shell-recent-list'); if (!box || !features.recent_resume) return;
     while (box.firstChild) box.removeChild(box.firstChild);
-    safeParse(recentKey, []).forEach(function (item) { if (!item || !sameOrigin(item.url)) return; var a = document.createElement('a'); a.href = item.url; a.textContent = item.title || item.url; a.className = 'sabri-shell-recent-link'; box.appendChild(a); });
+    safeParse(recentKey, []).forEach(function (item) { if (!item || !sameOrigin(item.url)) return; var u = new URL(item.url); if (u.search || privatePath(u.pathname)) return; var a = document.createElement('a'); a.href = item.url; a.textContent = item.title || item.url; a.className = 'sabri-shell-recent-link'; box.appendChild(a); });
   }
   document.addEventListener('click', function (event) {
     var clear = event.target.closest('[data-sabri-clear-recents]'); if (clear && features.recent_resume) { localStorage.removeItem(recentKey); renderRecents(); }
@@ -116,10 +117,11 @@
   function commands() {
     var list = [
       { label: 'Home', action: function () { location.href = cfg.homeUrl || '/'; } },
-      { label: 'Back', action: function () { history.back(); } }
+      { label: 'Back', action: safeBack }
     ];
     if (features.recent_resume) list.push({ label: 'Recent and Resume', action: function () { renderRecents(); closeDialog(palette); openDialog(document.getElementById('sabri-shell-recent-center')); } });
     if (features.accessibility_center) list.push({ label: 'Accessibility and Reading Preferences', action: function () { closeDialog(palette); openDialog(document.getElementById('sabri-shell-accessibility-center')); } });
+    if (features.language_direction) list.push({ label: 'Language and Direction', action: function () { closeDialog(palette); openDialog(document.getElementById('sabri-shell-accessibility-center')); } });
     if (features.focus_mode) list.push({ label: body.classList.contains('sabri-shell-focus-mode') ? 'Exit Focus Mode' : 'Enter Focus Mode', action: function () { setFocusMode(!body.classList.contains('sabri-shell-focus-mode')); closeDialog(palette); } });
     if (features.pwa_shell && installPrompt) list.push({ label: 'Install Sabri Homeopathy App', action: function () { installPrompt.prompt(); installPrompt.userChoice.finally(function () { installPrompt = null; }); closeDialog(palette); } });
     var split = document.getElementById('sabri-shell-split-workspace'); if (features.split_workspace && split) list.push({ label: 'Open Secondary Workspace', action: function () { split.hidden = false; closeDialog(palette); } });
