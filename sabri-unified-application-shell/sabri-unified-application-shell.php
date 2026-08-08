@@ -132,6 +132,7 @@ add_action( 'plugins_loaded', static function () use ( $sabri_shell_corrective_c
     Sabri\UnifiedShell\FutureShellV5SeventhHardening::register();
     Sabri\UnifiedShell\FutureShellV5EighthHardening::register();
     Sabri\UnifiedShell\FutureShellV5NinthHardening::register();
+    Sabri\UnifiedShell\FutureShellV5TenthHardening::register();
     Sabri\UnifiedShell\SystemCheckDuplicateHardening::register();
 
     add_action( 'init', static function () {
