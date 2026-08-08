@@ -4,30 +4,30 @@ Independent repository for **File 20 — Sabri Unified Application Shell** of th
 
 ## Current lifecycle
 
-- Main baseline before this audit: `1.4.4` at `a7cc344901473d5a45ec2fed53044385b049e200`.
-- Current fifth-audit candidate: `1.4.5` on `audit/file20-fifth-ten-round-2026-08-08`.
+- Merged baseline entering this audit: `1.4.5` at `399574e931eeb81f4aa35fb71c012312dc335101`.
+- Current sixth-audit candidate: `1.4.6` on `audit/file20-sixth-ten-round-2026-08-08`.
 - Future Shell v5 approved scope: exactly **18 enhancements**.
-- Future Shell contract: `1.0.0`; corrective layers: `1.0.1`, `1.0.2`, `1.0.3`, `1.0.4`, and fifth hardening `1.0.5`.
-- Status: repository/code candidate under exact-head QA; Hostinger staging, Founder acceptance, live deployment and operational acceptance remain separate gates.
+- Future Shell contract: `1.0.0`; corrective layers through sixth hardening `1.0.6`.
+- Status: repository/code/package/automated-QA candidate only after exact-head QA; Hostinger staging, Founder acceptance, live deployment and operational acceptance remain separate gates.
 
-## Canonical responsibilities
+## Canonical responsibility
 
-File 20 owns the global structural application shell, navigation/layout resolution, integration slots, degraded/recovery continuity and File-20-owned shell preferences. It does **not** duplicate native domain backends or become the owner of membership, authentication, publishing, messaging, notifications, appointments, marketplace, clinical data, Search/Discovery/Ranking, security governance or File 25 visual truth.
+File 20 owns the global structural application shell, navigation/layout resolution, integration slots and recovery continuity. It does **not** own membership, authentication, publishing, messaging, notifications, appointments, marketplace, clinical data, Search/Discovery/Ranking, security governance/enforcement or File 25 visual truth.
 
-## Fifth ten-round audit — 1.4.5
+## Sixth ten-round audit — 1.4.6
 
-This audit reopens the already merged 1.4.4 baseline and checks source, cross-file boundaries, release rings, documentation, migration/staging evidence and deterministic packaging afresh.
+This audit reopens merged 1.4.5 because newer companion evidence changed compatibility facts.
 
-Corrections in the candidate include:
+The candidate adds a truthfully scoped compatibility layer for:
 
-- production ZIP excludes development `tests/` and other declared development-only directories;
-- ZIP path traversal, duplicate-entry and canonical-root checks run before extraction;
-- clean production source, clean staging tree and extracted ZIP must have an identical file set and SHA-256 manifest;
-- embedded `MANIFEST.sha256` must equal the external source manifest;
-- the five-state Future Shell release-ring evaluator supports `Disabled`, `Internal`, `Staging`, `Limited` and `General` exactly;
-- `Internal` remains manager-enabled by default but may also consume the explicit fail-closed `sabri_shell_future_internal_principal_allowed` contract from the canonical identity/entitlement layer;
-- release-ring REST configuration remains `manage_options` only;
-- repository, migration, staging, package and changelog evidence is being advanced to the same `1.4.5` release identity.
+- File 00: runtime 1.2.13, schema 1.3.0, Public Membership 1.2.0, CF-01 1.0.0, Advanced Trust 1.0.0;
+- File 01-B: runtime 2.0.0, schema 1.2.0, Foundation Contract 2.0.0, Future Foundation 18;
+- File 02: runtime 1.3.1, DB 1.3.0, passkey schema 1.1.0, auth-event projection 1.1.0, 24 enhancements and current compromise/lockdown/cooling events;
+- File 24: runtime candidate 0.99.0, schema 0.25.5 and 25 Future Security requirements.
+
+These values are explicitly tagged **declared compatibility targets, not runtime detection**. Actual installation, health, authorization, staging status and native enforcement must be verified at runtime by the canonical owner. File 20 cannot infer them from documentation metadata.
+
+File 02 privileged reset remains native and requires the File 00 dual-control receipt. File 24 outage must not move security enforcement into File 20. The prior production-only deterministic package, path-safety, source/package parity and five-state release-ring hardening remain mandatory.
 
 No nineteenth Future Shell feature is added.
 
