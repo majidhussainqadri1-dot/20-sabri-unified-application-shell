@@ -6,22 +6,19 @@ $checks = 0;
 $failures = array();
 $assert = static function (bool $condition, string $message) use (&$checks, &$failures): void {
     ++$checks;
-    if (!$condition) {
-        $failures[] = $message;
-    }
+    if (!$condition) { $failures[] = $message; }
 };
 $paths = glob($root . '/includes/class-plan-v4-*.php');
 sort($paths);
 $all = '';
-foreach ($paths as $path) {
-    $all .= (string) file_get_contents($path);
-}
+foreach ($paths as $path) { $all .= (string) file_get_contents($path); }
 foreach (array('eval(', 'shell_exec(', 'passthru(', 'proc_open(', 'base64_decode(') as $forbidden) {
     $assert(strpos($all, $forbidden) === false, "Forbidden primitive remains: {$forbidden}");
 }
 
 $recovery = (string) file_get_contents($root . '/includes/class-plan-v4-recovery.php');
 $audit = (string) file_get_contents($root . '/includes/class-plan-v4-audit.php');
+$assurance = (string) file_get_contents($root . '/includes/class-plan-v4-assurance.php');
 $contracts = (string) file_get_contents($root . '/includes/class-plan-v4-contract-health.php');
 $privacy = (string) file_get_contents($root . '/includes/class-plan-v4-privacy-cache.php');
 $settings = (string) file_get_contents($root . '/includes/class-plan-v4-settings-concurrency.php');
@@ -41,15 +38,23 @@ foreach (array('private, no-store', 'X-Robots-Tag', 'noindex', 'Vary: Cookie') a
 foreach (array('return $old_value', 'settings_conflict', '$expected !== $current') as $needle) {
     $assert(strpos($settings, $needle) !== false, "Stale settings path missing {$needle}");
 }
+
+/* Real assurance/privacy assertions: this replaces the historical always-true placeholder. */
+$assert(strpos($assurance, "preg_match( '/secret|token|nonce|cookie|password|key|document|phone|email/i'") !== false, 'Assurance redaction key matcher missing.');
+$assert(strpos($assurance, "'[redacted]'" ) !== false, 'Assurance sensitive values are not redacted.');
+$assert(strpos($assurance, 'array_slice( $context, 0, 30, true )') !== false, 'Assurance context is not bounded to 30 fields.');
+$assert(strpos($assurance, "mb_substr( sanitize_text_field( (string) \$value ), 0, 300 )") !== false, 'Assurance scalar values are not sanitized/bounded.');
+$assert(strpos($assurance, 'const MAX_EVENTS = 100;') !== false, 'Assurance queue lacks a hard event bound.');
+$assert(strpos($assurance, 'array_slice( $queue, -self::MAX_EVENTS )') !== false, 'Assurance queue append is not bounded.');
+$assert(strpos($assurance, 'catch ( \\Throwable $exception )') !== false, 'Assurance provider exception path missing.');
+$assert(strpos($assurance, "do_action( 'sabri_shell_assurance_event', \$event )") !== false, 'Versioned assurance event projection hook missing.');
+
 $assert(strpos($all, "\$_GET['sabri_shell_mode']") === false, 'A generic query parameter may force shell mode.');
 $assert(!preg_match("/['\"]posts_per_page['\"]\s*=>\s*-1/", $all), 'An unbounded query remains in the completion classes.');
 $assert(strpos($recovery, "0 !== strpos( \$option, 'sabri_shell_' )") !== false, 'Rollback scope can escape File 20-owned options.');
-$assert(strpos($assurance ?? '', 'raw') === false || true, 'Placeholder');
 
 if ($failures) {
-    foreach ($failures as $failure) {
-        fwrite(STDERR, "FAIL: {$failure}\n");
-    }
+    foreach ($failures as $failure) { fwrite(STDERR, "FAIL: {$failure}\n"); }
     fwrite(STDERR, sprintf("File 20 adversarial suite: %d checks, %d failures.\n", $checks, count($failures)));
     exit(1);
 }
