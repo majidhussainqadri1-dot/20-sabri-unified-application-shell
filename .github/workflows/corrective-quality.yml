@@ -58,9 +58,17 @@ jobs:
           grep -Fq 'FutureShellV5::register();' sabri-unified-application-shell/sabri-unified-application-shell.php
           grep -Fq 'FutureShellV5Hardening::register();' sabri-unified-application-shell/sabri-unified-application-shell.php
           grep -Fq 'FutureShellV5ClientContext::register();' sabri-unified-application-shell/sabri-unified-application-shell.php
+          grep -Fq 'FutureShellV5ControlGuard::register();' sabri-unified-application-shell/sabri-unified-application-shell.php
           grep -Fq 'capture_previous_lkg' sabri-unified-application-shell/includes/class-future-shell-v5-hardening.php
           grep -Fq 'currentRoutePublic' sabri-unified-application-shell/includes/class-future-shell-v5-client-context.php
+          grep -Fq "'/login'" sabri-unified-application-shell/includes/class-future-shell-v5-client-context.php
+          grep -Fq "'/notifications'" sabri-unified-application-shell/includes/class-future-shell-v5-client-context.php
+          grep -Fq "'/publishing-dashboard'" sabri-unified-application-shell/includes/class-future-shell-v5-client-context.php
+          grep -Fq 'sabri_shell_future_private_path_fragments' sabri-unified-application-shell/includes/class-future-shell-v5-client-context.php
           grep -Fq 'Object.assign({},window.SabriShellFutureV5||{},window.SabriShellFutureV5Hardening)' sabri-unified-application-shell/includes/class-future-shell-v5-client-context.php
+          grep -Fq 'sabri_shell_invalid_release_ring' sabri-unified-application-shell/includes/class-future-shell-v5-control-guard.php
+          grep -Fq 'PHP_INT_MAX' sabri-unified-application-shell/includes/class-future-shell-v5-control-guard.php
+          grep -Fq 'finally {' sabri-unified-application-shell/includes/class-future-shell-v5-control-guard.php
           grep -Fq 'self.registration.unregister()' sabri-unified-application-shell/includes/class-future-shell-v5-hardening.php
           grep -Fq 'const IMMERSIVE' sabri-unified-application-shell/includes/class-layout.php
           grep -Fq 'sabri_shell_file25_visual_contract' sabri-unified-application-shell/includes/class-central-plan-contract.php
@@ -91,11 +99,13 @@ jobs:
           future=(root/'includes/class-future-shell-v5.php').read_text(encoding='utf-8')
           hard=(root/'includes/class-future-shell-v5-hardening.php').read_text(encoding='utf-8')
           client=(root/'includes/class-future-shell-v5-client-context.php').read_text(encoding='utf-8')
+          control=(root/'includes/class-future-shell-v5-control-guard.php').read_text(encoding='utf-8')
           feature_ids=['command_palette','pwa_shell','offline_mode','data_saver','recent_resume','module_circuit_breaker','last_known_good','performance_guardian','smart_navigation','keyboard_accessibility','focus_mode','split_workspace','adaptive_foldable','view_transitions','predictive_prefetch','language_direction','accessibility_center','release_rings']
           assert all(("'"+x+"'") in future for x in feature_ids) and len(feature_ids)==18
-          assert 'CREATE TABLE' not in future+hard+client and 'dbDelta(' not in future+hard+client
+          assert 'CREATE TABLE' not in future+hard+client+control and 'dbDelta(' not in future+hard+client+control
           assert "'disabled'" in hard and 'return (bool) $enabled && $allowed;' in hard
-          print('Static v1.4.1 ownership/privacy/security/future-shell hardening checks passed.')
+          assert 'sabri_shell_invalid_release_ring' in control and 'finally {' in control
+          print('Static v1.4.1 ownership/privacy/security/future-shell control-plane hardening checks passed.')
           PY
 
       - name: Build deterministic installable package
@@ -127,6 +137,7 @@ jobs:
           grep -Fq '* Version: 1.4.1' release/clean-extract/sabri-unified-application-shell/sabri-unified-application-shell.php
           grep -Fq 'FutureShellV5Hardening::register();' release/clean-extract/sabri-unified-application-shell/sabri-unified-application-shell.php
           grep -Fq 'FutureShellV5ClientContext::register();' release/clean-extract/sabri-unified-application-shell/sabri-unified-application-shell.php
+          grep -Fq 'FutureShellV5ControlGuard::register();' release/clean-extract/sabri-unified-application-shell/sabri-unified-application-shell.php
 
       - name: Write exact-head report
         run: |
@@ -135,6 +146,7 @@ jobs:
           - Exact workflow SHA: ${{ github.sha }}
           - Existing File 20 PHP 7.4/8.3 regression/adversarial suites: PASS
           - Future Shell v5 18/18 enhancement + ten-round hardening tests: PASS
+          - Release-ring/PWA/LKG/privacy/accessibility control-plane gates: PASS
           - JavaScript/CSS/JSON integrity: PASS
           - Deterministic ZIP, manifest, SHA-256, CRC and clean extraction: PASS
           - Hostinger staging accepted: NO
