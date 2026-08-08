@@ -17,6 +17,9 @@ final class FutureShellV5TenthHardening {
         add_filter( 'sabri_shell_contract_registry', array( __CLASS__, 'harmonize_latest_file00_audit_truth' ), PHP_INT_MAX - 100 );
 
         NativeContentSlots::register();
+
+        /* Replace the legacy health endpoint whose overall state could be green while required providers were unavailable. */
+        add_action( 'rest_api_init', array( __CLASS__, 'replace_health_route' ), PHP_INT_MAX );
         add_filter( 'sabri_shell_system_check_sections', array( __CLASS__, 'system_check' ), 95 );
     }
 
@@ -84,8 +87,83 @@ final class FutureShellV5TenthHardening {
         return $registry;
     }
 
+    /** Replace only File 20's own authenticated health endpoint. */
+    public static function replace_health_route() {
+        if ( function_exists( 'unregister_rest_route' ) ) {
+            unregister_rest_route( 'sabri-shell/v1', '/health' );
+        }
+        register_rest_route(
+            'sabri-shell/v1',
+            '/health',
+            array(
+                'methods' => \WP_REST_Server::READABLE,
+                'callback' => array( __CLASS__, 'rest_health' ),
+                'permission_callback' => array( PlanV4Recovery::class, 'can_manage' ),
+            )
+        );
+    }
+
+    /** Authenticated evidence endpoint with fail-safe aggregate state. */
+    public static function rest_health() {
+        $providers = PlanV4ContractHealth::health();
+        return rest_ensure_response(
+            array(
+                'schema' => 'sabri-shell-health/1.1',
+                'state' => self::authoritative_health_state( $providers ),
+                'checked_at' => gmdate( 'c' ),
+                'audit_chain' => PlanV4Audit::verify_chain() ? 'valid' : 'invalid',
+                'providers' => $providers,
+                'job' => get_option( PlanV4Jobs::STATE, array() ),
+                'settings_row_version' => PlanV4SettingsConcurrency::current_version(),
+                'truth_rule' => 'healthy-only-when-critical-contracts-verified',
+            )
+        );
+    }
+
+    /**
+     * Healthy is reserved for verified required contracts. Unknown or
+     * incompatible evidence can never be promoted to green by optional success.
+     */
+    public static function authoritative_health_state( $providers = null ) {
+        if ( ! PlanV4Audit::verify_chain() ) {
+            return 'repair_required';
+        }
+        $providers = is_array( $providers ) ? $providers : PlanV4ContractHealth::health();
+        $critical = array( 'file-20-shell', 'file-00-identity' );
+        foreach ( $critical as $key ) {
+            if ( ! isset( $providers[ $key ] ) || ! is_array( $providers[ $key ] ) ) {
+                return 'unknown';
+            }
+            $state = sanitize_key( (string) ( $providers[ $key ]['state'] ?? 'unknown' ) );
+            if ( 'healthy' === $state ) {
+                continue;
+            }
+            if ( 'incompatible' === $state ) {
+                return 'incompatible';
+            }
+            if ( in_array( $state, array( 'unknown', 'unavailable', 'stale' ), true ) ) {
+                return 'unknown';
+            }
+            return 'degraded';
+        }
+
+        $degraded = false;
+        foreach ( $providers as $provider ) {
+            if ( ! is_array( $provider ) ) {
+                $degraded = true;
+                continue;
+            }
+            $state = sanitize_key( (string) ( $provider['state'] ?? 'unknown' ) );
+            if ( 'healthy' !== $state ) {
+                $degraded = true;
+            }
+        }
+        return $degraded ? 'degraded' : 'healthy';
+    }
+
     public static function system_check( $sections ) {
         $sections = is_array( $sections ) ? $sections : array();
+        $providers = PlanV4ContractHealth::health();
         $sections['future_shell_v5_tenth_hardening'] = array(
             'label' => __( 'Future Shell v5 tenth fresh ten-round hardening', 'sabri-unified-application-shell' ),
             'contract_version' => self::CONTRACT_VERSION,
@@ -103,6 +181,8 @@ final class FutureShellV5TenthHardening {
                 'sabri_shell_news_main',
             ),
             'file21_native_slot_runtime' => 'published-by-native-content-slots',
+            'authoritative_health_state' => self::authoritative_health_state( $providers ),
+            'healthy_truth_rule' => 'all-critical-contracts-must-be-verified',
             'staging_accepted' => false,
             'live_deployed' => false,
         );
