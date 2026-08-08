@@ -212,9 +212,23 @@ final class PlanV4Recovery {
         }
         $token = self::lock();
         if ( is_wp_error( $token ) ) { return $token; }
-        $pre = self::create_snapshot( 'pre-rollback' );
-        $target = self::find_snapshot( $snapshot_id );
+        $pre = null;
         try {
+            /* Preview-to-execute is revalidated under the recovery lock. */
+            $locked_preview = self::preview_rollback( $snapshot_id );
+            if ( is_wp_error( $locked_preview ) ) {
+                return $locked_preview;
+            }
+            if ( empty( $locked_preview['compatible'] ) ) {
+                return new \WP_Error( 'sabri_shell_snapshot_changed', __( 'The selected rollback snapshot changed or became incompatible. Preview it again.', 'sabri-unified-application-shell' ), array( 'status' => 409, 'preview' => $locked_preview ) );
+            }
+            $target = self::find_snapshot( $snapshot_id );
+            if ( ! is_array( $target ) || ! self::verify_snapshot( $target ) ) {
+                return new \WP_Error( 'sabri_shell_snapshot_changed', __( 'The selected rollback snapshot is no longer available or valid.', 'sabri-unified-application-shell' ), array( 'status' => 409 ) );
+            }
+
+            /* Hold the verified target in memory before retention can evict it. */
+            $pre = self::create_snapshot( 'pre-rollback' );
             foreach ( (array) $target['state'] as $option => $entry ) {
                 if ( 0 !== strpos( $option, 'sabri_shell_' ) && 0 !== strpos( $option, 'sabri_unified_shell_' ) ) {
                     continue;
@@ -240,8 +254,9 @@ final class PlanV4Recovery {
             PlanV4Audit::record( 'rollback_completed', array( 'snapshot_id' => $snapshot_id, 'pre_rollback_snapshot_id' => $pre['id'], 'cache_purged' => true ) );
             return array( 'success' => true, 'snapshot_id' => $snapshot_id, 'pre_rollback_snapshot_id' => $pre['id'], 'smoke_test' => 'pass', 'cache_purged' => true );
         } catch ( \Throwable $exception ) {
-            do_action( 'sabri_shell_rollback_failed', array( 'snapshot_id' => $snapshot_id, 'exception_class' => get_class( $exception ) ) );
-            PlanV4Audit::record( 'rollback_failed', array( 'snapshot_id' => $snapshot_id, 'exception_class' => get_class( $exception ) ) );
+            $pre_id = is_array( $pre ) && isset( $pre['id'] ) ? $pre['id'] : '';
+            do_action( 'sabri_shell_rollback_failed', array( 'snapshot_id' => $snapshot_id, 'pre_rollback_snapshot_id' => $pre_id, 'exception_class' => get_class( $exception ) ) );
+            PlanV4Audit::record( 'rollback_failed', array( 'snapshot_id' => $snapshot_id, 'pre_rollback_snapshot_id' => $pre_id, 'exception_class' => get_class( $exception ) ) );
             return new \WP_Error( 'sabri_shell_rollback_exception', __( 'Rollback failed. Recovery evidence was retained.', 'sabri-unified-application-shell' ), array( 'status' => 500 ) );
         } finally {
             self::unlock( $token );
