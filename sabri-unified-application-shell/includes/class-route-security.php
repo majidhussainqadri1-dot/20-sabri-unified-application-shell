@@ -50,7 +50,7 @@ final class RouteSecurity {
 
     /** Quarantine invalid overrides before they can be persisted. */
     public static function sanitize_persisted_overrides( $value, $old_value, $option ) {
-        unset( $option );
+        unset( $old_value, $option );
         if ( ! is_array( $value ) || empty( $value['navigation'] ) || ! is_array( $value['navigation'] ) ) { return $value; }
         foreach ( $value['navigation'] as $key => &$config ) {
             if ( ! is_array( $config ) || ! array_key_exists( 'url_override', $config ) ) { continue; }
@@ -75,5 +75,3 @@ final class RouteSecurity {
         return $sections;
     }
 }
-
-RouteSecurity::register();
