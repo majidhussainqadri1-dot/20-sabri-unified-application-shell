@@ -17,15 +17,34 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class FutureShellV5ClientContext {
 	/** Register the pre-boot context after the main Future Shell enqueue. */
 	public static function register() {
+		add_action( 'init', array( __CLASS__, 'ensure_private_path_policy' ), 6 );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_context' ), 132 );
+	}
+
+	/**
+	 * Canonical privacy baseline. Public modules may add stricter prefixes through
+	 * sabri_shell_future_private_path_fragments; they may not remove this baseline.
+	 *
+	 * @return array<int,string>
+	 */
+	private static function baseline_private_paths() {
+		return array(
+			'/messages', '/network', '/smail', '/appointments', '/security', '/verification',
+			'/doctor-onboarding', '/doctor-verification', '/account', '/notifications', '/settings',
+			'/login', '/register', '/signup', '/logout', '/forgot-password', '/reset-password',
+			'/complete-profile', '/publishing-dashboard', '/newsroom', '/notes',
+			'/marketplace/dashboard', '/marketplace/deal', '/wp-admin', '/wp-login.php', '/wp-json',
+		);
 	}
 
 	/** @return array<int,string> */
 	private static function private_paths() {
 		$settings = FutureShellV5::settings();
+		$external = apply_filters( 'sabri_shell_future_private_path_fragments', array() );
 		$paths = array_merge(
-			array( '/messages', '/network', '/appointments', '/security', '/verification', '/account', '/wp-admin', '/wp-login.php', '/wp-json' ),
-			isset( $settings['private_path_fragments'] ) && is_array( $settings['private_path_fragments'] ) ? $settings['private_path_fragments'] : array()
+			self::baseline_private_paths(),
+			isset( $settings['private_path_fragments'] ) && is_array( $settings['private_path_fragments'] ) ? $settings['private_path_fragments'] : array(),
+			is_array( $external ) ? $external : array()
 		);
 		$out = array();
 		foreach ( $paths as $path ) {
@@ -36,6 +55,30 @@ final class FutureShellV5ClientContext {
 			if ( '' !== $path && strlen( $path ) <= 160 ) { $out[ $path ] = $path; }
 		}
 		return array_values( array_slice( $out, 0, 64, true ) );
+	}
+
+	/**
+	 * Persist the unified protected-prefix policy so the server-generated service
+	 * worker and the browser-local shell consume the same list on the same request.
+	 *
+	 * @return void
+	 */
+	public static function ensure_private_path_policy() {
+		$current = get_option( FutureShellV5::OPTION, array() );
+		$current = is_array( $current ) ? $current : array();
+		$desired = self::private_paths();
+		$stored  = isset( $current['private_path_fragments'] ) && is_array( $current['private_path_fragments'] ) ? $current['private_path_fragments'] : array();
+		$normalize = static function ( $items ) {
+			$out = array();
+			foreach ( $items as $item ) {
+				if ( is_string( $item ) && '' !== $item ) { $out[] = untrailingslashit( '/' . ltrim( $item, '/' ) ); }
+			}
+			sort( $out );
+			return array_values( array_unique( $out ) );
+		};
+		if ( $normalize( $stored ) === $normalize( $desired ) ) { return; }
+		$current['private_path_fragments'] = $desired;
+		update_option( FutureShellV5::OPTION, $current, false );
 	}
 
 	/** @return string */
