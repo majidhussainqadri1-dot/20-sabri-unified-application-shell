@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.4.1 — 2026-08-08 — Ten-Round Corrective Hardening
+
+- Completed ten independent post-implementation review rounds against the governing File 20 plan, Future Shell v5 scope, privacy/security boundaries and deterministic release law.
+- Made release-ring state fail closed after filters and converted malformed persisted rings to Disabled instead of General.
+- Replaced unconditional Future Shell footer markup with current-ring-aware output.
+- Hardened PWA scope/private-route policy, no-store control delivery, deactivation cleanup and browser self-unregister behavior if File 20 stops serving the control manifest.
+- Versioned/scrubbed Recent & Resume and limited capture to server-classified public, query/hash-free routes.
+- Limited Smart Navigation pins and predictive prefetch to bounded public shell destinations.
+- Corrected last-known-good capture to snapshot the previous compatible settings state and reject automatic cross-version/schema restoration.
+- Added dialog focus restoration, editable-region shortcut guards, `aria-pressed` state and desktop-only Split Workspace focus/Escape behavior.
+- Bounded PerformanceObserver lifetime after the local measurement snapshot.
+- Removed Future Shell visual-token ownership and global contrast/data-saver overrides that could affect File 25 or native content.
+- Updated release identity, regression tests and deterministic package gates to `1.4.1`.
+- Hostinger staging, Founder acceptance, live deployment and operational acceptance remain separate evidence gates.
+
+## 1.4.0 — 2026-08-08 — Future Shell v5 / 18 Enhancements
+
+- Added all eighteen approved modern application-shell enhancements: Command Palette, PWA, Offline/Weak Network, Data Saver, Recent & Resume, Circuit Breaker, Last-Known-Good recovery, Performance Guardian, Smart Navigation, Keyboard Layer, Focus Mode, Split Workspace, Adaptive/Foldable Shell, View Transitions, bounded Predictive Prefetch, Language/Direction control, Accessibility Center and Release Rings.
+- Preserved File 00/22 authorization, File 19 one-bell, File 25 visual ownership, File 26 search ownership and all existing central-plan layout/recovery contracts.
+- Added Future Shell regression checks and deterministic package/CI evidence.
+
 ## 1.3.1 — 2026-08-07
 
 - Completed a fresh four-plan review over the merged 1.3.0 baseline.
