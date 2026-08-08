@@ -4,9 +4,8 @@ $fifth  = file_get_contents( $root . '/includes/class-future-shell-v5-fifth-hard
 $main   = file_get_contents( $root . '/sabri-unified-application-shell.php' );
 $future = file_get_contents( $root . '/includes/class-future-shell-v5.php' );
 $fail   = array();
-
 $checks = array(
-    'release 1.4.6 preserves fifth hardening' => false !== strpos( $main, '* Version: 1.4.6' ) && false !== strpos( $main, "define( 'SABRI_SHELL_VERSION', '1.4.6' );" ),
+    'release 1.4.7 preserves fifth hardening' => false !== strpos( $main, '* Version: 1.4.7' ) && false !== strpos( $main, "define( 'SABRI_SHELL_VERSION', '1.4.7' );" ),
     'fifth hardening loaded' => false !== strpos( $main, 'class-future-shell-v5-fifth-hardening.php' ) && false !== strpos( $main, 'FutureShellV5FifthHardening::register();' ),
     'contract 1.0.5' => false !== strpos( $fifth, "CONTRACT_VERSION = '1.0.5'" ),
     'old final evaluator retired' => false !== strpos( $fifth, "remove_filter( 'sabri_shell_future_feature_enabled', array( FutureShellV5Hardening::class, 'narrow_feature_enablement' ), 999999 )" ),
@@ -18,16 +17,6 @@ $checks = array(
     'invalid state fails closed' => false !== strpos( $fifth, 'default:' ) && false !== strpos( $fifth, 'return false;' ),
     'no foreign backend' => false === strpos( $fifth, 'CREATE TABLE' ) && false === strpos( $fifth, 'dbDelta(' ) && false === strpos( $fifth, 'INSERT INTO' ),
 );
-
-foreach ( $checks as $name => $ok ) {
-    if ( ! $ok ) {
-        $fail[] = $name;
-    }
-}
-
-if ( $fail ) {
-    fwrite( STDERR, "Future Shell v5 fifth hardening FAIL: " . implode( '; ', $fail ) . "\n" );
-    exit( 1 );
-}
-
-echo "Future Shell v5 fifth ten-round hardening preserved under 1.4.6: exact five-state rings, explicit internal-principal contract, manager-only configuration and no foreign backend PASS\n";
+foreach ( $checks as $name => $ok ) { if ( ! $ok ) { $fail[] = $name; } }
+if ( $fail ) { fwrite( STDERR, "Future Shell v5 fifth hardening FAIL: " . implode( '; ', $fail ) . "\n" ); exit(1); }
+echo "Future Shell v5 fifth hardening preserved under 1.4.7: exact five-state rings, explicit internal-principal contract, manager-only configuration and no foreign backend PASS\n";
