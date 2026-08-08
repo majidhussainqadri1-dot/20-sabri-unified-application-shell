@@ -14,7 +14,7 @@ final class NativeContentSlots {
         add_action( 'wp_body_open', array( __CLASS__, 'end_shell_capture' ), 6 );
     }
 
-    /** Mount canonical Home/News slots exactly once in the main content request. */
+    /** Mount canonical Home/News slots exactly once; legacy page content is fallback, never a second authoritative renderer. */
     public static function mount_main_slots( $content ) {
         if ( is_admin() || ! is_string( $content ) || ! in_the_loop() || ! is_main_query() ) {
             return $content;
@@ -28,22 +28,20 @@ final class NativeContentSlots {
             $before = self::capture_action( 'sabri_shell_home_before_main' );
             $main   = self::capture_action( 'sabri_shell_home_main' );
             $after  = self::capture_action( 'sabri_shell_home_after_main' );
-            return $before . $content . $main . $after;
+            $authoritative = '' !== trim( $main ) ? $main : $content;
+            return $before . $authoritative . $after;
         }
 
         if ( self::is_news_request() && ! self::$news_content_dispatched ) {
             self::$news_content_dispatched = true;
-            return $content . self::capture_action( 'sabri_shell_news_main' );
+            $main = self::capture_action( 'sabri_shell_news_main' );
+            return '' !== trim( $main ) ? $main : $content;
         }
 
         return $content;
     }
 
-    /**
-     * Capture only File 20's own wp_body_open renderer output so the Home
-     * right-sidebar slot can be mounted inside its structural sidebar without
-     * reparenting theme DOM.
-     */
+    /** Capture the structural File 20 wp_body_open window so the approved Home right slot can remain inside the structural sidebar. */
     public static function begin_shell_capture() {
         if ( ! self::is_home_request() || Layout::THREE !== Layout::current_mode() || ! has_action( 'sabri_shell_home_right_sidebar' ) ) {
             return;
@@ -52,7 +50,7 @@ final class NativeContentSlots {
         ob_start();
     }
 
-    /** Insert the provider slot in the existing Home right sidebar, or emit one honest structural aside if no native modules opened it. */
+    /** Insert the provider slot in the existing Home right sidebar, or emit a bounded structural provider aside. */
     public static function end_shell_capture() {
         if ( self::$shell_capture_level <= 0 || ob_get_level() < self::$shell_capture_level ) {
             self::$shell_capture_level = 0;
@@ -86,9 +84,7 @@ final class NativeContentSlots {
     }
 
     private static function capture_action( $hook ) {
-        if ( ! has_action( $hook ) ) {
-            return '';
-        }
+        if ( ! has_action( $hook ) ) { return ''; }
         ob_start();
         try {
             do_action( $hook );
@@ -96,34 +92,22 @@ final class NativeContentSlots {
         } catch ( \Throwable $error ) {
             ob_end_clean();
             if ( class_exists( __NAMESPACE__ . '\\PlanV4Audit', false ) ) {
-                PlanV4Audit::record(
-                    'native_slot_provider_failure',
-                    array(
-                        'slot' => sanitize_key( $hook ),
-                        'exception_class' => sanitize_text_field( get_class( $error ) ),
-                    )
-                );
+                PlanV4Audit::record( 'native_slot_provider_failure', array( 'slot' => sanitize_key( $hook ), 'exception_class' => sanitize_text_field( get_class( $error ) ) ) );
             }
             return '';
         }
     }
 
     private static function is_home_request() {
-        if ( function_exists( 'is_front_page' ) && is_front_page() ) {
-            return true;
-        }
+        if ( function_exists( 'is_front_page' ) && is_front_page() ) { return true; }
         $home_id = Integrations::page_id( 'home' );
         return $home_id > 0 && function_exists( 'get_queried_object_id' ) && absint( get_queried_object_id() ) === $home_id;
     }
 
     private static function is_news_request() {
-        if ( function_exists( 'is_post_type_archive' ) && is_post_type_archive( 'snp_publication' ) ) {
-            return true;
-        }
+        if ( function_exists( 'is_post_type_archive' ) && is_post_type_archive( 'snp_publication' ) ) { return true; }
         $news_id = Integrations::page_id( 'news' );
-        if ( $news_id > 0 && function_exists( 'get_queried_object_id' ) && absint( get_queried_object_id() ) === $news_id ) {
-            return true;
-        }
+        if ( $news_id > 0 && function_exists( 'get_queried_object_id' ) && absint( get_queried_object_id() ) === $news_id ) { return true; }
         return function_exists( 'is_home' ) && is_home() && ! self::is_home_request();
     }
 }
