@@ -7,6 +7,7 @@ final class PlanV4Recovery {
     const SNAPSHOTS = 'sabri_shell_plan_v4_snapshots';
     const LOCK = 'sabri_shell_plan_v4_recovery_lock';
     const MAX_SNAPSHOTS = 10;
+    const MAX_DIFF_ROWS = 100;
 
     public static function register() {
         add_action( 'rest_api_init', array( __CLASS__, 'register_routes' ) );
@@ -114,7 +115,12 @@ final class PlanV4Recovery {
         $actions = array_values( array_unique( array_intersect( array_map( 'sanitize_key', $actions ), $allowed ) ) );
         $operations = array();
         foreach ( $actions as $action ) {
-            $operations[] = array( 'action' => $action, 'scope' => 'file-20-owned-state', 'destructive' => false );
+            $operations[] = array(
+                'action' => $action,
+                'scope' => 'file-20-owned-state',
+                'destructive' => false,
+                'diff' => self::repair_action_diff( $action ),
+            );
         }
         return array(
             'dry_run' => true,
@@ -143,7 +149,7 @@ final class PlanV4Recovery {
             foreach ( $preview['operations'] as $operation ) {
                 $action = $operation['action'];
                 $ok = self::run_repair_action( $action );
-                $results[] = array( 'action' => $action, 'success' => $ok );
+                $results[] = array( 'action' => $action, 'success' => $ok, 'preview_diff' => $operation['diff'] );
                 if ( ! $ok ) { $failed = true; }
             }
             $health = PlanV4ContractHealth::health( array(), true );
@@ -235,14 +241,76 @@ final class PlanV4Recovery {
         return $snapshot;
     }
 
+    /** Build a bounded, evidence-oriented dry-run diff for one repair action. */
+    private static function repair_action_diff( $action ) {
+        switch ( $action ) {
+            case 'plan_v4_normalize_settings':
+                $current = get_option( Defaults::OPTION_NAME, array() );
+                $current = is_array( $current ) ? $current : array();
+                $target = Settings::deep_merge( Defaults::settings(), $current );
+                $target['schema_version'] = Defaults::SCHEMA_VERSION;
+                return self::diff_values( $current, $target );
+            case 'plan_v4_rebuild_contract_health':
+                return array( array( 'path' => 'provider_health_cache', 'before' => 'current-cached-evidence', 'after' => 'invalidated-and-authoritatively-rechecked' ) );
+            case 'plan_v4_reschedule_jobs':
+                return array( array( 'path' => 'scheduled_maintenance', 'before' => wp_next_scheduled( PlanV4Jobs::HOOK ) ? 'scheduled' : 'missing', 'after' => 'scheduled' ) );
+            case 'plan_v4_flush_rewrites':
+                return array( array( 'path' => 'rewrite_rules', 'before' => 'current', 'after' => 'flushed-once' ) );
+            case 'plan_v4_purge_cache':
+                return array( array( 'path' => 'file20_and_litespeed_cache', 'before' => 'current', 'after' => 'purged-and-reconciled' ) );
+        }
+        return array();
+    }
+
+    /** Recursively describe actual settings changes without exposing secret-like values. */
+    private static function diff_values( $before, $after, $prefix = '' ) {
+        $rows = array();
+        if ( is_array( $before ) && is_array( $after ) ) {
+            $keys = array_unique( array_merge( array_keys( $before ), array_keys( $after ) ) );
+            foreach ( $keys as $key ) {
+                if ( count( $rows ) >= self::MAX_DIFF_ROWS ) { break; }
+                $path = '' === $prefix ? (string) $key : $prefix . '.' . $key;
+                $left = array_key_exists( $key, $before ) ? $before[ $key ] : null;
+                $right = array_key_exists( $key, $after ) ? $after[ $key ] : null;
+                if ( $left === $right ) { continue; }
+                if ( is_array( $left ) && is_array( $right ) ) {
+                    $rows = array_merge( $rows, self::diff_values( $left, $right, $path ) );
+                    $rows = array_slice( $rows, 0, self::MAX_DIFF_ROWS );
+                    continue;
+                }
+                $rows[] = array( 'path' => sanitize_text_field( $path ), 'before' => self::safe_diff_value( $left, $path ), 'after' => self::safe_diff_value( $right, $path ) );
+            }
+            return $rows;
+        }
+        if ( $before !== $after ) {
+            $rows[] = array( 'path' => sanitize_text_field( $prefix ), 'before' => self::safe_diff_value( $before, $prefix ), 'after' => self::safe_diff_value( $after, $prefix ) );
+        }
+        return $rows;
+    }
+
+    private static function safe_diff_value( $value, $path ) {
+        if ( preg_match( '/pass|secret|token|cookie|authorization|nonce|credential|document|phone|email|key/i', (string) $path ) ) {
+            return '[redacted]';
+        }
+        if ( is_bool( $value ) || is_int( $value ) || is_float( $value ) || null === $value ) {
+            return $value;
+        }
+        if ( is_array( $value ) ) {
+            return '[structured-value]';
+        }
+        $text = sanitize_text_field( (string) $value );
+        return function_exists( 'mb_substr' ) ? mb_substr( $text, 0, 200 ) : substr( $text, 0, 200 );
+    }
+
     private static function run_repair_action( $action ) {
         switch ( $action ) {
             case 'plan_v4_normalize_settings':
-                if ( class_exists( __NAMESPACE__ . '\\Settings', false ) ) {
-                    $settings = Settings::get();
-                    return is_array( $settings );
+                if ( ! class_exists( __NAMESPACE__ . '\\Settings', false ) ) {
+                    return false;
                 }
-                return false;
+                Settings::ensure_defaults();
+                $stored = get_option( Defaults::OPTION_NAME, array() );
+                return is_array( $stored ) && isset( $stored['schema_version'] ) && Defaults::SCHEMA_VERSION === absint( $stored['schema_version'] );
             case 'plan_v4_rebuild_contract_health':
                 PlanV4ContractHealth::invalidate();
                 return is_array( PlanV4ContractHealth::health( array(), true ) );
