@@ -13,6 +13,8 @@ final class FutureShellV5TenthHardening {
         add_filter( 'sabri_shell_contract_registry', array( __CLASS__, 'harmonize_latest_file00_audit_truth' ), PHP_INT_MAX - 100 );
         add_filter( 'sabri_shell_provider_registry', array( __CLASS__, 'bind_actual_provider_versions' ), PHP_INT_MAX - 100 );
         add_filter( 'sabri_shell_search_surface', array( __CLASS__, 'file26_search_surface_only' ), PHP_INT_MAX );
+        add_filter( 'pre_update_option_' . Defaults::OPTION_NAME, array( __CLASS__, 'sanitize_retired_local_feed_state' ), PHP_INT_MAX - 10, 3 );
+        add_action( 'init', array( __CLASS__, 'migrate_retired_local_feed_state' ), 2 );
         NativeContentSlots::register();
         add_action( 'rest_api_init', array( __CLASS__, 'replace_health_route' ), PHP_INT_MAX );
         add_filter( 'sabri_shell_system_check_sections', array( __CLASS__, 'system_check' ), 95 );
@@ -22,6 +24,34 @@ final class FutureShellV5TenthHardening {
         if ( ! is_array( $destinations ) || empty( $destinations['home']['shortcodes'] ) || ! is_array( $destinations['home']['shortcodes'] ) ) { return $destinations; }
         $destinations['home']['shortcodes'] = array_values( array_filter( $destinations['home']['shortcodes'], static function ( $shortcode ) { return 'sabri_shell_home_feed' !== sanitize_key( (string) $shortcode ); } ) );
         return $destinations;
+    }
+
+    /** Persist the retired File 20 feed state as explicitly inert and prevent the old shortcode from becoming a configured route source. */
+    public static function sanitize_retired_local_feed_state( $value, $old_value, $option ) {
+        unset( $old_value, $option );
+        if ( ! is_array( $value ) ) { return $value; }
+        $value['home_feed'] = array( 'retired' => true, 'auto_insert' => false, 'posts_count' => 0 );
+        if ( isset( $value['navigation']['home']['shortcode'] ) && 'sabri_shell_home_feed' === sanitize_key( (string) $value['navigation']['home']['shortcode'] ) ) {
+            $value['navigation']['home']['shortcode'] = '';
+        }
+        return $value;
+    }
+
+    /** Idempotent upgrade for already-installed 1.4.x settings. */
+    public static function migrate_retired_local_feed_state() {
+        $current = get_option( Defaults::OPTION_NAME, array() );
+        if ( ! is_array( $current ) ) { return; }
+        $target = self::sanitize_retired_local_feed_state( $current, $current, Defaults::OPTION_NAME );
+        if ( $target === $current ) { return; }
+        update_option( Defaults::OPTION_NAME, $target, false );
+        $stored = get_option( Defaults::OPTION_NAME, array() );
+        if ( is_array( $stored ) && $stored === $target ) {
+            Navigation::invalidate_cache();
+            Integrations::invalidate_cache();
+            if ( class_exists( __NAMESPACE__ . '\\PlanV4Audit', false ) ) {
+                PlanV4Audit::record( 'retired_local_home_feed_state_migrated', array( 'native_owner' => 'file-21', 'runtime_owner' => 'file-20-shell-slots-only' ) );
+            }
+        }
     }
 
     public static function structural_body_classes( $classes ) {
@@ -40,18 +70,11 @@ final class FutureShellV5TenthHardening {
         $registry = is_array( $registry ) ? $registry : array();
         $entry = isset( $registry['00'] ) && is_array( $registry['00'] ) ? $registry['00'] : array();
         $registry['00'] = array_merge( $entry, array(
-            'provider_baseline' => 'membership-core-1.2.18-reviewed-head',
-            'provider_schema' => '1.3.0',
-            'public_membership_contract' => '1.2.0',
-            'evidence_kind' => 'external-reviewed-code-audit-not-runtime-health',
-            'reviewed_file00_commit' => '3a84c32a6ddad151f2ed09d244fa8aa536a58108',
+            'provider_baseline' => 'membership-core-1.2.18-reviewed-head', 'provider_schema' => '1.3.0', 'public_membership_contract' => '1.2.0',
+            'evidence_kind' => 'external-reviewed-code-audit-not-runtime-health', 'reviewed_file00_commit' => '3a84c32a6ddad151f2ed09d244fa8aa536a58108',
             'reviewed_finding_counts' => array( 'critical' => 13, 'high' => 44, 'medium' => 17, 'low' => 1 ),
-            'known_external_release_blockers' => true,
-            'production_safe_implied' => false,
-            'runtime_presence_must_be_verified' => true,
-            'runtime_authorization_remains_native' => true,
-            'staging_acceptance_implied' => false,
-            'live_status_implied' => false,
+            'known_external_release_blockers' => true, 'production_safe_implied' => false, 'runtime_presence_must_be_verified' => true,
+            'runtime_authorization_remains_native' => true, 'staging_acceptance_implied' => false, 'live_status_implied' => false,
             'file20_boundary' => 'consume-native-versioned-claims-only-no-membership-identity-mfa-or-trust-write',
         ) );
         return $registry;
@@ -117,7 +140,6 @@ final class FutureShellV5TenthHardening {
         ) );
     }
 
-    /** Safety result for the two contracts without which File 20 cannot claim a healthy privileged shell. */
     public static function critical_health_state( $providers = null ) {
         if ( ! PlanV4Audit::verify_chain() ) { return 'repair_required'; }
         $providers = is_array( $providers ) ? $providers : PlanV4ContractHealth::health();
@@ -150,13 +172,13 @@ final class FutureShellV5TenthHardening {
             'label' => __( 'Future Shell v5 tenth fresh ten-round hardening', 'sabri-unified-application-shell' ),
             'contract_version' => self::CONTRACT_VERSION, 'approved_feature_count' => 18,
             'file20_local_home_feed_runtime' => 'retired-file21-canonical-owner',
+            'file20_local_home_feed_state' => 'persisted-inert-auto-insert-false',
             'file25_visual_runtime_ownership' => 'native-file25-only-file20-structural-classes',
             'file00_latest_reviewed_evidence' => 'runtime-1.2.18/schema-1.3.0/contract-1.2.0/audit-known-blockers',
             'file00_production_safe_implied' => false, 'file00_runtime_health_must_be_verified' => true,
             'file21_native_slots' => array( 'sabri_shell_home_before_main', 'sabri_shell_home_main', 'sabri_shell_home_after_main', 'sabri_shell_home_right_sidebar', 'sabri_shell_news_main' ),
             'file21_native_slot_runtime' => 'published-by-native-content-slots',
-            'critical_health_state' => self::critical_health_state( $providers ),
-            'authoritative_health_state' => self::authoritative_health_state( $providers ),
+            'critical_health_state' => self::critical_health_state( $providers ), 'authoritative_health_state' => self::authoritative_health_state( $providers ),
             'healthy_truth_rule' => 'all-critical-contracts-must-be-verified',
             'search_surface_owner' => $search['owner'], 'search_surface_status' => $search['status'], 'search_native_fallback' => false,
             'provider_versions_bound_to_native_evidence' => true, 'staging_accepted' => false, 'live_deployed' => false,
