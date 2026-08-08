@@ -13,6 +13,9 @@ final class FutureShellV5TenthHardening {
         remove_filter( 'body_class', array( Renderer::class, 'body_classes' ) );
         add_filter( 'body_class', array( __CLASS__, 'structural_body_classes' ), 10 );
 
+        /* Supersede stale sixth-pass File 00 compatibility metadata with the latest reviewed evidence. */
+        add_filter( 'sabri_shell_contract_registry', array( __CLASS__, 'harmonize_latest_file00_audit_truth' ), PHP_INT_MAX - 100 );
+
         add_filter( 'sabri_shell_system_check_sections', array( __CLASS__, 'system_check' ), 95 );
     }
 
@@ -47,6 +50,39 @@ final class FutureShellV5TenthHardening {
         return array_values( array_unique( array_filter( array_map( 'strval', $classes ) ) ) );
     }
 
+    /**
+     * Record the latest reviewed File 00 evidence without turning static metadata
+     * into runtime health or authorization. File 00 remains the native authority.
+     */
+    public static function harmonize_latest_file00_audit_truth( $registry ) {
+        $registry = is_array( $registry ) ? $registry : array();
+        $entry = isset( $registry['00'] ) && is_array( $registry['00'] ) ? $registry['00'] : array();
+        $registry['00'] = array_merge(
+            $entry,
+            array(
+                'provider_baseline' => 'membership-core-1.2.18-reviewed-head',
+                'provider_schema' => '1.3.0',
+                'public_membership_contract' => '1.2.0',
+                'evidence_kind' => 'external-reviewed-code-audit-not-runtime-health',
+                'reviewed_file00_commit' => '3a84c32a6ddad151f2ed09d244fa8aa536a58108',
+                'reviewed_finding_counts' => array(
+                    'critical' => 13,
+                    'high' => 44,
+                    'medium' => 17,
+                    'low' => 1,
+                ),
+                'known_external_release_blockers' => true,
+                'production_safe_implied' => false,
+                'runtime_presence_must_be_verified' => true,
+                'runtime_authorization_remains_native' => true,
+                'staging_acceptance_implied' => false,
+                'live_status_implied' => false,
+                'file20_boundary' => 'consume-native-versioned-claims-only-no-membership-identity-mfa-or-trust-write',
+            )
+        );
+        return $registry;
+    }
+
     public static function system_check( $sections ) {
         $sections = is_array( $sections ) ? $sections : array();
         $sections['future_shell_v5_tenth_hardening'] = array(
@@ -55,6 +91,9 @@ final class FutureShellV5TenthHardening {
             'approved_feature_count' => 18,
             'file20_local_home_feed_runtime' => 'retired-file21-canonical-owner',
             'file25_visual_runtime_ownership' => 'native-file25-only-file20-structural-classes',
+            'file00_latest_reviewed_evidence' => 'runtime-1.2.18/schema-1.3.0/contract-1.2.0/audit-known-blockers',
+            'file00_production_safe_implied' => false,
+            'file00_runtime_health_must_be_verified' => true,
             'staging_accepted' => false,
             'live_deployed' => false,
         );
