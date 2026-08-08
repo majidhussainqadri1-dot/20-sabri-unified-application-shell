@@ -70,7 +70,11 @@ final class FutureShellV5ClientContext {
 	}
 
 	/**
-	 * Add a separate pre-boot object so ordering with wp_localize_script remains deterministic.
+	 * Add a separate pre-boot object and merge it into the already-localized
+	 * base object before future-shell-v5.js executes.
+	 *
+	 * WordPress prints localization data before "before" inline data for the
+	 * same handle; the separate object is retained as an auditable fallback.
 	 *
 	 * @return void
 	 */
@@ -83,9 +87,10 @@ final class FutureShellV5ClientContext {
 			'privatePaths'       => self::private_paths(),
 			'recentsVersion'     => FutureShellV5Hardening::RECENTS_VERSION,
 		);
+		$encoded = wp_json_encode( $payload );
 		wp_add_inline_script(
 			'sabri-shell-future-v5',
-			'window.SabriShellFutureV5Hardening=' . wp_json_encode( $payload ) . ';',
+			'window.SabriShellFutureV5Hardening=' . $encoded . ';window.SabriShellFutureV5=Object.assign({},window.SabriShellFutureV5||{},window.SabriShellFutureV5Hardening);',
 			'before'
 		);
 	}
