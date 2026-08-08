@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.4.6 — 2026-08-08 — Sixth Independent Ten-Round Corrective Hardening
+
+- Reopened merged `1.4.5` after newer File 00, File 01, File 02 and File 24 evidence changed the compatibility surface.
+- Added `FutureShellV5SixthHardening` contract `1.0.6` without adding a nineteenth Future Shell feature or any companion-domain backend.
+- Reconciled File 00 runtime `1.2.13`, schema `1.3.0`, Public Membership Contract `1.2.0`, CF-01 `1.0.0` and Advanced Trust Contract `1.0.0` as compatibility targets only.
+- Reconciled File 01-B runtime `2.0.0`, schema `1.2.0`, Foundation Contract `2.0.0` and exact 18 Future Foundation enhancements.
+- Advanced File 02 compatibility from the historical fourth-pass `1.3.0` target to current runtime `1.3.1`, database schema `1.3.0`, passkey schema `1.1.0`, auth-event projection contract `1.1.0`, exact 24 enhancements and current compromise/lockdown/cooling event family.
+- Preserved File 02 privileged-reset native ownership: File 02 executes only with the required File 00 dual-control receipt; File 20 renders/routes only.
+- Preserved fail-safe security ownership when File 24 is unavailable; File 20 never becomes an authentication/security fallback engine.
+- Reconciled File 24 to runtime candidate `0.99.0`, schema `0.25.5` and exact `F24-FUT-001..F24-FUT-025` Future Security requirements while retaining native-owner enforcement.
+- Marked all new static compatibility facts as `declared-compatibility-target-not-runtime-detection`; runtime presence, health, authorization and staging acceptance must still be verified independently.
+- Added a dedicated sixth-pass regression and advanced permanent deterministic package/QA gates to `1.4.6`.
+- Hostinger staging, Founder acceptance, live deployment and operational acceptance remain separate evidence gates.
+
 ## 1.4.5 — 2026-08-08 — Fifth Independent Ten-Round Corrective Hardening
 
 - Reopened the merged 1.4.4 baseline for a fifth independent ten-round source/evidence audit.
