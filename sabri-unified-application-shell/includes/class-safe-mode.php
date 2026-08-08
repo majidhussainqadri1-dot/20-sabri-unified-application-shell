@@ -62,10 +62,7 @@ final class SafeMode {
 		return defined( 'SABRI_SHELL_DISABLE' ) && SABRI_SHELL_DISABLE;
 	}
 
-	/**
-	 * Whether an authorized, nonce-bound safe-mode URL flag is active.
-	 * The configuration constant remains the highest-priority break-glass path.
-	 */
+	/** Whether an authorized, nonce-bound safe-mode URL flag is active. */
 	public static function query_safe_mode() {
 		if ( empty( $_GET['sabri_shell_safe'] ) ) {
 			return false;
@@ -120,8 +117,7 @@ final class SafeMode {
 	 * Apply an audited emergency state transition.
 	 *
 	 * Disable requires a reason and review window. Re-enable requires an intact
-	 * File 20 audit chain, no critical provider collision/error/invalid state,
-	 * and a cache purge before the shell is allowed to render again.
+	 * audit chain, verified critical File 20/File 00 providers, and a cache purge.
 	 */
 	public static function set_emergency_disabled( $disable, $reason = '', $review_hours = 24 ) {
 		if ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) {
@@ -165,10 +161,15 @@ final class SafeMode {
 			return new \WP_Error( 'sabri_shell_emergency_reenable_audit_invalid', __( 'The shell cannot be re-enabled while File 20 audit integrity is invalid.', 'sabri-unified-application-shell' ), array( 'status' => 409 ) );
 		}
 		$health = PlanV4ContractHealth::health( array(), true );
-		foreach ( (array) $health as $provider ) {
-			if ( is_array( $provider ) && isset( $provider['state'] ) && in_array( $provider['state'], array( 'collision', 'error', 'invalid' ), true ) ) {
-				return new \WP_Error( 'sabri_shell_emergency_reenable_health_blocked', __( 'The shell cannot be re-enabled while a critical provider state is unresolved.', 'sabri-unified-application-shell' ), array( 'status' => 409 ) );
-			}
+		$critical_state = class_exists( __NAMESPACE__ . '\\FutureShellV5TenthHardening', false )
+			? FutureShellV5TenthHardening::critical_health_state( $health )
+			: 'unknown';
+		if ( 'healthy' !== $critical_state ) {
+			return new \WP_Error(
+				'sabri_shell_emergency_reenable_health_blocked',
+				__( 'The shell cannot be re-enabled until critical File 20 and File 00 provider evidence is healthy.', 'sabri-unified-application-shell' ),
+				array( 'status' => 409, 'critical_state' => $critical_state )
+			);
 		}
 
 		PlanV4PrivacyCache::purge();
@@ -186,7 +187,7 @@ final class SafeMode {
 		update_option( self::EMERGENCY_META_OPTION, $meta, false );
 		Navigation::invalidate_cache();
 		Integrations::invalidate_cache();
-		PlanV4Audit::record( 'emergency_reenabled', array( 'actor_id' => get_current_user_id(), 'reason' => $reason, 'cache_purged' => true ) );
+		PlanV4Audit::record( 'emergency_reenabled', array( 'actor_id' => get_current_user_id(), 'reason' => $reason, 'cache_purged' => true, 'critical_health_state' => $critical_state ) );
 		do_action( 'sabri_shell_emergency_reenabled', array( 'actor_id' => get_current_user_id(), 'cache_purged' => true ) );
 		return array( 'changed' => true, 'disabled' => false, 'metadata' => $meta );
 	}
