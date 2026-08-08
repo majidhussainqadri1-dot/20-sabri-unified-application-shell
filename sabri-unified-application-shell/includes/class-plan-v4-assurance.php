@@ -72,12 +72,22 @@ final class PlanV4Assurance {
 
     private static function sanitize_context( array $context ) {
         $safe = array();
-        foreach ( array_slice( $context, 0, 30, true ) as $key => $value ) {
-            $key = sanitize_key( (string) $key );
-            if ( preg_match( '/secret|token|nonce|cookie|password|key|document|phone|email/i', $key ) ) {
+        foreach ( array_slice( $context, 0, 30, true ) as $original_key => $value ) {
+            $key = sanitize_key( (string) $original_key );
+            if ( '' === $key ) {
+                $key = 'item';
+            }
+            $base = $key;
+            $suffix = 2;
+            while ( array_key_exists( $key, $safe ) ) {
+                $key = $base . '-' . $suffix;
+                ++$suffix;
+            }
+            if ( preg_match( '/secret|token|nonce|cookie|password|key|document|phone|email/i', (string) $original_key ) ) {
                 $safe[ $key ] = '[redacted]';
             } elseif ( is_scalar( $value ) || null === $value ) {
-                $safe[ $key ] = mb_substr( sanitize_text_field( (string) $value ), 0, 300 );
+                $text = sanitize_text_field( (string) $value );
+                $safe[ $key ] = function_exists( 'mb_substr' ) ? mb_substr( $text, 0, 300 ) : substr( $text, 0, 300 );
             }
         }
         return $safe;

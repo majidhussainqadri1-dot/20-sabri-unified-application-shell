@@ -7,6 +7,7 @@ final class PlanV4Recovery {
     const SNAPSHOTS = 'sabri_shell_plan_v4_snapshots';
     const LOCK = 'sabri_shell_plan_v4_recovery_lock';
     const MAX_SNAPSHOTS = 10;
+    const MAX_DIFF_ROWS = 100;
 
     public static function register() {
         add_action( 'rest_api_init', array( __CLASS__, 'register_routes' ) );
@@ -33,6 +34,7 @@ final class PlanV4Recovery {
             'scheduled' => (bool) wp_next_scheduled( PlanV4Jobs::HOOK ),
             'provider_health' => PlanV4ContractHealth::health(),
             'last_job' => get_option( PlanV4Jobs::STATE, array() ),
+            'snapshot_schema_required' => Defaults::SCHEMA_VERSION,
         );
         return $sections;
     }
@@ -114,7 +116,12 @@ final class PlanV4Recovery {
         $actions = array_values( array_unique( array_intersect( array_map( 'sanitize_key', $actions ), $allowed ) ) );
         $operations = array();
         foreach ( $actions as $action ) {
-            $operations[] = array( 'action' => $action, 'scope' => 'file-20-owned-state', 'destructive' => false );
+            $operations[] = array(
+                'action' => $action,
+                'scope' => 'file-20-owned-state',
+                'destructive' => false,
+                'diff' => self::repair_action_diff( $action ),
+            );
         }
         return array(
             'dry_run' => true,
@@ -143,7 +150,7 @@ final class PlanV4Recovery {
             foreach ( $preview['operations'] as $operation ) {
                 $action = $operation['action'];
                 $ok = self::run_repair_action( $action );
-                $results[] = array( 'action' => $action, 'success' => $ok );
+                $results[] = array( 'action' => $action, 'success' => $ok, 'preview_diff' => $operation['diff'] );
                 if ( ! $ok ) { $failed = true; }
             }
             $health = PlanV4ContractHealth::health( array(), true );
@@ -159,6 +166,10 @@ final class PlanV4Recovery {
         }
     }
 
+    /**
+     * Rollback preview is fail-closed across both code-major and settings-schema.
+     * Cross-schema snapshots are read-only evidence requiring a manual migration.
+     */
     public static function preview_rollback( $snapshot_id ) {
         $snapshot = self::find_snapshot( $snapshot_id );
         if ( ! $snapshot ) {
@@ -169,11 +180,18 @@ final class PlanV4Recovery {
         }
         $current_major = (int) strtok( defined( 'SABRI_SHELL_VERSION' ) ? SABRI_SHELL_VERSION : '0', '.' );
         $target_major = (int) strtok( isset( $snapshot['plugin_version'] ) ? $snapshot['plugin_version'] : '0', '.' );
+        $target_schema = self::snapshot_schema_version( $snapshot );
+        $version_compatible = $current_major === $target_major;
+        $schema_compatible = Defaults::SCHEMA_VERSION === $target_schema;
         return array(
             'dry_run' => true,
             'snapshot_id' => $snapshot['id'],
             'created_at' => $snapshot['created_at'],
-            'compatible' => $current_major === $target_major,
+            'version_compatible' => $version_compatible,
+            'schema_compatible' => $schema_compatible,
+            'target_schema_version' => $target_schema,
+            'current_schema_version' => Defaults::SCHEMA_VERSION,
+            'compatible' => $version_compatible && $schema_compatible,
             'scope' => array_keys( (array) $snapshot['state'] ),
             'pre_rollback_snapshot_required' => true,
         );
@@ -183,7 +201,7 @@ final class PlanV4Recovery {
         $preview = self::preview_rollback( $snapshot_id );
         if ( is_wp_error( $preview ) ) { return $preview; }
         if ( empty( $preview['compatible'] ) ) {
-            return new \WP_Error( 'sabri_shell_snapshot_incompatible', __( 'This snapshot is not compatible with the current major version. Use read-only recovery and a manual migration plan.', 'sabri-unified-application-shell' ), array( 'status' => 409 ) );
+            return new \WP_Error( 'sabri_shell_snapshot_incompatible', __( 'This snapshot is not compatible with the current code/schema. Keep it read-only and use a manual migration plan.', 'sabri-unified-application-shell' ), array( 'status' => 409, 'preview' => $preview ) );
         }
         $token = self::lock();
         if ( is_wp_error( $token ) ) { return $token; }
@@ -196,25 +214,56 @@ final class PlanV4Recovery {
                 }
                 update_option( $option, $value, false );
             }
+            Navigation::invalidate_cache();
+            Integrations::invalidate_cache();
             PlanV4PrivacyCache::purge();
             $smoke = class_exists( __NAMESPACE__ . '\\Layout', false ) && in_array( Layout::current_mode(), Layout::modes(), true );
             if ( ! $smoke ) {
                 do_action( 'sabri_shell_rollback_failed', array( 'snapshot_id' => $snapshot_id, 'pre_rollback_snapshot_id' => $pre['id'] ) );
+                PlanV4Audit::record( 'rollback_failed', array( 'snapshot_id' => $snapshot_id, 'pre_rollback_snapshot_id' => $pre['id'], 'reason' => 'smoke-test' ) );
                 return new \WP_Error( 'sabri_shell_rollback_smoke_failed', __( 'Rollback state was restored, but the post-rollback smoke test failed. The shell remains in recovery-required state.', 'sabri-unified-application-shell' ), array( 'status' => 500 ) );
             }
-            PlanV4Audit::record( 'rollback_completed', array( 'snapshot_id' => $snapshot_id, 'pre_rollback_snapshot_id' => $pre['id'] ) );
-            return array( 'success' => true, 'snapshot_id' => $snapshot_id, 'pre_rollback_snapshot_id' => $pre['id'], 'smoke_test' => 'pass' );
+            PlanV4Audit::record( 'rollback_completed', array( 'snapshot_id' => $snapshot_id, 'pre_rollback_snapshot_id' => $pre['id'], 'cache_purged' => true ) );
+            return array( 'success' => true, 'snapshot_id' => $snapshot_id, 'pre_rollback_snapshot_id' => $pre['id'], 'smoke_test' => 'pass', 'cache_purged' => true );
         } catch ( \Throwable $exception ) {
             do_action( 'sabri_shell_rollback_failed', array( 'snapshot_id' => $snapshot_id, 'exception_class' => get_class( $exception ) ) );
+            PlanV4Audit::record( 'rollback_failed', array( 'snapshot_id' => $snapshot_id, 'exception_class' => get_class( $exception ) ) );
             return new \WP_Error( 'sabri_shell_rollback_exception', __( 'Rollback failed. Recovery evidence was retained.', 'sabri-unified-application-shell' ), array( 'status' => 500 ) );
         } finally {
             self::unlock( $token );
         }
     }
 
+    /** Return bounded snapshot metadata for operator selection; never expose state values. */
+    public static function snapshot_list() {
+        $out = array();
+        foreach ( array_slice( (array) get_option( self::SNAPSHOTS, array() ), -self::MAX_SNAPSHOTS ) as $snapshot ) {
+            if ( ! is_array( $snapshot ) || empty( $snapshot['id'] ) ) { continue; }
+            $out[] = array(
+                'id' => sanitize_text_field( (string) $snapshot['id'] ),
+                'reason' => sanitize_key( isset( $snapshot['reason'] ) ? $snapshot['reason'] : '' ),
+                'created_at' => sanitize_text_field( isset( $snapshot['created_at'] ) ? $snapshot['created_at'] : '' ),
+                'plugin_version' => sanitize_text_field( isset( $snapshot['plugin_version'] ) ? $snapshot['plugin_version'] : '' ),
+                'schema_version' => self::snapshot_schema_version( $snapshot ),
+                'integrity' => self::verify_snapshot( $snapshot ) ? 'valid' : 'invalid',
+            );
+        }
+        return $out;
+    }
+
     public static function create_snapshot( $reason ) {
         $state = array();
-        foreach ( array( 'sabri_shell_settings', 'sabri_unified_shell_settings', PlanV4SettingsConcurrency::VERSION_OPTION ) as $option ) {
+        $owned_options = array(
+            Defaults::OPTION_NAME,
+            'sabri_unified_shell_settings',
+            PlanV4SettingsConcurrency::VERSION_OPTION,
+            FutureShellV5::OPTION,
+            SafeMode::EMERGENCY_META_OPTION,
+            'sabri_shell_four_plan_migration',
+            'sabri_shell_future_rewrite_version',
+            'sabri_shell_flush_rewrite_rules',
+        );
+        foreach ( $owned_options as $option ) {
             $state[ $option ] = get_option( $option, null );
         }
         $snapshot = array(
@@ -222,8 +271,12 @@ final class PlanV4Recovery {
             'reason' => sanitize_key( $reason ),
             'created_at' => gmdate( 'c' ),
             'actor_id' => get_current_user_id(),
+            'source' => 'file-20-plan-v4-recovery',
             'plugin_version' => defined( 'SABRI_SHELL_VERSION' ) ? SABRI_SHELL_VERSION : '0.0.0',
+            'schema_version' => Defaults::SCHEMA_VERSION,
             'contract_fingerprint' => hash( 'sha256', wp_json_encode( PlanV4ContractHealth::providers() ) ),
+            'route_fingerprint' => hash( 'sha256', wp_json_encode( Navigation::resolved() ) ),
+            'feature_fingerprint' => hash( 'sha256', wp_json_encode( FutureShellV5::settings() ) ),
             'state' => $state,
         );
         $copy = $snapshot;
@@ -231,18 +284,80 @@ final class PlanV4Recovery {
         $snapshots = (array) get_option( self::SNAPSHOTS, array() );
         $snapshots[] = $snapshot;
         update_option( self::SNAPSHOTS, array_slice( $snapshots, -self::MAX_SNAPSHOTS ), false );
-        PlanV4Audit::record( 'snapshot_created', array( 'snapshot_id' => $snapshot['id'], 'reason' => $snapshot['reason'] ) );
+        PlanV4Audit::record( 'snapshot_created', array( 'snapshot_id' => $snapshot['id'], 'reason' => $snapshot['reason'], 'schema_version' => Defaults::SCHEMA_VERSION ) );
         return $snapshot;
+    }
+
+    /** Build a bounded, evidence-oriented dry-run diff for one repair action. */
+    private static function repair_action_diff( $action ) {
+        switch ( $action ) {
+            case 'plan_v4_normalize_settings':
+                $current = get_option( Defaults::OPTION_NAME, array() );
+                $current = is_array( $current ) ? $current : array();
+                $target = Settings::deep_merge( Defaults::settings(), $current );
+                $target['schema_version'] = Defaults::SCHEMA_VERSION;
+                return self::diff_values( $current, $target );
+            case 'plan_v4_rebuild_contract_health':
+                return array( array( 'path' => 'provider_health_cache', 'before' => 'current-cached-evidence', 'after' => 'invalidated-and-authoritatively-rechecked' ) );
+            case 'plan_v4_reschedule_jobs':
+                return array( array( 'path' => 'scheduled_maintenance', 'before' => wp_next_scheduled( PlanV4Jobs::HOOK ) ? 'scheduled' : 'missing', 'after' => 'scheduled' ) );
+            case 'plan_v4_flush_rewrites':
+                return array( array( 'path' => 'rewrite_rules', 'before' => 'current', 'after' => 'flushed-once' ) );
+            case 'plan_v4_purge_cache':
+                return array( array( 'path' => 'file20_and_litespeed_cache', 'before' => 'current', 'after' => 'purged-and-reconciled' ) );
+        }
+        return array();
+    }
+
+    /** Recursively describe actual settings changes without exposing secret-like values. */
+    private static function diff_values( $before, $after, $prefix = '' ) {
+        $rows = array();
+        if ( is_array( $before ) && is_array( $after ) ) {
+            $keys = array_unique( array_merge( array_keys( $before ), array_keys( $after ) ) );
+            foreach ( $keys as $key ) {
+                if ( count( $rows ) >= self::MAX_DIFF_ROWS ) { break; }
+                $path = '' === $prefix ? (string) $key : $prefix . '.' . $key;
+                $left = array_key_exists( $key, $before ) ? $before[ $key ] : null;
+                $right = array_key_exists( $key, $after ) ? $after[ $key ] : null;
+                if ( $left === $right ) { continue; }
+                if ( is_array( $left ) && is_array( $right ) ) {
+                    $rows = array_merge( $rows, self::diff_values( $left, $right, $path ) );
+                    $rows = array_slice( $rows, 0, self::MAX_DIFF_ROWS );
+                    continue;
+                }
+                $rows[] = array( 'path' => sanitize_text_field( $path ), 'before' => self::safe_diff_value( $left, $path ), 'after' => self::safe_diff_value( $right, $path ) );
+            }
+            return $rows;
+        }
+        if ( $before !== $after ) {
+            $rows[] = array( 'path' => sanitize_text_field( $prefix ), 'before' => self::safe_diff_value( $before, $prefix ), 'after' => self::safe_diff_value( $after, $prefix ) );
+        }
+        return $rows;
+    }
+
+    private static function safe_diff_value( $value, $path ) {
+        if ( preg_match( '/pass|secret|token|cookie|authorization|nonce|credential|document|phone|email|key/i', (string) $path ) ) {
+            return '[redacted]';
+        }
+        if ( is_bool( $value ) || is_int( $value ) || is_float( $value ) || null === $value ) {
+            return $value;
+        }
+        if ( is_array( $value ) ) {
+            return '[structured-value]';
+        }
+        $text = sanitize_text_field( (string) $value );
+        return function_exists( 'mb_substr' ) ? mb_substr( $text, 0, 200 ) : substr( $text, 0, 200 );
     }
 
     private static function run_repair_action( $action ) {
         switch ( $action ) {
             case 'plan_v4_normalize_settings':
-                if ( class_exists( __NAMESPACE__ . '\\Settings', false ) ) {
-                    $settings = Settings::get();
-                    return is_array( $settings );
+                if ( ! class_exists( __NAMESPACE__ . '\\Settings', false ) ) {
+                    return false;
                 }
-                return false;
+                Settings::ensure_defaults();
+                $stored = get_option( Defaults::OPTION_NAME, array() );
+                return is_array( $stored ) && isset( $stored['schema_version'] ) && Defaults::SCHEMA_VERSION === absint( $stored['schema_version'] );
             case 'plan_v4_rebuild_contract_health':
                 PlanV4ContractHealth::invalidate();
                 return is_array( PlanV4ContractHealth::health( array(), true ) );
@@ -275,6 +390,15 @@ final class PlanV4Recovery {
             if ( isset( $snapshot['id'] ) && hash_equals( (string) $snapshot['id'], (string) $id ) ) { return $snapshot; }
         }
         return null;
+    }
+
+    private static function snapshot_schema_version( array $snapshot ) {
+        if ( isset( $snapshot['schema_version'] ) ) {
+            return absint( $snapshot['schema_version'] );
+        }
+        $state = isset( $snapshot['state'] ) && is_array( $snapshot['state'] ) ? $snapshot['state'] : array();
+        $settings = isset( $state[ Defaults::OPTION_NAME ] ) && is_array( $state[ Defaults::OPTION_NAME ] ) ? $state[ Defaults::OPTION_NAME ] : array();
+        return isset( $settings['schema_version'] ) ? absint( $settings['schema_version'] ) : 0;
     }
 
     private static function verify_snapshot( array $snapshot ) {

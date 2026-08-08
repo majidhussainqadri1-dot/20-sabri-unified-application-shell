@@ -4,7 +4,7 @@ Tags: application shell, navigation, layout, accessibility, pwa, offline
 Requires at least: 6.0
 Tested up to: 7.0.1
 Requires PHP: 7.4
-Stable tag: 1.4.7
+Stable tag: 1.4.8
 License: GPLv2 or later
 Text Domain: sabri-unified-application-shell
 
@@ -16,41 +16,53 @@ File 20 owns the global structural shell and continuity layer; native-domain dat
 
 Future Shell v5 contains exactly eighteen approved enhancements: Command Palette, PWA, offline/weak-network mode, Data Saver, Recent & Resume, module circuit breaker, last-known-good recovery, performance guardian, smart navigation, keyboard accessibility, Focus Mode, native-owner Split Workspace, foldable/tablet/ultra-wide adaptation, progressive View Transitions, bounded safe prefetch, language/direction quick control, accessibility preference center and five-state release rings.
 
-Version 1.4.7 completes a seventh independent ten-round harmonization over merged 1.4.6. It adds the later central-plan CF-01 through CF-06 conditional-module contract surface without activating any conditional backend or adding a nineteenth Future Shell feature.
+Version 1.4.8 completes an eighth independent ten-round corrective review over merged 1.4.7. It retains the exact eighteen-feature Future Shell scope and the conditional CF-01 through CF-06 contract surface while closing post-merge File-20-owned recovery, diagnostics, admin-control, audit-integrity and subdirectory-layout gaps.
 
-CF-01 clinical records, CF-02 support/appeals, CF-03 financial operations, CF-04 secure media, CF-05 analytics and CF-06 localization remain native owners. File 20 contributes route/layout/UI/privacy integration only. Every CF entry is marked as a declared conditional target, requires explicit activation and runtime verification, and never implies staging acceptance or live deployment.
+File 25 remains the visual owner; File 20's historical Appearance editor is retired. Sensitive account/membership/system task layout is site-relative so WordPress subdirectory installs receive the same Minimal presentation as root installs. System Check now consumes registered hardening sections and emits bounded ID/severity/evidence/last-run/affected-surface/remediation records plus an authenticated sanitized export.
 
-Current platform financial law remains one free tier, voluntary donation, zero commission and no donor advantage. Paid collection is dormant unless a new Founder change-control decision and native CF-03 activation evidence authorize it.
+Operational audit retention now uses a bounded chain anchor, fails closed before appending to an invalid chain, and rehashes authorized privacy erasures without silently breaking evidence. Assurance and audit sanitizers no longer require mbstring to exist.
 
-Sensitive CF routes are protected from File 20 Recent/Resume, Smart Navigation and predictive prefetch. CF-04 `/media/d/{grant}` remains native cache/range territory and receives Minimal/no Future Shell client surface rather than a File-20-owned cache policy. Verified transfer remains File 17 + CF-04 after activation with a 1 GB per-file limit; eligible download remains native-owner/File-24/CF-04 territory. CF-06 localization remains provider-owned; File 20 supplies only language-preference/direction presentation.
+Complete Repair now performs real settings normalization and exposes bounded dry-run diffs. Recovery snapshots include current File 20 settings, Future Shell feature state, source/version/schema and contract/route/feature fingerprints. Automatic rollback requires both compatible code major and exact current settings schema. Activation snapshots use an integrity-protected File-20-only format and no longer restore shared WordPress front-page ownership.
 
-Hostinger staging testing and Founder acceptance remain required before production deployment.
+Safe Mode query access is nonce-bound for administrators. Emergency Disable records reason, actor, time and review evidence; re-enable is blocked by invalid audit/provider health and purges shell/cache state before rendering resumes. File 20 admin Repair/Rollback/Emergency controls are routed through these hardened lifecycles instead of the legacy one-click handlers.
+
+CF-01 clinical records, CF-02 support/appeals, CF-03 financial operations, CF-04 secure media, CF-05 analytics and CF-06 localization remain native owners. File 20 contributes route/layout/UI/privacy integration only. Current platform financial law remains one free tier, voluntary donation, zero commission and no donor advantage. Paid collection remains dormant absent new Founder change control and native CF-03 activation.
+
+Hostinger staging testing and Founder acceptance remain required before production deployment. Repository/CI success does not imply staging, live or operational acceptance.
 
 == Installation ==
 
 1. Back up files and database and prove restore.
-2. Install or upgrade the exact 1.4.7 candidate on staging only and flush rewrite rules.
+2. Install or upgrade the exact 1.4.8 candidate on staging only and flush rewrite rules.
 3. Verify the package has one canonical root, no tests/development-only material, and matching embedded/external source manifests.
-4. Run Sabri Shell System Check and confirm sixth-pass current compatibility targets plus seventh-pass CF conditional targets are shown as targets, not runtime detection.
+4. Run Sabri Shell System Check and export the sanitized evidence report; Unknown/Unavailable/Incompatible states must not be treated as PASS.
 5. Verify actual File 00-26 contracts and any activated CF-01..CF-06 contracts independently.
-6. Verify sensitive CF private routes never enter local Recent/Resume, Smart Navigation or prefetch; verify `/media/d/{grant}` remains native cache/range authority with Minimal/no visual shell.
-7. Verify CF-03 does not create paid/premium/donor privilege under the current single-free-tier law.
-8. Test all five release rings and root/subdirectory PWA lifecycle/privacy behavior.
-9. Test keyboard/accessibility, all four layout modes, RTL/LTR, zoom, weak network, Split Workspace and recovery.
-10. Complete Hostinger staging, backup/restore/rollback rehearsal and Founder acceptance before production.
+6. Verify root and WordPress-subdirectory sensitive routes resolve to their governed Minimal/private behavior.
+7. Exercise the dry-run repair diff before repair, then verify pre-repair snapshot, audit evidence and post-repair health.
+8. Verify rollback rejects code/schema-incompatible snapshots and creates a pre-rollback snapshot before a compatible rollback.
+9. Test nonce-bound Safe Mode plus Emergency Disable reason/review evidence and health/cache-gated re-enable.
+10. Complete Hostinger staging, backup/restore/rollback rehearsal, accessibility/browser/device checks and Founder acceptance before production.
 
 == Changelog ==
 
+= 1.4.8 =
+* Completed an eighth independent ten-round corrective review over merged 1.4.7.
+* Added FutureShellV5EighthHardening contract 1.0.8 without adding a nineteenth Future Shell feature.
+* Retired the stale File 20 Appearance admin surface while preserving historical appearance values as migration-only data under File 25 visual ownership.
+* Corrected sensitive task layout classification for WordPress subdirectory installations.
+* Made System Check consume hardening sections and emit structured evidence fields with a bounded authenticated sanitized export.
+* Corrected bounded audit-chain retention and privacy-erasure rehashing; appends now fail closed on invalid evidence.
+* Removed hidden mbstring dependency from audit/assurance sanitization and preserved sanitized-key collisions.
+* Made settings normalization a real repair action and added bounded dry-run diffs for selectable repair operations.
+* Added schema-aware rollback compatibility, Future Shell state to recovery snapshots, source/schema/route/contract/feature fingerprints and bounded operator snapshot metadata.
+* Replaced legacy activation snapshot behavior with integrity-protected File-20-only state; shared WordPress front-page options are never restored by File 20.
+* Added nonce-bound query Safe Mode and audited Emergency Disable/re-enable lifecycle with reason, actor, time, review, health and cache gates.
+* Routed File 20 admin Repair/Rollback/Emergency actions through hardened recovery/emergency controllers.
+* Added dedicated eighth-pass adversarial regression and advanced release identity to 1.4.8.
+
 = 1.4.7 =
 * Completed a seventh independent ten-round corrective review over merged 1.4.6.
-* Added FutureShellV5SeventhHardening contract 1.0.7.
-* Added CF-01 through CF-06 as conditional contract targets without activating their backends.
-* Added bounded private-route protection for clinical, support-case, financial, media-admin/API, analytics and localization administration/API surfaces.
-* Kept CF-04 token delivery out of File 20 cache ownership and forced Minimal/no Future Shell client surface instead.
-* Preserved single-free-tier, voluntary donation, zero commission and donor-neutral law; paid collection remains dormant absent new Founder change control and native CF-03 activation.
-* Reconciled File17/CF04 1 GB transfer, native/File24/CF04 download and CF06 localization-provider boundaries.
-* Advanced permanent regression and deterministic package gates to the 1.4.7 conditional-module surface.
-* Added no nineteenth Future Shell feature and no conditional-domain backend.
+* Added FutureShellV5SeventhHardening contract 1.0.7 and CF-01 through CF-06 conditional targets without activating their backends.
 
 = 1.4.6 =
 * Completed a sixth independent ten-round corrective review after newer File 00/01/02/24 evidence changed compatibility facts.
