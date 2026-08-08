@@ -1,0 +1,1 @@
+File 20 1.4.6 sixth-pass regressions cover latest File 00/01/02/24 compatibility targets, explicit target-vs-runtime truth status, native-owner boundaries, preserved 18-feature Future Shell scope, and all prior regression suites. This file is repository test documentation and is excluded from the production ZIP with the tests directory.
