@@ -145,11 +145,20 @@ final class PlanV4Recovery {
         if ( is_wp_error( $token ) ) {
             return $token;
         }
-        $snapshot = self::create_snapshot( 'pre-repair' );
-        $results = array();
-        $failed = false;
         try {
-            foreach ( $preview['operations'] as $operation ) {
+            /* Close preview-to-execute TOCTOU before creating any snapshot or write. */
+            if ( absint( $expected_version ) !== PlanV4SettingsConcurrency::current_version() ) {
+                return new \WP_Error( 'sabri_shell_stale_repair_locked', __( 'Settings changed while the repair was waiting for its lock. Run the preview again.', 'sabri-unified-application-shell' ), array( 'status' => 409 ) );
+            }
+            $locked_preview = self::preview_repair( $actions );
+            if ( empty( $locked_preview['operations'] ) || absint( $locked_preview['settings_row_version'] ) !== absint( $expected_version ) ) {
+                return new \WP_Error( 'sabri_shell_stale_repair_locked', __( 'The repair plan changed before execution. Run the preview again.', 'sabri-unified-application-shell' ), array( 'status' => 409 ) );
+            }
+
+            $snapshot = self::create_snapshot( 'pre-repair' );
+            $results = array();
+            $failed = false;
+            foreach ( $locked_preview['operations'] as $operation ) {
                 $action = $operation['action'];
                 $ok = self::run_repair_action( $action );
                 $results[] = array( 'action' => $action, 'success' => $ok, 'preview_diff' => $operation['diff'] );
