@@ -26,14 +26,14 @@
   function applyConnectivity() {
     var offline = navigator.onLine === false;
     var weak = !!(connection && (connection.saveData || /(^|-)2g$/.test(connection.effectiveType || '')));
-    body.classList.toggle('sabri-shell-offline', offline);
-    body.classList.toggle('sabri-shell-weak-network', !offline && weak);
+    body.classList.toggle('sabri-shell-offline', features.offline_mode && offline);
+    body.classList.toggle('sabri-shell-weak-network', features.offline_mode && !offline && weak);
     body.classList.toggle('sabri-shell-data-saver', features.data_saver && dataSaverActive());
     if (status && features.offline_mode) {
       if (offline) { status.textContent = (cfg.strings || {}).offline || 'Offline'; status.hidden = false; }
       else if (weak) { status.textContent = (cfg.strings || {}).weak || 'Weak network'; status.hidden = false; }
       else { status.hidden = true; status.textContent = ''; }
-    }
+    } else if (status) { status.hidden = true; }
   }
   window.addEventListener('online', applyConnectivity); window.addEventListener('offline', applyConnectivity);
   if (connection && connection.addEventListener) connection.addEventListener('change', applyConnectivity);
@@ -47,13 +47,13 @@
     safeSet(recentKey, recents.slice(0, 12));
   }
   function renderRecents() {
-    var box = document.getElementById('sabri-shell-recent-list'); if (!box) return;
+    var box = document.getElementById('sabri-shell-recent-list'); if (!box || !features.recent_resume) return;
     while (box.firstChild) box.removeChild(box.firstChild);
     safeParse(recentKey, []).forEach(function (item) { if (!item || !sameOrigin(item.url)) return; var a = document.createElement('a'); a.href = item.url; a.textContent = item.title || item.url; a.className = 'sabri-shell-recent-link'; box.appendChild(a); });
   }
   document.addEventListener('click', function (event) {
-    var clear = event.target.closest('[data-sabri-clear-recents]'); if (clear) { localStorage.removeItem(recentKey); renderRecents(); }
-    var splitClose = event.target.closest('[data-sabri-split-close]'); if (splitClose) { var split = document.getElementById('sabri-shell-split-workspace'); if (split) split.hidden = true; }
+    var clear = event.target.closest('[data-sabri-clear-recents]'); if (clear && features.recent_resume) { localStorage.removeItem(recentKey); renderRecents(); }
+    var splitClose = event.target.closest('[data-sabri-split-close]'); if (splitClose && features.split_workspace) { var split = document.getElementById('sabri-shell-split-workspace'); if (split) split.hidden = true; }
   });
 
   if (features.performance_guardian && 'PerformanceObserver' in window) {
@@ -80,19 +80,19 @@
     });
   }
   document.addEventListener('click', function (event) {
-    var pin = event.target.closest('[data-sabri-pin]'); if (!pin) return;
+    var pin = event.target.closest('[data-sabri-pin]'); if (!pin || !features.smart_navigation) return;
     var url = pin.getAttribute('data-sabri-pin'); var pinned = safeParse(pinnedKey, []); var idx = pinned.indexOf(url);
     if (idx === -1) pinned.unshift(url); else pinned.splice(idx, 1); pinned = pinned.slice(0, 8); safeSet(pinnedKey, pinned); pin.textContent = idx === -1 ? '★' : '☆';
   });
   decoratePins();
 
   var focusKey = 'sabriShellFocusMode';
-  function setFocusMode(on) { body.classList.toggle('sabri-shell-focus-mode', !!on); safeSet(focusKey, !!on); }
-  if (features.focus_mode) setFocusMode(!!safeParse(focusKey, false));
+  function setFocusMode(on) { if (!features.focus_mode) return; body.classList.toggle('sabri-shell-focus-mode', !!on); safeSet(focusKey, !!on); }
+  if (features.focus_mode) setFocusMode(!!safeParse(focusKey, false)); else body.classList.remove('sabri-shell-focus-mode');
 
   var prefsKey = 'sabriShellA11yPrefs';
   function applyPrefs() {
-    var p = safeParse(prefsKey, {});
+    var p = features.accessibility_center ? safeParse(prefsKey, {}) : {};
     body.classList.toggle('sabri-shell-a11y-large', !!p.font);
     body.classList.toggle('sabri-shell-a11y-contrast', !!p.contrast);
     body.classList.toggle('sabri-shell-a11y-focus', !!p.focus);
@@ -100,7 +100,7 @@
     body.classList.toggle('sabri-shell-a11y-reduce-motion', !!p.motion);
     body.classList.toggle('sabri-shell-data-saver', features.data_saver && !!(p.data || (connection && connection.saveData)));
   }
-  document.addEventListener('click', function (event) { var pref = event.target.closest('[data-sabri-pref]'); if (!pref) return; var p = safeParse(prefsKey, {}); var key = pref.getAttribute('data-sabri-pref'); p[key] = !p[key]; safeSet(prefsKey, p); applyPrefs(); });
+  document.addEventListener('click', function (event) { var pref = event.target.closest('[data-sabri-pref]'); if (!pref || !features.accessibility_center) return; var p = safeParse(prefsKey, {}); var key = pref.getAttribute('data-sabri-pref'); p[key] = !p[key]; safeSet(prefsKey, p); applyPrefs(); });
   applyPrefs();
 
   var prefetched = {};
@@ -116,36 +116,37 @@
   function commands() {
     var list = [
       { label: 'Home', action: function () { location.href = cfg.homeUrl || '/'; } },
-      { label: 'Back', action: function () { history.back(); } },
-      { label: 'Recent and Resume', action: function () { renderRecents(); closeDialog(palette); openDialog(document.getElementById('sabri-shell-recent-center')); } },
-      { label: 'Accessibility and Reading Preferences', action: function () { closeDialog(palette); openDialog(document.getElementById('sabri-shell-accessibility-center')); } },
-      { label: body.classList.contains('sabri-shell-focus-mode') ? 'Exit Focus Mode' : 'Enter Focus Mode', action: function () { setFocusMode(!body.classList.contains('sabri-shell-focus-mode')); closeDialog(palette); } }
+      { label: 'Back', action: function () { history.back(); } }
     ];
-    if (installPrompt) list.push({ label: 'Install Sabri Homeopathy App', action: function () { installPrompt.prompt(); installPrompt.userChoice.finally(function () { installPrompt = null; }); closeDialog(palette); } });
+    if (features.recent_resume) list.push({ label: 'Recent and Resume', action: function () { renderRecents(); closeDialog(palette); openDialog(document.getElementById('sabri-shell-recent-center')); } });
+    if (features.accessibility_center) list.push({ label: 'Accessibility and Reading Preferences', action: function () { closeDialog(palette); openDialog(document.getElementById('sabri-shell-accessibility-center')); } });
+    if (features.focus_mode) list.push({ label: body.classList.contains('sabri-shell-focus-mode') ? 'Exit Focus Mode' : 'Enter Focus Mode', action: function () { setFocusMode(!body.classList.contains('sabri-shell-focus-mode')); closeDialog(palette); } });
+    if (features.pwa_shell && installPrompt) list.push({ label: 'Install Sabri Homeopathy App', action: function () { installPrompt.prompt(); installPrompt.userChoice.finally(function () { installPrompt = null; }); closeDialog(palette); } });
     var split = document.getElementById('sabri-shell-split-workspace'); if (features.split_workspace && split) list.push({ label: 'Open Secondary Workspace', action: function () { split.hidden = false; closeDialog(palette); } });
-    safeParse(pinnedKey, []).forEach(function (url) { if (sameOrigin(url)) list.push({ label: 'Pinned: ' + (new URL(url)).pathname, action: function () { location.href = url; } }); });
+    if (features.smart_navigation) safeParse(pinnedKey, []).forEach(function (url) { if (sameOrigin(url)) list.push({ label: 'Pinned: ' + (new URL(url)).pathname, action: function () { location.href = url; } }); });
     if (cfg.search && cfg.search.url) list.push({ label: 'Search the platform…', search: true, action: function (q) { var u = new URL(cfg.search.url); u.searchParams.set(cfg.search.query_param || 'q', q || ''); location.href = u.toString(); } });
     return list;
   }
   function renderCommands(query) {
-    if (!results) return; while (results.firstChild) results.removeChild(results.firstChild);
+    if (!results || !features.command_palette) return; while (results.firstChild) results.removeChild(results.firstChild);
     var q = (query || '').toLowerCase(); var list = commands().filter(function (c) { return !q || c.label.toLowerCase().indexOf(q) !== -1 || c.search; });
     list.slice(0, 12).forEach(function (cmd) { var b = document.createElement('button'); b.type = 'button'; b.className = 'sabri-shell-command-item'; b.textContent = cmd.search && q ? 'Search: “' + query + '”' : cmd.label; b.addEventListener('click', function () { cmd.action(query); }); results.appendChild(b); });
   }
-  if (input) input.addEventListener('input', function () { renderCommands(input.value); });
+  if (input && features.command_palette) input.addEventListener('input', function () { renderCommands(input.value); });
   document.addEventListener('keydown', function (event) {
     if (!features.keyboard_accessibility && !features.command_palette) return;
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k' && features.command_palette) { event.preventDefault(); renderCommands(''); openDialog(palette); if (input) { input.value = ''; input.focus(); } return; }
-    if (event.key === '?' && !event.ctrlKey && !event.metaKey && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) { event.preventDefault(); openDialog(document.getElementById('sabri-shell-accessibility-center')); }
-    if (event.altKey && event.key.toLowerCase() === 'h') { event.preventDefault(); location.href = cfg.homeUrl || '/'; }
+    if (event.key === '?' && features.keyboard_accessibility && features.accessibility_center && !event.ctrlKey && !event.metaKey && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) { event.preventDefault(); openDialog(document.getElementById('sabri-shell-accessibility-center')); }
+    if (event.altKey && event.key.toLowerCase() === 'h' && features.keyboard_accessibility) { event.preventDefault(); location.href = cfg.homeUrl || '/'; }
     if (event.key === 'Escape') { [palette, document.getElementById('sabri-shell-accessibility-center'), document.getElementById('sabri-shell-recent-center')].forEach(closeDialog); }
   });
 
   function viewportState() {
+    if (!features.adaptive_foldable) return;
     var width = window.visualViewport ? window.visualViewport.width : window.innerWidth;
     body.classList.toggle('sabri-shell-ultrawide', width >= 1600);
     body.classList.toggle('sabri-shell-tablet-landscape', width >= 768 && width < 1200 && window.innerWidth > window.innerHeight);
     document.documentElement.style.setProperty('--sabri-visual-height', (window.visualViewport ? window.visualViewport.height : window.innerHeight) + 'px');
   }
-  viewportState(); window.addEventListener('resize', viewportState); if (window.visualViewport) window.visualViewport.addEventListener('resize', viewportState);
+  if (features.adaptive_foldable) { viewportState(); window.addEventListener('resize', viewportState); if (window.visualViewport) window.visualViewport.addEventListener('resize', viewportState); }
 })();
