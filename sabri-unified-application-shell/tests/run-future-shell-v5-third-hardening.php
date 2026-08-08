@@ -10,19 +10,12 @@ $required_routes = array(
     '/membership-application', '/membership-status', '/guardian-consent', '/membership-security',
     '/platform-system-check', '/platform-foundation/status', '/security-center'
 );
-foreach ( $required_routes as $route ) {
-    if ( false === strpos( $third, "'{$route}'" ) ) { $fail[] = 'missing protected route ' . $route; }
-}
-$required_task_slugs = array(
-    'account-security', 'account-passkeys', 'resolve-account', 'membership-application',
-    'membership-status', 'guardian-consent', 'membership-security', 'platform-system-check', 'platform-foundation'
-);
-foreach ( $required_task_slugs as $slug ) {
-    if ( false === strpos( $layout, "'{$slug}'" ) ) { $fail[] = 'missing Minimal task slug ' . $slug; }
-}
+foreach ( $required_routes as $route ) { if ( false === strpos( $third, "'{$route}'" ) ) { $fail[] = 'missing protected route ' . $route; } }
+$required_task_slugs = array( 'account-security', 'account-passkeys', 'resolve-account', 'membership-application', 'membership-status', 'guardian-consent', 'membership-security', 'platform-system-check', 'platform-foundation' );
+foreach ( $required_task_slugs as $slug ) { if ( false === strpos( $layout, "'{$slug}'" ) ) { $fail[] = 'missing Minimal task slug ' . $slug; } }
 
 $checks = array(
-    'current release preserves 1.4.3 hardening' => false !== strpos( $main, '* Version: 1.4.9' ) && false !== strpos( $main, "define( 'SABRI_SHELL_VERSION', '1.4.9' );" ),
+    'current release preserves 1.4.3 hardening' => false !== strpos( $main, '* Version: 1.4.10' ) && false !== strpos( $main, "define( 'SABRI_SHELL_VERSION', '1.4.10' );" ),
     'third hardening loaded' => false !== strpos( $main, 'class-future-shell-v5-third-hardening.php' ) && false !== strpos( $main, 'FutureShellV5ThirdHardening::register();' ),
     'contract 1.0.3' => false !== strpos( $third, "CONTRACT_VERSION  = '1.0.3'" ),
     'privacy registry bounded' => false !== strpos( $third, 'MAX_PRIVATE_PATHS = 128' ) && false !== strpos( $third, "'overflow_count'" ),
@@ -36,8 +29,5 @@ $checks = array(
     'no foreign backend' => false === strpos( $third, 'CREATE TABLE' ) && false === strpos( $third, 'dbDelta(' ) && false === strpos( $third, 'INSERT INTO' ),
 );
 foreach ( $checks as $name => $ok ) { if ( ! $ok ) { $fail[] = $name; } }
-if ( $fail ) {
-    fwrite( STDERR, "Future Shell v5 third hardening FAIL: " . implode( '; ', $fail ) . "\n" );
-    exit( 1 );
-}
-echo "Future Shell v5 third hardening preserved under 1.4.9: protected routes, overflow fail-closed, single PWA owner and historical third-pass boundaries PASS\n";
+if ( $fail ) { fwrite( STDERR, "Future Shell v5 third hardening FAIL: " . implode( '; ', $fail ) . "\n" ); exit( 1 ); }
+echo "Future Shell v5 third hardening preserved under 1.4.10: protected routes, overflow fail-closed, single PWA owner and historical third-pass boundaries PASS\n";

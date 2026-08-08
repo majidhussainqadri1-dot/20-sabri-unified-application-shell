@@ -44,7 +44,11 @@ final class Plugin {
 		add_action( 'admin_init', array( Settings::class, 'register' ) );
 		add_action( 'init', array( __CLASS__, 'maybe_upgrade' ), 1 );
 		Navigation::register_cache_hooks();
-		HomeFeed::register();
+		/*
+		 * File 21 is the canonical Home/News owner. The historical File 20
+		 * HomeFeed producer/auto-insert path is deliberately not registered.
+		 * File 20 supplies shell slots and honest degraded presentation only.
+		 */
 		Renderer::register();
 		ContextNavigation::register();
 		add_action( 'init', array( __CLASS__, 'maybe_flush_rewrite_rules' ), 99 );

@@ -4,7 +4,7 @@ Tags: application shell, navigation, layout, accessibility, pwa, offline
 Requires at least: 6.0
 Tested up to: 7.0.1
 Requires PHP: 7.4
-Stable tag: 1.4.9
+Stable tag: 1.4.10
 License: GPLv2 or later
 Text Domain: sabri-unified-application-shell
 
@@ -16,32 +16,40 @@ File 20 owns the global structural shell and continuity layer; native-domain dat
 
 Future Shell v5 contains exactly eighteen approved enhancements: Command Palette, PWA, offline/weak-network mode, Data Saver, Recent & Resume, module circuit breaker, last-known-good recovery, performance guardian, smart navigation, keyboard accessibility, Focus Mode, native-owner Split Workspace, foldable/tablet/ultra-wide adaptation, progressive View Transitions, bounded safe prefetch, language/direction quick control, accessibility preference center and five-state release rings.
 
-Version 1.4.9 completes a ninth independent ten-round corrective review over merged 1.4.8. It does not add a nineteenth Future Shell feature. File 25 visual ownership is enforced at the persisted-default level, direct Emergency state writes are blocked, recovery snapshots are presence-aware, repair/rollback concurrency is revalidated under lock, stale File 20 Page-ID bindings have a dry-run repair path, route overrides use a strict HTTPS/relative contract, canonical route precedence is exact, explicit uninstall cleanup is File-20-only and comprehensive, and rollback preserves the current Emergency safety state while keeping the settings row version monotonic.
+Version 1.4.10 completes a tenth fresh ten-round corrective review over merged 1.4.9. It does not add a nineteenth Future Shell feature. File 21 remains the only Home/News feed owner; File 20's historical local feed runtime is not registered and its persisted state is forced inert. The five exact File 21 native shell slots are published with one-per-request and native-over-legacy rendering. File 25 remains the visual owner, File 26 the Search/Discovery/Ranking owner, and File 00 remains the native identity/security authority.
 
-Legacy File 20 appearance values may survive only as migration evidence; File 20 no longer creates visual appearance state. Route overrides reject raw HTTP, unauthorized external hosts, credentials, query strings, fragments and protocol-relative forms. Stored legacy overrides are revalidated on read.
+The latest reviewed File 00 1.2.18 audit is recorded as external evidence with known release blockers; File 20 does not convert that evidence into a production-safe claim and does not create a replacement membership/security backend. Provider health is bound to actual advertised versions and overall health cannot be Healthy while critical File 20/File 00 evidence is unavailable, unknown or incompatible. Emergency re-enable consumes the same critical-provider health gate.
 
-Recovery snapshot format 2 records option existence separately from value so absent options are restored as absent. Automatic rollback requires matching snapshot format, File 20 code major and current settings schema. The target is revalidated under the recovery lock and held before the pre-rollback snapshot can affect retention. Emergency lifecycle evidence and the monotonic settings-row counter are deliberately not rolled backward.
-
-Complete Repair now includes a separately selectable stale Page-ID quarantine action. It changes only File 20's configured pointer from an invalid/non-published Page ID to zero; it never deletes or commandeers pages or companion state. Programmatic repair writes advance audited concurrency evidence.
-
-CF-01 clinical records, CF-02 support/appeals, CF-03 financial operations, CF-04 secure media, CF-05 analytics and CF-06 localization remain native owners. File 20 contributes route/layout/UI/privacy integration only. Current platform financial law remains one free tier, voluntary donation, zero commission and no donor advantage. Paid collection remains dormant absent new Founder change control and native CF-03 activation.
+Prior strict route precedence, route-override security, presence-aware recovery snapshots, locked repair/rollback concurrency, stale Page-ID quarantine, File20-only uninstall cleanup, PWA privacy, release rings and conditional-module boundaries remain preserved.
 
 Hostinger staging testing and Founder acceptance remain required before production deployment. Repository/CI success does not imply staging, live or operational acceptance.
 
 == Installation ==
 
 1. Back up files and database and prove restore.
-2. Install or upgrade the exact 1.4.9 candidate on staging only and flush rewrite rules.
+2. Install or upgrade the exact 1.4.10 candidate on staging only and flush rewrite rules.
 3. Verify the package has one canonical root, no tests/development-only material, and matching embedded/external source manifests.
-4. Run Sabri Shell System Check; Unknown/Unavailable/Incompatible states must not be treated as PASS.
-5. Verify File 25 owns visual truth and fresh File 20 defaults contain no Appearance group.
-6. Test direct Emergency state writes, canonical Emergency Disable/re-enable, and nonce-bound Safe Mode.
-7. Exercise repair preview, stale Page-ID quarantine, settings normalization and settings-row concurrency.
-8. Verify rollback rejects legacy/ambiguous/code/schema-incompatible snapshots, preserves current Emergency state, keeps row versions monotonic and restores absent options as absent.
-9. Test exact route precedence and strict route overrides, including hostile external/query/fragment inputs.
+4. Run Sabri Shell System Check; Unknown/Unavailable/Incompatible critical states must never be treated as Healthy.
+5. Confirm File 21 mounts through the five native Home/News slots without duplicate shortcode/page rendering.
+6. Confirm File 25 owns visual truth and File 26 Search has no local WordPress fallback.
+7. Verify File 00 runtime/version/health independently; the shell's static compatibility record is not authorization or staging proof.
+8. Test canonical Emergency Disable/re-enable and prove File 00/File 20 critical-health failures block re-enable.
+9. Exercise repair/rollback, exact route precedence, strict route overrides, PWA privacy and deterministic package checks.
 10. Complete Hostinger staging, backup/restore/rollback rehearsal, accessibility/browser/device checks and Founder acceptance before production.
 
 == Changelog ==
+
+= 1.4.10 =
+* Completed a tenth fresh ten-round corrective review over merged 1.4.9.
+* Added FutureShellV5TenthHardening contract 1.0.10 without adding a nineteenth Future Shell feature.
+* Retired File 20's local Home-feed runtime and forced residual local-feed state/configured shortcode inert under File 21 ownership.
+* Published the five exact File 21 native Home/News shell hooks and prevented native + legacy duplicate rendering.
+* Removed residual File 20 visual body-class ownership; File 25 remains the visual authority.
+* Updated declared File 00 evidence to reviewed runtime 1.2.18/schema 1.3.0/contract 1.2.0 and explicitly recorded known external release blockers without implying production safety.
+* Removed the legacy WordPress search fallback; only a validated File 26 Search contract may provide the search surface.
+* Bound File 25/File 01-B provider health to their actually advertised semantic versions.
+* Prevented overall health from reporting Healthy while critical File 20/File 00 provider evidence is Unknown/Unavailable/Incompatible.
+* Made Emergency re-enable fail closed unless critical File 20/File 00 health is verified Healthy.
 
 = 1.4.9 =
 * Completed a ninth independent ten-round corrective review over merged 1.4.8.
@@ -59,27 +67,16 @@ Hostinger staging testing and Founder acceptance remain required before producti
 
 = 1.4.8 =
 * Completed an eighth independent ten-round corrective review over merged 1.4.7.
-* Added FutureShellV5EighthHardening contract 1.0.8 without adding a nineteenth Future Shell feature.
-* Retired the stale File 20 Appearance admin surface while preserving historical appearance values as migration-only data under File 25 visual ownership.
-* Corrected sensitive task layout classification for WordPress subdirectory installations.
-* Made System Check consume hardening sections and emit structured evidence fields with a bounded authenticated sanitized export.
-* Corrected bounded audit-chain retention and privacy-erasure rehashing; appends now fail closed on invalid evidence.
-* Removed hidden mbstring dependency from audit/assurance sanitization and preserved sanitized-key collisions.
-* Made settings normalization a real repair action and added bounded dry-run diffs for selectable repair operations.
-* Added schema-aware rollback compatibility, Future Shell state to recovery snapshots, source/schema/route/contract/feature fingerprints and bounded operator snapshot metadata.
-* Replaced legacy activation snapshot behavior with integrity-protected File-20-only state; shared WordPress front-page options are never restored by File 20.
-* Added nonce-bound query Safe Mode and audited Emergency Disable/re-enable lifecycle with reason, actor, time, review, health and cache gates.
-* Routed File 20 admin Repair/Rollback/Emergency actions through hardened recovery/emergency controllers.
+* Retired the stale File 20 Appearance admin surface, hardened System Check/audit/recovery/Safe Mode and preserved File 25 visual ownership.
 
 = 1.4.7 =
-* Completed a seventh independent ten-round corrective review over merged 1.4.6.
-* Added FutureShellV5SeventhHardening contract 1.0.7 and CF-01 through CF-06 conditional targets without activating their backends.
+* Added CF-01 through CF-06 conditional targets without activating their native backends.
 
 = 1.4.6 =
-* Completed a sixth independent ten-round corrective review after newer File 00/01/02/24 evidence changed compatibility facts.
+* Reconciled newer File 00/01/02/24 compatibility evidence.
 
 = 1.4.5 =
-* Completed the fifth ten-round corrective review, production-only packaging hardening and final five-state Internal release-ring contract.
+* Hardened production-only packaging and final five-state release-ring behavior.
 
 = 1.4.4 =
 * Reconciled File 00/01/02/19/21/24 contracts and current owner boundaries.
