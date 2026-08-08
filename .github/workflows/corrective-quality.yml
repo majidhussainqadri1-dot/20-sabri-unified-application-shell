@@ -1,4 +1,4 @@
-name: File 20 Version 1.4.3 Third Ten-Round Hardened Quality
+name: File 20 Version 1.4.4 Fourth Ten-Round Hardened Quality
 
 on:
   pull_request:
@@ -45,6 +45,8 @@ jobs:
         run: php sabri-unified-application-shell/tests/run-future-shell-v5.php
       - name: Future Shell v5 third-hardening regression
         run: php sabri-unified-application-shell/tests/run-future-shell-v5-third-hardening.php
+      - name: Future Shell v5 fourth-hardening regression
+        run: php sabri-unified-application-shell/tests/run-future-shell-v5-fourth-hardening.php
 
   static-package:
     name: Ownership privacy security future-shell and deterministic package
@@ -58,16 +60,17 @@ jobs:
           set -euo pipefail
           for js in sabri-unified-application-shell/assets/js/*.js; do node --check "$js"; done
           python -m json.tool sabri-unified-application-shell/contracts/file20-central-plan-v4.json >/dev/null
-          grep -Fq '* Version: 1.4.3' sabri-unified-application-shell/sabri-unified-application-shell.php
-          grep -Fq "define( 'SABRI_SHELL_VERSION', '1.4.3' );" sabri-unified-application-shell/sabri-unified-application-shell.php
-          grep -Fq 'Stable tag: 1.4.3' sabri-unified-application-shell/readme.txt
-          grep -Fq 'Version: `1.4.3`' sabri-unified-application-shell/README.md
+          grep -Fq '* Version: 1.4.4' sabri-unified-application-shell/sabri-unified-application-shell.php
+          grep -Fq "define( 'SABRI_SHELL_VERSION', '1.4.4' );" sabri-unified-application-shell/sabri-unified-application-shell.php
+          grep -Fq 'Stable tag: 1.4.4' sabri-unified-application-shell/readme.txt
+          grep -Fq 'Version: `1.4.4`' sabri-unified-application-shell/README.md
           grep -Fq 'FutureShellV5::register();' sabri-unified-application-shell/sabri-unified-application-shell.php
           grep -Fq 'FutureShellV5Hardening::register();' sabri-unified-application-shell/sabri-unified-application-shell.php
           grep -Fq 'FutureShellV5ClientContext::register();' sabri-unified-application-shell/sabri-unified-application-shell.php
           grep -Fq 'FutureShellV5ControlGuard::register();' sabri-unified-application-shell/sabri-unified-application-shell.php
           grep -Fq 'FutureShellV5SecondHardening::register();' sabri-unified-application-shell/sabri-unified-application-shell.php
           grep -Fq 'FutureShellV5ThirdHardening::register();' sabri-unified-application-shell/sabri-unified-application-shell.php
+          grep -Fq 'FutureShellV5FourthHardening::register();' sabri-unified-application-shell/sabri-unified-application-shell.php
           grep -Fq 'preserve_partial_future_settings' sabri-unified-application-shell/includes/class-future-shell-v5-second-hardening.php
           grep -Fq 'MAX_CIRCUITS' sabri-unified-application-shell/includes/class-future-shell-v5-second-hardening.php
           grep -Fq 'Layout::IMMERSIVE === Layout::current_mode()' sabri-unified-application-shell/includes/class-future-shell-v5-second-hardening.php
@@ -80,8 +83,18 @@ jobs:
           grep -Fq "remove_action( 'template_redirect', array( FutureShellV5::class, 'serve_virtual_assets' ), 0 )" sabri-unified-application-shell/includes/class-future-shell-v5-third-hardening.php
           grep -Fq "remove_action( 'template_redirect', array( FutureShellV5SecondHardening::class, 'serve_virtual_assets' ), -30 )" sabri-unified-application-shell/includes/class-future-shell-v5-third-hardening.php
           grep -Fq "BRAND_FALLBACK    = '#087a4e'" sabri-unified-application-shell/includes/class-future-shell-v5-third-hardening.php
-          grep -Fq 'bootstrap-registries-contracts-activation-shared-conventions' sabri-unified-application-shell/includes/class-future-shell-v5-third-hardening.php
-          grep -Fq 'credentials-passkeys-sessions-risk-recovery-account-completion' sabri-unified-application-shell/includes/class-future-shell-v5-third-hardening.php
+          grep -Fq 'membership-core-1.2.13' sabri-unified-application-shell/includes/class-future-shell-v5-fourth-hardening.php
+          grep -Fq 'foundation-runtime-2.0.0-future-foundation-18' sabri-unified-application-shell/includes/class-future-shell-v5-fourth-hardening.php
+          grep -Fq 'modern-auth-1.3.0-candidate' sabri-unified-application-shell/includes/class-future-shell-v5-fourth-hardening.php
+          grep -Fq "'modern_feature_count'" sabri-unified-application-shell/includes/class-future-shell-v5-fourth-hardening.php
+          grep -Fq "'public_standard_route'" sabri-unified-application-shell/includes/class-future-shell-v5-fourth-hardening.php
+          grep -Fq '/.well-known/webauthn' sabri-unified-application-shell/includes/class-future-shell-v5-fourth-hardening.php
+          grep -Fq 'notifications-runtime-3.0.0-intelligent-attention-os' sabri-unified-application-shell/includes/class-future-shell-v5-fourth-hardening.php
+          grep -Fq 'home-news-runtime-1.0.1-ng30-amended' sabri-unified-application-shell/includes/class-future-shell-v5-fourth-hardening.php
+          grep -Fq "'native_slot_count'" sabri-unified-application-shell/includes/class-future-shell-v5-fourth-hardening.php
+          grep -Fq "'incident-containment'" sabri-unified-application-shell/includes/class-future-shell-v5-fourth-hardening.php
+          grep -Fq "'security_state_count'" sabri-unified-application-shell/includes/class-future-shell-v5-fourth-hardening.php
+          grep -Fq 'native-modules-enforce' sabri-unified-application-shell/includes/class-future-shell-v5-fourth-hardening.php
           grep -Fq "'account-passkeys'" sabri-unified-application-shell/includes/class-layout.php
           grep -Fq "'platform-system-check'" sabri-unified-application-shell/includes/class-layout.php
           grep -Fq 'event.stopImmediatePropagation()' sabri-unified-application-shell/assets/js/future-shell-v5-editable-guard.js
@@ -114,6 +127,7 @@ jobs:
           ! grep -Eq "smc_assertions_v1|_smc_official_founder|_smc_doctor_verified|_smc_trusted_publisher|post-new.php" sabri-unified-application-shell/includes/class-integrations.php sabri-unified-application-shell/includes/class-create-contract.php
           ! grep -R "'posts_per_page'[[:space:]]*=>[[:space:]]*-1" sabri-unified-application-shell/includes
           ! grep -R --line-number --include='*.php' --include='*.css' '#ff8a1f' sabri-unified-application-shell/includes sabri-unified-application-shell/assets/css sabri-unified-application-shell/sabri-unified-application-shell.php
+          ! grep -Fq "'/.well-known/webauthn'" sabri-unified-application-shell/includes/class-future-shell-v5-third-hardening.php
           python - <<'PY'
           from pathlib import Path
           root=Path('sabri-unified-application-shell')
@@ -125,18 +139,28 @@ jobs:
           control=(root/'includes/class-future-shell-v5-control-guard.php').read_text(encoding='utf-8')
           second=(root/'includes/class-future-shell-v5-second-hardening.php').read_text(encoding='utf-8')
           third=(root/'includes/class-future-shell-v5-third-hardening.php').read_text(encoding='utf-8')
+          fourth=(root/'includes/class-future-shell-v5-fourth-hardening.php').read_text(encoding='utf-8')
           guard=(root/'assets/js/future-shell-v5-editable-guard.js').read_text(encoding='utf-8')
           feature_ids=['command_palette','pwa_shell','offline_mode','data_saver','recent_resume','module_circuit_breaker','last_known_good','performance_guardian','smart_navigation','keyboard_accessibility','focus_mode','split_workspace','adaptive_foldable','view_transitions','predictive_prefetch','language_direction','accessibility_center','release_rings']
           assert all(("'"+x+"'") in future for x in feature_ids) and len(feature_ids)==18
-          assert 'CREATE TABLE' not in future+hard+client+control+second+third and 'dbDelta(' not in future+hard+client+control+second+third
+          all_hardening=future+hard+client+control+second+third+fourth
+          assert 'CREATE TABLE' not in all_hardening and 'dbDelta(' not in all_hardening
           assert "'disabled'" in hard and 'return (bool) $enabled && $allowed;' in hard
           assert 'sabri_shell_invalid_release_ring' in control and 'finally {' in control
           assert 'MAX_CIRCUITS' in second and 'preserve_partial_future_settings' in second
           assert 'MAX_PRIVATE_PATHS = 128' in third and 'privacyPolicyComplete' in third and 'POLICY_COMPLETE' in third
           assert "'/account-security'" in third and "'/account-passkeys'" in third and "'/resolve-account'" in third
           assert "BRAND_FALLBACK    = '#087a4e'" in third
+          assert "CONTRACT_VERSION = '1.0.4'" in fourth
+          assert 'membership-core-1.2.13' in fourth and 'advanced_trust_contract' in fourth
+          assert 'foundation-runtime-2.0.0-future-foundation-18' in fourth
+          assert 'modern-auth-1.3.0-candidate' in fourth and 'modern_feature_count' in fourth
+          assert '/.well-known/webauthn' in fourth and "'/.well-known/webauthn'" not in third
+          assert 'notifications-runtime-3.0.0-intelligent-attention-os' in fourth
+          assert 'home-news-runtime-1.0.1-ng30-amended' in fourth and 'native_slot_count' in fourth
+          assert 'incident-containment' in fourth and 'security_state_count' in fourth and 'native-modules-enforce' in fourth
           assert 'event.stopImmediatePropagation()' in guard
-          print('Static v1.4.3 third-ten-round ownership/privacy/security/future-shell checks passed.')
+          print('Static v1.4.4 fourth-ten-round ownership/privacy/security/future-shell checks passed.')
           PY
 
       - name: Build deterministic installable package
@@ -152,37 +176,40 @@ jobs:
           files=sorted(p for p in stage.rglob('*') if p.is_file() and p.name!='MANIFEST.sha256')
           manifest=[f"{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.relative_to(stage).as_posix()}" for p in files]
           (stage/'MANIFEST.sha256').write_text('\n'.join(manifest)+'\n',encoding='utf-8')
-          base='20-sabri-unified-application-shell-1.4.3-THIRD-TEN-ROUND-HARDENED'
+          base='20-sabri-unified-application-shell-1.4.4-FOURTH-TEN-ROUND-HARDENED'
           archive=release/f'{base}.zip'
           with ZipFile(archive,'w') as zf:
               for p in sorted(stage.rglob('*')):
                   if p.is_file():
-                      info=ZipInfo((Path(root.name)/p.relative_to(stage)).as_posix(),(2026,8,8,16,0,0)); info.compress_type=ZIP_DEFLATED; info.external_attr=(0o100644 & 0xFFFF)<<16; zf.writestr(info,p.read_bytes())
+                      info=ZipInfo((Path(root.name)/p.relative_to(stage)).as_posix(),(2026,8,8,17,0,0)); info.compress_type=ZIP_DEFLATED; info.external_attr=(0o100644 & 0xFFFF)<<16; zf.writestr(info,p.read_bytes())
           digest=hashlib.sha256(archive.read_bytes()).hexdigest(); (release/f'{base}.sha256').write_text(f'{digest}  {archive.name}\n',encoding='utf-8'); (release/f'{base}-SOURCE-MANIFEST.sha256').write_text('\n'.join(manifest)+'\n',encoding='utf-8')
           PY
-          base='20-sabri-unified-application-shell-1.4.3-THIRD-TEN-ROUND-HARDENED'
+          base='20-sabri-unified-application-shell-1.4.4-FOURTH-TEN-ROUND-HARDENED'
           (cd release && sha256sum -c "${base}.sha256")
           unzip -t "release/${base}.zip"
           rm -rf release/clean-extract && mkdir -p release/clean-extract
           unzip -q "release/${base}.zip" -d release/clean-extract
-          grep -Fq '* Version: 1.4.3' release/clean-extract/sabri-unified-application-shell/sabri-unified-application-shell.php
+          grep -Fq '* Version: 1.4.4' release/clean-extract/sabri-unified-application-shell/sabri-unified-application-shell.php
           grep -Fq 'FutureShellV5Hardening::register();' release/clean-extract/sabri-unified-application-shell/sabri-unified-application-shell.php
           grep -Fq 'FutureShellV5SecondHardening::register();' release/clean-extract/sabri-unified-application-shell/sabri-unified-application-shell.php
           grep -Fq 'FutureShellV5ThirdHardening::register();' release/clean-extract/sabri-unified-application-shell/sabri-unified-application-shell.php
-          test -f release/clean-extract/sabri-unified-application-shell/includes/class-future-shell-v5-third-hardening.php
-          test -f release/clean-extract/sabri-unified-application-shell/tests/run-future-shell-v5-third-hardening.php
+          grep -Fq 'FutureShellV5FourthHardening::register();' release/clean-extract/sabri-unified-application-shell/sabri-unified-application-shell.php
+          test -f release/clean-extract/sabri-unified-application-shell/includes/class-future-shell-v5-fourth-hardening.php
+          test -f release/clean-extract/sabri-unified-application-shell/tests/run-future-shell-v5-fourth-hardening.php
           test -f release/clean-extract/sabri-unified-application-shell/assets/js/future-shell-v5-editable-guard.js
 
       - name: Write exact-head report
         run: |
-          cat > release/FILE-20-1.4.3-THIRD-TEN-ROUND-TEST-REPORT.md <<REPORT
-          # File 20 Version 1.4.3 Third Ten-Round Corrective Evidence
+          cat > release/FILE-20-1.4.4-FOURTH-TEN-ROUND-TEST-REPORT.md <<REPORT
+          # File 20 Version 1.4.4 Fourth Ten-Round Corrective Evidence
           - Exact workflow SHA: ${{ github.sha }}
           - Existing File 20 PHP 7.4/8.3 regression/adversarial suites: PASS
-          - Future Shell v5 18/18 enhancement + first, second and third ten-round hardening tests: PASS
-          - Latest File 00/01/02 route/privacy/ownership reconciliation: PASS
-          - Protected-path overflow fail-closed semantics: PASS
-          - Single final PWA virtual-asset ownership and Sabri Green continuity fallback: PASS
+          - Future Shell v5 approved feature count: 18/18; no nineteenth feature added
+          - First, second, third and fourth hardening regressions: PASS
+          - Current File 00 1.2.13 / File 01 2.0.0 / File 02 1.3.0 compatibility metadata: PASS
+          - File 02 public /.well-known/webauthn Minimal presentation without private misclassification: PASS
+          - File 19 3.0 one-bell boundary and File 21 NG30 five-slot contract: PASS
+          - File 24 eight-state render/routing vocabulary with native enforcement preserved: PASS
           - JavaScript/CSS/JSON integrity: PASS
           - Deterministic ZIP, manifest, SHA-256, CRC and clean extraction: PASS
           - Hostinger staging accepted: NO
@@ -192,11 +219,11 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: file20-1.4.3-third-ten-round-${{ github.sha }}
+          name: file20-1.4.4-fourth-ten-round-${{ github.sha }}
           retention-days: 60
           if-no-files-found: error
           path: |
-            release/20-sabri-unified-application-shell-1.4.3-THIRD-TEN-ROUND-HARDENED.zip
-            release/20-sabri-unified-application-shell-1.4.3-THIRD-TEN-ROUND-HARDENED.sha256
-            release/20-sabri-unified-application-shell-1.4.3-THIRD-TEN-ROUND-HARDENED-SOURCE-MANIFEST.sha256
-            release/FILE-20-1.4.3-THIRD-TEN-ROUND-TEST-REPORT.md
+            release/20-sabri-unified-application-shell-1.4.4-FOURTH-TEN-ROUND-HARDENED.zip
+            release/20-sabri-unified-application-shell-1.4.4-FOURTH-TEN-ROUND-HARDENED.sha256
+            release/20-sabri-unified-application-shell-1.4.4-FOURTH-TEN-ROUND-HARDENED-SOURCE-MANIFEST.sha256
+            release/FILE-20-1.4.4-FOURTH-TEN-ROUND-TEST-REPORT.md
