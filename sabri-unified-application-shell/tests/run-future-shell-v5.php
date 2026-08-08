@@ -4,7 +4,9 @@ $php     = file_get_contents( $root . '/includes/class-future-shell-v5.php' );
 $hard    = file_get_contents( $root . '/includes/class-future-shell-v5-hardening.php' );
 $client  = file_get_contents( $root . '/includes/class-future-shell-v5-client-context.php' );
 $control = file_get_contents( $root . '/includes/class-future-shell-v5-control-guard.php' );
+$second  = file_get_contents( $root . '/includes/class-future-shell-v5-second-hardening.php' );
 $js      = file_get_contents( $root . '/assets/js/future-shell-v5.js' );
+$guard   = file_get_contents( $root . '/assets/js/future-shell-v5-editable-guard.js' );
 $css     = file_get_contents( $root . '/assets/css/future-shell-v5.css' );
 $main    = file_get_contents( $root . '/sabri-unified-application-shell.php' );
 $fail    = array();
@@ -19,8 +21,8 @@ foreach ( $features as $feature ) {
 }
 $checks = array(
     '18 features' => count( $features ) === 18,
-    'release 1.4.1' => false !== strpos( $main, '* Version: 1.4.1' ) && false !== strpos( $main, "define( 'SABRI_SHELL_VERSION', '1.4.1' );" ),
-    'three hardening layers registered' => false !== strpos( $main, 'FutureShellV5Hardening::register();' ) && false !== strpos( $main, 'FutureShellV5ClientContext::register();' ) && false !== strpos( $main, 'FutureShellV5ControlGuard::register();' ),
+    'release 1.4.2' => false !== strpos( $main, '* Version: 1.4.2' ) && false !== strpos( $main, "define( 'SABRI_SHELL_VERSION', '1.4.2' );" ),
+    'four hardening layers registered' => false !== strpos( $main, 'FutureShellV5Hardening::register();' ) && false !== strpos( $main, 'FutureShellV5ClientContext::register();' ) && false !== strpos( $main, 'FutureShellV5ControlGuard::register();' ) && false !== strpos( $main, 'FutureShellV5SecondHardening::register();' ),
     'File26 search preserved' => false !== strpos( $php, 'FourPlanHarmonization::file26_search_contract()' ),
     'release rings present' => false !== strpos( $php, "case 'limited'" ) && false !== strpos( $php, "case 'staging'" ),
     'stored rings fail closed' => false !== strpos( $hard, "$ring    = 'disabled';" ) && false !== strpos( $hard, 'return (bool) $enabled && $allowed;' ),
@@ -34,32 +36,38 @@ $checks = array(
     'PWA self unregister' => false !== strpos( $hard, 'Service-Worker-Allowed:' ) && false !== strpos( $hard, 'controlAlive()' ) && false !== strpos( $hard, 'self.registration.unregister()' ),
     'PWA deactivation cleanup' => false !== strpos( $main, "FutureShellV5Hardening', 'deactivate'" ) && false !== strpos( $hard, 'flush_rewrite_rules( false )' ),
     'expanded privacy policy' => false !== strpos( $client, "'/login'" ) && false !== strpos( $client, "'/notifications'" ) && false !== strpos( $client, "'/publishing-dashboard'" ) && false !== strpos( $client, 'sabri_shell_future_private_path_fragments' ),
-    'private policy SW/client parity' => false !== strpos( $client, 'ensure_private_path_policy' ) && false !== strpos( $client, 'update_option( FutureShellV5::OPTION, $current, false )' ),
+    'dynamic private policy no longer persisted' => false !== strpos( $second, "remove_action( 'init', array( FutureShellV5ClientContext::class, 'ensure_private_path_policy' ), 6 )" ) && false !== strpos( $second, "apply_filters( 'sabri_shell_future_private_path_fragments'" ),
     'preboot context before JS' => false !== strpos( $client, 'window.SabriShellFutureV5Hardening=' ) && false !== strpos( $client, 'Object.assign({},window.SabriShellFutureV5||{},window.SabriShellFutureV5Hardening)' ),
+    'second preboot context overrides subdirectory paths' => false !== strpos( $second, 'scoped_private_paths' ) && false !== strpos( $second, 'currentRoutePublic' ) && false !== strpos( $second, 'SabriShellFutureV5SecondHardening' ),
     'LKG previous state' => false !== strpos( $hard, 'capture_previous_lkg' ) && false !== strpos( $hard, 'FutureShellV5::capture_lkg( array(), $old_value )' ),
     'LKG compatibility' => false !== strpos( $hard, "snapshot['plugin_version']" ) && false !== strpos( $hard, 'Defaults::SCHEMA_VERSION === absint' ) && false !== strpos( $control, 'Defaults::SCHEMA_VERSION !== absint' ),
-    'circuit breaker' => false !== strpos( $php, 'CIRCUIT_THRESHOLD' ) && false !== strpos( $php, 'sabri_shell_module_failure' ),
+    'circuit breaker bounded' => false !== strpos( $php, 'CIRCUIT_THRESHOLD' ) && false !== strpos( $second, 'MAX_CIRCUITS' ) && false !== strpos( $second, 'bound_circuit_state' ) && false !== strpos( $second, 'circuit_state_count' ),
     'recent public privacy' => false !== strpos( $js, 'sabriShellRecentPublicRoutesV' ) && false !== strpos( $js, 'cfg.currentRoutePublic' ) && false !== strpos( $js, 'canonicalLocalUrl' ) && false !== strpos( $js, 'localStorage.removeItem(legacyRecentKey)' ),
     'private path boundary matcher' => false !== strpos( $js, "candidate === prefix || candidate.indexOf(prefix + '/') === 0" ),
     'pins public nav only' => false !== strpos( $js, 'publicAnchorUrl(anchor)' ) && false !== strpos( $js, "anchor.closest('.sabri-shell-primary-nav')" ) && false !== strpos( $js, 'aria-pressed' ),
     'performance browser local bounded' => false !== strpos( $js, 'sabri:shell-performance' ) && false === strpos( $js, 'sendBeacon' ) && false !== strpos( $js, 'observer.disconnect()' ),
     'bounded safe prefetch' => false !== strpos( $js, 'Object.keys(prefetched).length >= 3' ) && false !== strpos( $js, 'publicAnchorUrl(anchor)' ) && false !== strpos( $js, 'dataSaverActive()' ),
-    'editable keyboard guard' => false !== strpos( $js, 'isEditableTarget' ) && false !== strpos( $js, 'isContentEditable' ),
+    'editable keyboard guard' => false !== strpos( $js, 'isEditableTarget' ) && false !== strpos( $guard, 'event.stopImmediatePropagation()' ) && false !== strpos( $guard, "toLowerCase() !== 'k'" ),
     'safe Back' => false !== strpos( $js, "document.querySelector('[data-sabri-context-back]')" ) && false === strpos( $js, 'history.back()' ),
     'dialog focus restoration' => false !== strpos( $js, 'dialogReturnFocus' ) && false !== strpos( $js, 'restoreDialogFocus' ),
     'language quick command' => false !== strpos( $js, 'features.language_direction' ) && false !== strpos( $js, "label: 'Language and Direction'" ),
     'pressed states' => false !== strpos( $js, 'syncPrefButtons' ) && false !== strpos( $hard, 'aria-pressed="false"' ),
-    'split workspace desktop only' => false !== strpos( $js, "matchMedia('(min-width: 1024px)')" ) && false !== strpos( $js, 'closeSplit();' ) && false !== strpos( $css, '@media (max-width:1023px)' ),
+    'split workspace desktop only and non-immersive' => false !== strpos( $js, "matchMedia('(min-width: 1024px)')" ) && false !== strpos( $js, 'closeSplit();' ) && false !== strpos( $css, '@media (max-width:1023px)' ) && false !== strpos( $second, 'Layout::IMMERSIVE === Layout::current_mode()' ),
     'focus mode actual context nav' => false !== strpos( $css, '.sabri-context-navigation' ),
     'data saver native content preserved' => false === strpos( $css, '.sabri-shell-data-saver *' ) && false !== strpos( $css, '[data-sabri-decorative-background]' ),
-    'File25 visual ownership' => false === strpos( $css, '--sabri-shell-v5-accent' ) && false === strpos( $css, 'filter:contrast(' ),
+    'File25 visual ownership' => false === strpos( $css, '--sabri-shell-v5-accent' ) && false === strpos( $css, 'filter:contrast(' ) && false !== strpos( $css, 'var(--sabri-shell-radius' ) && false !== strpos( $css, 'var(--sabri-shell-shadow' ) && false !== strpos( $second, 'CentralPlanContract::visual_tokens()' ),
+    'File20 does not globally restyle native paragraph spacing' => false === strpos( $css, '.sabri-shell-a11y-spacing p,.sabri-shell-a11y-spacing li' ),
+    'PWA disabled virtual routes retire workers' => false !== strpos( $second, 'status_header( 410 )' ) && false !== strpos( $second, 'Sabri Shell PWA is disabled.' ),
+    'PWA cache version follows plugin version' => false !== strpos( $second, "preg_replace( '/[^a-z0-9]+/i', '', SABRI_SHELL_VERSION )" ),
+    'PWA manifest consumes File25 tokens' => false !== strpos( $second, "'theme_color'" ) && false !== strpos( $second, "tokens['primary_color']" ) && false !== strpos( $second, "tokens['background']" ),
+    'partial settings preserve old values' => false !== strpos( $second, 'preserve_partial_future_settings' ) && false !== strpos( $second, 'array_replace( $old_features[ $feature ]' ),
     'view transition progressive' => false !== strpos( $css, '@supports (view-transition-name:none)' ) && false !== strpos( $css, '@view-transition' ),
     'foldable safe area' => false !== strpos( $css, 'env(safe-area-inset-left)' ) && false !== strpos( $css, 'horizontal-viewport-segments:2' ),
-    'no foreign backend' => false === strpos( $php . $hard . $client . $control, 'CREATE TABLE' ) && false === strpos( $php . $hard . $client . $control, 'dbDelta(' ),
+    'no foreign backend' => false === strpos( $php . $hard . $client . $control . $second, 'CREATE TABLE' ) && false === strpos( $php . $hard . $client . $control . $second, 'dbDelta(' ),
 );
 foreach ( $checks as $name => $ok ) { if ( ! $ok ) { $fail[] = $name; } }
 if ( $fail ) {
     fwrite( STDERR, "Future Shell v5 FAIL: " . implode( '; ', $fail ) . "\n" );
     exit( 1 );
 }
-echo "Future Shell v5: 18/18 enhancements + ten-round corrective hardening PASS\n";
+echo "Future Shell v5: 18/18 enhancements + two ten-round corrective passes PASS\n";

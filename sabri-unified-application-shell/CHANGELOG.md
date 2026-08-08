@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.4.2 — 2026-08-08 — Second Independent Ten-Round Corrective Hardening
+
+- Completed a second independent ten-round review over the merged 1.4.1 baseline; this pass did not reuse the first audit as proof of completion.
+- Made protected-route classification and service-worker exclusions WordPress-subdirectory aware.
+- Added explicit `410` PWA virtual-route retirement when PWA is disabled, so installed workers do not mistake ordinary HTML for a live control manifest.
+- Derived PWA manifest/theme colors from File 25's validated visual contract and service-worker cache identity from `SABRI_SHELL_VERSION`.
+- Preserved omitted feature/recovery/privacy values during partial Future Shell settings updates and failed malformed explicit feature rules closed.
+- Bounded circuit-breaker metadata to 64 active/recent states and removed expired states before health reporting.
+- Added a dependency-ordered editable-context guard so global `Ctrl/Cmd+K` cannot hijack inputs or rich editors.
+- Stopped dynamic provider private-path filters from being silently persisted into File 20 options; they are evaluated per request for SW/client parity.
+- Rejected Split Workspace in Minimal and Immersive modes while preserving native provider hooks elsewhere.
+- Consumed File 25 border/radius/shadow/focus tokens in Future Shell controls and scoped File 20 spacing/reduced-motion styling to File-20-owned surfaces.
+- Updated plugin/readmes/tests/workflow/deterministic package identity to `1.4.2` and added `SECOND-TEN-ROUND-REVIEW-2026-08-08.md`.
+- Hostinger staging, Founder acceptance, live deployment and operational acceptance remain separate evidence gates.
+
 ## 1.4.1 — 2026-08-08 — Ten-Round Corrective Hardening
 
 - Completed ten independent post-implementation review rounds against the governing File 20 plan, Future Shell v5 scope, privacy/security boundaries and deterministic release law.
