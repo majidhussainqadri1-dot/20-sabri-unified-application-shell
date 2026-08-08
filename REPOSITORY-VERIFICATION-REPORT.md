@@ -2,18 +2,35 @@
 
 ## Scope
 
-The current review baseline is merged File 20 **1.4.9** at `3e9c65373d88332e050628f27f0801092d417da2`; the tenth fresh audit advances the candidate to **1.4.10 / FutureShellV5TenthHardening 1.0.10**.
+The current review baseline is merged File 20 **1.4.9** at `3e9c65373d88332e050628f27f0801092d417da2`; PR #25 advances the candidate to **1.4.10 / FutureShellV5TenthHardening 1.0.10**.
 
-The tenth audit is a fresh ten-round review against File 20 v5.0, the central QA/ownership law, File21 native-slot requirements, the latest reviewed File00 audit evidence and current repository source. Previous green runs are historical evidence only.
+The tenth audit is a fresh ten-round review against File20 v5.0, the central QA/ownership law, File21 native-slot requirements, the latest reviewed File00 audit evidence and current source. Previous green runs are historical evidence only.
 
-## Exact final-head verification gates
+## Current verification evidence
 
-Before merge, the final PR head must pass PHP 7.4/8.3 syntax and every `run*.php` regression/adversarial suite; exact 18 Future Shell features; CF native boundaries; no registered File20 local Home-feed runtime; inert migrated local-feed state/configuration; all five executable File21 native slots with one-per-request/native-over-legacy behavior; structural-only File20 body classes under File25 ownership; latest reviewed File00 1.2.18 evidence without production-safe implication; File26-only Search with no WordPress/File20 fallback; actual semantic-version provider health for File25/File01-B; critical File20/File00 health that cannot report Healthy when Unknown/Unavailable/Incompatible; Emergency re-enable using that same critical gate; inherited presence-aware recovery, locked concurrency, page-map repair, strict route security/precedence, File20-only uninstall and rollback safety; all prior privacy/System Check/PWA/accessibility ownership checks; JavaScript/JSON/CSS static validation; and deterministic production-only package path/root/file-set/SHA/manifest/CRC parity.
+Initial closure head `4c255f8af45fd308e6085f6965948e97a4763bc4` passed syntax but exposed six stale preservation-suite assertions that still identified `1.4.9` as the current release. Those test-contract defects were corrected without weakening the historical contract assertions.
 
-The permanent workflow must generate `20-sabri-unified-application-shell-1.4.10-TENTH-TEN-ROUND-HARDENED.zip`, its SHA-256, source manifest and tenth-audit test report from the exact final head.
+Corrected head `4773cb2cd9b4cd9757193e11f1f3b06b431c95a7` passed quality run `31274972535`:
+
+- PHP 7.4 syntax and every `tests/run*.php` regression/adversarial suite;
+- PHP 8.3 syntax and every `tests/run*.php` regression/adversarial suite;
+- JavaScript/JSON/CSS and tenth-pass ownership/native-slot/health/privacy checks;
+- exact eighteen Future Shell feature IDs and conditional/native-owner boundaries;
+- File21-only Home/News feed ownership, five native slots and native-over-legacy single-render behavior;
+- File25 visual and File26 search ownership;
+- reviewed File00 1.2.18 evidence without production-safe implication;
+- native semantic-version provider health plus critical File20/File00 no-false-green semantics;
+- Emergency re-enable critical-health gate;
+- inherited recovery/route/privacy/PWA/release-ring/uninstall protections;
+- deterministic production-only `1.4.10` package, canonical ZIP root/path/duplicate safety, source/stage/extracted SHA-256 parity, embedded/external manifest equality and ZIP CRC;
+- exact-head tenth-audit report and artifact upload.
+
+Baseline Archive Integrity run `31274972551` also passed on that same corrected head.
+
+## Final merge gate
+
+This evidence record itself creates a later documentation head. Therefore PR #25 is **not merge-eligible until the final exact head again passes both the 1.4.10 quality workflow and Baseline Archive Integrity**. The final PASS claim and merge must cite that later exact head, not `4773cb2c…`.
 
 ## Truthful lifecycle boundary
 
-A successful exact-head repository workflow establishes repository/code/package/automated-QA evidence only. It does **not** establish Hostinger staging acceptance, real companion/provider behavior, browser/device/accessibility acceptance, backup restoration, rollback rehearsal, Founder acceptance, live deployment or operational monitoring.
-
-**Current result:** 1.4.10 corrections are awaiting exact-final-head PR verification. A final PASS claim requires the final green PR head and merged-main rerun; staging/live/operational remain unclaimed until separately proven.
+Repository success establishes repository/code/package/automated-QA evidence only. It does **not** establish Hostinger staging acceptance, real companion/provider behavior, browser/device/accessibility acceptance, backup restoration, rollback rehearsal, Founder acceptance, live deployment or operational monitoring.
