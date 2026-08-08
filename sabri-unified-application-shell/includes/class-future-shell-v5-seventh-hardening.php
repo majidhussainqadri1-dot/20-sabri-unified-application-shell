@@ -87,28 +87,29 @@ final class FutureShellV5SeventhHardening {
 		$registry['CF-03'] = self::conditional_target(
 			isset( $registry['CF-03'] ) ? $registry['CF-03'] : array(),
 			array(
-				'owner'                       => 'Payments Donations Financial Operations',
-				'plan_version'                => '2.0',
-				'native_scope'                => 'donations-financial-transparency-payment-ledger-refund-provider-operations-if-approved',
-				'file20_boundary'             => 'route-disclosure-and-accessible-shell-only-no-ledger-price-payment-refund-or-provider-authority',
-				'criticality'                 => 'conditional-financial',
-				'failure_behavior'            => 'financial-action-unavailable-no-shell-fabricated-success',
+				'owner'                           => 'Payments Donations Financial Operations',
+				'plan_version'                    => '2.0',
+				'native_scope'                    => 'donations-financial-transparency-payment-ledger-refund-provider-operations-if-approved',
+				'file20_boundary'                 => 'route-disclosure-and-accessible-shell-only-no-ledger-price-payment-refund-or-provider-authority',
+				'criticality'                     => 'conditional-financial',
+				'failure_behavior'                => 'financial-action-unavailable-no-shell-fabricated-success',
 				'current_platform_financial_mode' => 'single-free-tier-voluntary-donation-no-donor-advantage',
-				'paid_collection_activation'  => 'dormant-unless-new-founder-change-control-and-cf03-activation-evidence',
-				'zero_commission'              => true,
-				'donor_advantage'              => false,
+				'paid_collection_activation'      => 'dormant-unless-new-founder-change-control-and-cf03-activation-evidence',
+				'zero_commission'                 => true,
+				'donor_advantage'                 => false,
 			)
 		);
 
 		$registry['CF-04'] = self::conditional_target(
 			isset( $registry['CF-04'] ) ? $registry['CF-04'] : array(),
 			array(
-				'owner'            => 'Central Media Processing Secure Delivery',
-				'plan_version'     => '1.0',
-				'native_scope'     => 'secure-upload-processing-quarantine-transcode-storage-delivery-grants',
-				'file20_boundary'  => 'ui-entry-and-shell-state-only-no-binary-storage-scanning-token-grant-cdn-or-processing-authority',
-				'criticality'      => 'conditional-security-sensitive',
-				'failure_behavior' => 'secure-media-action-unavailable-no-public-url-fallback',
+				'owner'                         => 'Central Media Processing Secure Delivery',
+				'plan_version'                  => '1.0',
+				'native_scope'                  => 'secure-upload-processing-quarantine-transcode-storage-delivery-grants',
+				'file20_boundary'                => 'ui-entry-and-shell-state-only-no-binary-storage-scanning-token-grant-cdn-or-processing-authority',
+				'criticality'                    => 'conditional-security-sensitive',
+				'failure_behavior'               => 'secure-media-action-unavailable-no-public-url-fallback',
+				'token_delivery_shell_behavior' => 'minimal-no-future-shell-client-history-or-prefetch-native-cache-and-range-authority-preserved',
 			)
 		);
 
@@ -142,10 +143,10 @@ final class FutureShellV5SeventhHardening {
 	/**
 	 * Privacy-sensitive CF route prefixes.
 	 *
-	 * Public help, donation/transparency pages and localized public routes are
-	 * deliberately absent. Native owners still decide authorization and cache
-	 * semantics; this list only prevents File 20's local history/prefetch/PWA
-	 * conveniences from treating sensitive routes as public shell navigation.
+	 * Public help, donation/transparency pages, localized public routes and the
+	 * CF-04 token-delivery route are deliberately absent. Native owners retain
+	 * response/cache truth. This list prevents File 20's local history, prefetch
+	 * and PWA conveniences from treating genuinely private routes as public.
 	 */
 	public static function conditional_private_paths( $paths ) {
 		$paths = is_array( $paths ) ? $paths : array();
@@ -154,7 +155,7 @@ final class FutureShellV5SeventhHardening {
 			'/clinic/prescriptions', '/clinic/follow-ups', '/admin/clinical-governance', '/api/clinical/v1',
 			'/support/cases', '/support/appeals', '/admin/support', '/api/support/v1',
 			'/checkout', '/billing', '/admin/finance', '/api/finance/v1',
-			'/api/media/v1', '/media/d', '/admin/media',
+			'/api/media/v1', '/admin/media',
 			'/insights', '/admin/analytics', '/api/analytics/v1',
 			'/settings/language', '/admin/localization', '/api/localization/v1',
 		);
@@ -252,18 +253,18 @@ final class FutureShellV5SeventhHardening {
 	public static function system_check( $sections ) {
 		$sections = is_array( $sections ) ? $sections : array();
 		$sections['future_shell_v5_seventh_hardening'] = array(
-			'label'                         => __( 'Future Shell v5 seventh-pass conditional-module contracts', 'sabri-unified-application-shell' ),
-			'contract_version'              => self::CONTRACT_VERSION,
-			'conditional_module_count'      => self::CONDITIONAL_COUNT,
-			'conditional_modules'           => array( 'CF-01', 'CF-02', 'CF-03', 'CF-04', 'CF-05', 'CF-06' ),
-			'evidence_kind'                 => 'declared-conditional-contract-target-not-runtime-detection',
-			'activation_authority'          => 'founder-change-control-plus-native-module-gates',
-			'native_authorization_preserved'=> true,
-			'native_cache_truth_preserved'  => true,
-			'current_financial_mode'        => 'single-free-tier-voluntary-donation-no-donor-advantage',
-			'future_shell_feature_count'    => 18,
-			'staging_accepted'              => false,
-			'live_deployed'                 => false,
+			'label'                          => __( 'Future Shell v5 seventh-pass conditional-module contracts', 'sabri-unified-application-shell' ),
+			'contract_version'               => self::CONTRACT_VERSION,
+			'conditional_module_count'       => self::CONDITIONAL_COUNT,
+			'conditional_modules'            => array( 'CF-01', 'CF-02', 'CF-03', 'CF-04', 'CF-05', 'CF-06' ),
+			'evidence_kind'                  => 'declared-conditional-contract-target-not-runtime-detection',
+			'activation_authority'           => 'founder-change-control-plus-native-module-gates',
+			'native_authorization_preserved' => true,
+			'native_cache_truth_preserved'   => true,
+			'current_financial_mode'         => 'single-free-tier-voluntary-donation-no-donor-advantage',
+			'future_shell_feature_count'     => 18,
+			'staging_accepted'               => false,
+			'live_deployed'                  => false,
 		);
 		return $sections;
 	}
