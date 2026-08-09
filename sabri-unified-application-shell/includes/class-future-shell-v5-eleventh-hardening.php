@@ -15,6 +15,7 @@ final class FutureShellV5EleventhHardening {
         add_filter( 'default_option_' . Defaults::OPTION_NAME, array( __CLASS__, 'normalize_setting_default' ), PHP_INT_MAX, 3 );
         add_filter( 'register_url', array( __CLASS__, 'block_core_registration_fallback' ), PHP_INT_MAX );
         add_filter( 'sabri_shell_system_check_report', array( __CLASS__, 'correct_messages_diagnostic' ), PHP_INT_MAX - 10 );
+        add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_provider_slot_responsive_fix' ), 220 );
         add_filter( 'sabri_shell_system_check_sections', array( __CLASS__, 'system_check' ), 110 );
     }
 
@@ -51,16 +52,12 @@ final class FutureShellV5EleventhHardening {
     }
 
     public static function correct_messages_destination( $destinations ) {
-        if ( is_array( $destinations ) && isset( $destinations['messages'] ) && is_array( $destinations['messages'] ) ) {
-            $destinations['messages']['shortcodes'] = array( 'sabri_messages', 'sabri_communication' );
-        }
+        if ( is_array( $destinations ) && isset( $destinations['messages'] ) && is_array( $destinations['messages'] ) ) { $destinations['messages']['shortcodes'] = array( 'sabri_messages', 'sabri_communication' ); }
         return $destinations;
     }
 
-    /** File01 owns foundation/registries/contracts, never Search truth. */
     public static function correct_foundation_contract_metadata( $registry ) {
-        if ( ! is_array( $registry ) ) { return $registry; }
-        if ( isset( $registry['01-B'] ) && is_array( $registry['01-B'] ) ) {
+        if ( is_array( $registry ) && isset( $registry['01-B'] ) && is_array( $registry['01-B'] ) ) {
             $registry['01-B']['native_scope'] = 'bootstrap-registry-contracts-activation-shared-conventions';
             $registry['01-B']['file20_boundary'] = 'consume-foundation-registry-no-shell-or-search-truth';
             $registry['01-B']['failure_behavior'] = 'bounded-last-known-or-unavailable';
@@ -79,14 +76,10 @@ final class FutureShellV5EleventhHardening {
             if ( '' === $shortcode || 'sabri_network' === $shortcode ) { $value['navigation']['messages']['shortcode'] = 'sabri_messages'; }
         }
         if ( isset( $value['left_sidebar']['footer_mappings'] ) && is_array( $value['left_sidebar']['footer_mappings'] ) ) {
-            foreach ( $value['left_sidebar']['footer_mappings'] as $key => $url ) {
-                $value['left_sidebar']['footer_mappings'][ $key ] = 'whatsapp' === $key ? self::https_or_relative_url( $url, false ) : self::https_or_relative_url( $url, true );
-            }
+            foreach ( $value['left_sidebar']['footer_mappings'] as $key => $url ) { $value['left_sidebar']['footer_mappings'][ $key ] = 'whatsapp' === $key ? self::https_or_relative_url( $url, false ) : self::https_or_relative_url( $url, true ); }
         }
         if ( isset( $value['integrations']['urls'] ) && is_array( $value['integrations']['urls'] ) ) {
-            foreach ( $value['integrations']['urls'] as $key => $url ) {
-                $value['integrations']['urls'][ $key ] = 'whatsapp' === $key ? self::https_or_relative_url( $url, false ) : self::https_or_relative_url( $url, true );
-            }
+            foreach ( $value['integrations']['urls'] as $key => $url ) { $value['integrations']['urls'][ $key ] = 'whatsapp' === $key ? self::https_or_relative_url( $url, false ) : self::https_or_relative_url( $url, true ); }
         }
         return $value;
     }
@@ -126,6 +119,13 @@ final class FutureShellV5EleventhHardening {
         return $rows;
     }
 
+    /** Provider-only Home right slots must not disappear below the desktop breakpoint. */
+    public static function enqueue_provider_slot_responsive_fix() {
+        if ( ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) || ! wp_style_is( 'sabri-shell-central-plan-v4', 'enqueued' ) ) { return; }
+        $css = '@media (max-width:1199px){.sabri-shell-right-sidebar-provider:not(.sabri-shell-right-sidebar-drawer){display:block!important;position:static!important;inset:auto!important;inline-size:auto!important;max-block-size:none!important;margin:12px var(--sabri-shell-gap,24px);border:1px solid var(--sabri-shell-border);overflow:visible!important;}}';
+        wp_add_inline_style( 'sabri-shell-central-plan-v4', $css );
+    }
+
     public static function system_check( $sections ) {
         $sections = is_array( $sections ) ? $sections : array();
         $sections['future_shell_v5_eleventh_hardening'] = array(
@@ -139,6 +139,7 @@ final class FutureShellV5EleventhHardening {
             'file01_foundation_scope' => 'registry-contracts-activation-no-search-truth',
             'core_open_registration_fallback' => 'blocked-high-trust-entry-canonical-provider-only',
             'configured_url_policy' => 'internal-relative-or-same-site-https;external-whatsapp-https-only',
+            'file21_provider_only_home_right_slot' => 'desktop-right-context-mobile-inline-accessible',
             'approved_feature_count' => 18,
             'staging_accepted' => false,
             'live_deployed' => false,
