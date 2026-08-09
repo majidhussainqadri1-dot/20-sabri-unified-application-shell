@@ -3,7 +3,7 @@
  * Plugin Name: Sabri Unified Application Shell
  * Plugin URI: https://github.com/majidhussainqadri1-dot/20-sabri-unified-application-shell
  * Description: Secure responsive public application shell for the Sabri Social Homeopathy Platform.
- * Version: 1.4.11
+ * Version: 1.4.12
  * Author: Dr. Allamah Majid Hussain Sabri Muhaddith Mursheed
  * Text Domain: sabri-unified-application-shell
  * Domain Path: /languages
@@ -15,7 +15,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'SABRI_SHELL_VERSION', '1.4.11' );
+define( 'SABRI_SHELL_VERSION', '1.4.12' );
 define( 'SABRI_SHELL_FILE', __FILE__ );
 define( 'SABRI_SHELL_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SABRI_SHELL_URL', plugin_dir_url( __FILE__ ) );
@@ -91,12 +91,8 @@ if ( $sabri_shell_create_contract_unclaimed ) {
     define( 'SABRI_SHELL_CREATE_CONTRACT_VERSION', '1.0.1' );
     define( 'SABRI_SHELL_CREATE_CONTRACT_OWNER', 'sabri-unified-application-shell' );
     define( 'SABRI_SHELL_CREATE_FUNCTIONS_OWNED', true );
-    function sabri_shell_create_contract_available() {
-        return class_exists( 'Sabri\\UnifiedShell\\CreateContract' ) && Sabri\UnifiedShell\CreateContract::available();
-    }
-    function sabri_shell_create_visible_for_current_user() {
-        return class_exists( 'Sabri\\UnifiedShell\\CreateContract' ) && Sabri\UnifiedShell\CreateContract::visible_for_current_user();
-    }
+    function sabri_shell_create_contract_available() { return class_exists( 'Sabri\\UnifiedShell\\CreateContract' ) && Sabri\UnifiedShell\CreateContract::available(); }
+    function sabri_shell_create_visible_for_current_user() { return class_exists( 'Sabri\\UnifiedShell\\CreateContract' ) && Sabri\UnifiedShell\CreateContract::visible_for_current_user(); }
 }
 
 $sabri_shell_central_plan_contract_owned = static function () {
