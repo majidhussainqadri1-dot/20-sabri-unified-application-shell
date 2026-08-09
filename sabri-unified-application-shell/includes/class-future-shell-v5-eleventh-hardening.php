@@ -9,6 +9,7 @@ final class FutureShellV5EleventhHardening {
     public static function register() {
         add_filter( 'sabri_shell_route_result_allowed', array( __CLASS__, 'reject_page_id_collisions' ), PHP_INT_MAX, 5 );
         add_filter( 'sabri_shell_navigation_destinations', array( __CLASS__, 'correct_messages_destination' ), PHP_INT_MAX );
+        add_filter( 'sabri_shell_contract_registry', array( __CLASS__, 'correct_foundation_contract_metadata' ), PHP_INT_MAX );
         add_filter( 'pre_update_option_' . Defaults::OPTION_NAME, array( __CLASS__, 'normalize_setting_write' ), PHP_INT_MAX - 3, 3 );
         add_filter( 'option_' . Defaults::OPTION_NAME, array( __CLASS__, 'normalize_setting_read' ), PHP_INT_MAX );
         add_filter( 'default_option_' . Defaults::OPTION_NAME, array( __CLASS__, 'normalize_setting_default' ), PHP_INT_MAX, 3 );
@@ -56,6 +57,17 @@ final class FutureShellV5EleventhHardening {
         return $destinations;
     }
 
+    /** File01 owns foundation/registries/contracts, never Search truth. */
+    public static function correct_foundation_contract_metadata( $registry ) {
+        if ( ! is_array( $registry ) ) { return $registry; }
+        if ( isset( $registry['01-B'] ) && is_array( $registry['01-B'] ) ) {
+            $registry['01-B']['native_scope'] = 'bootstrap-registry-contracts-activation-shared-conventions';
+            $registry['01-B']['file20_boundary'] = 'consume-foundation-registry-no-shell-or-search-truth';
+            $registry['01-B']['failure_behavior'] = 'bounded-last-known-or-unavailable';
+        }
+        return $registry;
+    }
+
     public static function normalize_setting_write( $value, $old_value, $option ) { unset( $old_value, $option ); return self::normalize_setting( $value ); }
     public static function normalize_setting_read( $value ) { return self::normalize_setting( $value ); }
     public static function normalize_setting_default( $value, $option = '', $passed_default = false ) { unset( $option, $passed_default ); return self::normalize_setting( $value ); }
@@ -79,13 +91,10 @@ final class FutureShellV5EleventhHardening {
         return $value;
     }
 
-    /** Relative URLs are local; absolute URLs must be HTTPS and optionally exact home authority. */
     private static function https_or_relative_url( $url, $same_site ) {
         $url = trim( (string) $url );
         if ( '' === $url ) { return ''; }
-        if ( 0 === strpos( $url, '/' ) && 0 !== strpos( $url, '//' ) ) {
-            return RouteSecurity::sanitize_override( $url );
-        }
+        if ( 0 === strpos( $url, '/' ) && 0 !== strpos( $url, '//' ) ) { return RouteSecurity::sanitize_override( $url ); }
         $clean = esc_url_raw( $url, array( 'https' ) );
         if ( ! $clean || ! wp_http_validate_url( $clean ) ) { return ''; }
         $parts = wp_parse_url( $clean );
@@ -127,6 +136,7 @@ final class FutureShellV5EleventhHardening {
             'file17_network_shortcode' => 'sabri_network',
             'file17_messages_network_page_id_fallback' => 'not-canonical-page-id-evidence',
             'file17_messages_diagnostic' => 'dedicated-evidence-required',
+            'file01_foundation_scope' => 'registry-contracts-activation-no-search-truth',
             'core_open_registration_fallback' => 'blocked-high-trust-entry-canonical-provider-only',
             'configured_url_policy' => 'internal-relative-or-same-site-https;external-whatsapp-https-only',
             'approved_feature_count' => 18,
