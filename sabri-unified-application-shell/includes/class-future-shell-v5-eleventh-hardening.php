@@ -19,9 +19,8 @@ final class FutureShellV5EleventhHardening {
         add_filter( 'pre_update_option_' . Defaults::OPTION_NAME, array( __CLASS__, 'normalize_messages_setting_write' ), PHP_INT_MAX - 3, 3 );
         add_filter( 'option_' . Defaults::OPTION_NAME, array( __CLASS__, 'normalize_messages_setting_read' ), PHP_INT_MAX );
         add_filter( 'default_option_' . Defaults::OPTION_NAME, array( __CLASS__, 'normalize_messages_default' ), PHP_INT_MAX, 3 );
-        /* Current platform law is High-Trust Verified Entry, not WordPress open registration.
-         * Canonical File00/File02 signup pages resolve before this core fallback is asked for. */
         add_filter( 'register_url', array( __CLASS__, 'block_core_registration_fallback' ), PHP_INT_MAX );
+        add_filter( 'sabri_shell_system_check_report', array( __CLASS__, 'correct_messages_diagnostic' ), PHP_INT_MAX - 10 );
         add_filter( 'sabri_shell_system_check_sections', array( __CLASS__, 'system_check' ), 110 );
     }
 
@@ -40,7 +39,6 @@ final class FutureShellV5EleventhHardening {
             $network_fallback = absint( get_option( 'sn_network_page_id', 0 ) );
             if ( ! $dedicated && $network_fallback && $network_fallback === $page_id ) { return false; }
         }
-
         return self::page_id_has_single_canonical_claim( sanitize_key( $key ), $page_id, $source );
     }
 
@@ -72,14 +70,11 @@ final class FutureShellV5EleventhHardening {
         unset( $old_value, $option );
         return self::normalize_messages_setting( $value );
     }
-
     public static function normalize_messages_setting_read( $value ) { return self::normalize_messages_setting( $value ); }
-
     public static function normalize_messages_default( $value, $option = '', $passed_default = false ) {
         unset( $option, $passed_default );
         return self::normalize_messages_setting( $value );
     }
-
     private static function normalize_messages_setting( $value ) {
         if ( ! is_array( $value ) || ! isset( $value['navigation'] ) || ! is_array( $value['navigation'] ) || ! isset( $value['navigation']['messages'] ) || ! is_array( $value['navigation']['messages'] ) ) { return $value; }
         $shortcode = isset( $value['navigation']['messages']['shortcode'] ) ? sanitize_key( (string) $value['navigation']['messages']['shortcode'] ) : '';
@@ -87,10 +82,24 @@ final class FutureShellV5EleventhHardening {
         return $value;
     }
 
-    /** Never advertise generic wp-login.php?action=register as a platform signup route. */
-    public static function block_core_registration_fallback( $url ) {
-        unset( $url );
-        return '';
+    public static function block_core_registration_fallback( $url ) { unset( $url ); return ''; }
+
+    /** Correct the legacy generic detector in operator-facing System Check. */
+    public static function correct_messages_diagnostic( $rows ) {
+        if ( ! is_array( $rows ) ) { return $rows; }
+        $map = get_option( 'sn_page_map', array() );
+        $dedicated_map = is_array( $map ) && ! empty( $map['messages'] );
+        $dedicated = shortcode_exists( 'sabri_messages' ) || shortcode_exists( 'sabri_communication' ) || $dedicated_map || ( class_exists( 'SN_Activator' ) && is_callable( array( 'SN_Activator', 'messages_url' ) ) );
+        foreach ( $rows as &$row ) {
+            if ( ! is_array( $row ) || 'messages-integration' !== ( isset( $row['id'] ) ? $row['id'] : '' ) ) { continue; }
+            $row['value'] = $dedicated ? __( 'Dedicated File 17 Messages surface detected', 'sabri-unified-application-shell' ) : __( 'Dedicated File 17 Messages surface not detected', 'sabri-unified-application-shell' );
+            $row['status'] = $dedicated ? 'pass' : 'warn';
+            $row['severity'] = $dedicated ? 'info' : 'high';
+            $row['evidence'] = 'Dedicated sabri_messages/sabri_communication shortcode, sn_page_map.messages, or SN_Activator::messages_url; generic Network evidence is insufficient.';
+            break;
+        }
+        unset( $row );
+        return $rows;
     }
 
     public static function system_check( $sections ) {
@@ -102,6 +111,7 @@ final class FutureShellV5EleventhHardening {
             'file17_messages_shortcode' => 'sabri_messages',
             'file17_network_shortcode' => 'sabri_network',
             'file17_messages_network_page_id_fallback' => 'not-canonical-page-id-evidence',
+            'file17_messages_diagnostic' => 'dedicated-evidence-required',
             'core_open_registration_fallback' => 'blocked-high-trust-entry-canonical-provider-only',
             'approved_feature_count' => 18,
             'staging_accepted' => false,
