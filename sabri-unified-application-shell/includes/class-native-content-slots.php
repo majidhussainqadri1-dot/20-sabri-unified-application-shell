@@ -41,9 +41,15 @@ final class NativeContentSlots {
         return $content;
     }
 
-    /** Capture the structural File 20 wp_body_open window so the approved Home right slot can remain inside the structural sidebar. */
+    /** Capture only when File 20 has actually enabled the structural Home right-sidebar surface. */
     public static function begin_shell_capture() {
-        if ( ! self::is_home_request() || Layout::THREE !== Layout::current_mode() || ! has_action( 'sabri_shell_home_right_sidebar' ) ) {
+        $settings = Settings::get();
+        if (
+            ! self::is_home_request()
+            || Layout::THREE !== Layout::current_mode()
+            || empty( $settings['right_sidebar']['enabled'] )
+            || ! has_action( 'sabri_shell_home_right_sidebar' )
+        ) {
             return;
         }
         self::$shell_capture_level = ob_get_level() + 1;
@@ -79,6 +85,8 @@ final class NativeContentSlots {
             }
         }
 
+        /* This branch is only reached when File 20 enabled the structural sidebar
+         * but no built-in module caused Renderer to emit its ordinary container. */
         echo $buffer; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- captured File 20 renderer output.
         echo '<aside class="sabri-shell-right-sidebar sabri-shell-right-sidebar-provider" aria-label="' . esc_attr__( 'Home context', 'sabri-unified-application-shell' ) . '" data-sabri-shell-component="right-sidebar" data-sabri-right-context="home"><div class="sabri-shell-native-slot sabri-shell-native-slot-home-right" data-sabri-shell-slot="sabri_shell_home_right_sidebar">' . $slot . '</div></aside>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- approved provider owns slot markup; shell owns containment.
     }

@@ -23,13 +23,8 @@ final class RouteSecurity {
         if ( 0 === strpos( $url, '/' ) ) {
             if ( 0 === strpos( $url, '//' ) || false !== strpos( $url, '\\' ) ) { return ''; }
             $path = wp_parse_url( $url, PHP_URL_PATH );
-            if ( ! is_string( $path ) || '' === $path || 0 !== strpos( $path, '/' ) ) { return ''; }
-            foreach ( explode( '/', $path ) as $segment ) {
-                $decoded = rawurldecode( $segment );
-                if ( in_array( $decoded, array( '.', '..' ), true ) || false !== strpos( $decoded, '/' ) || false !== strpos( $decoded, '\\' ) || preg_match( '/[\x00-\x1F\x7F]/', $decoded ) ) { return ''; }
-            }
-            $path = preg_replace( '#/+#', '/', $path );
-            return is_string( $path ) && '' !== $path ? $path : '';
+            $path = self::validated_path( $path );
+            return '' !== $path ? $path : '';
         }
 
         $clean = esc_url_raw( $url, array( 'https' ) );
@@ -37,6 +32,8 @@ final class RouteSecurity {
         $parts = wp_parse_url( $clean );
         if ( ! is_array( $parts ) || 'https' !== strtolower( isset( $parts['scheme'] ) ? (string) $parts['scheme'] : '' ) || empty( $parts['host'] ) ) { return ''; }
         if ( isset( $parts['user'] ) || isset( $parts['pass'] ) || isset( $parts['query'] ) || isset( $parts['fragment'] ) ) { return ''; }
+        $path = self::validated_path( isset( $parts['path'] ) ? $parts['path'] : '/' );
+        if ( '' === $path ) { return ''; }
 
         $host = strtolower( (string) $parts['host'] );
         $home = wp_parse_url( home_url( '/' ) );
@@ -52,7 +49,20 @@ final class RouteSecurity {
         if ( ! $same_site && ! in_array( $authority, $allowed, true ) && ! ( 443 === $port && in_array( $host, $allowed, true ) ) ) { return ''; }
 
         if ( $same_site && '' === wp_validate_redirect( $clean, '' ) ) { return ''; }
-        return $clean;
+        $normalized = 'https://' . $authority . $path;
+        return esc_url_raw( $normalized, array( 'https' ) );
+    }
+
+    /** Validate and normalize one absolute-path component for every override form. */
+    private static function validated_path( $path ) {
+        if ( ! is_string( $path ) || '' === $path || 0 !== strpos( $path, '/' ) || false !== strpos( $path, '\\' ) ) { return ''; }
+        foreach ( explode( '/', $path ) as $segment ) {
+            if ( false !== strpos( $segment, '%' ) && preg_match( '/%(?![0-9A-Fa-f]{2})/', $segment ) ) { return ''; }
+            $decoded = rawurldecode( $segment );
+            if ( in_array( $decoded, array( '.', '..' ), true ) || false !== strpos( $decoded, '/' ) || false !== strpos( $decoded, '\\' ) || preg_match( '/[\x00-\x1F\x7F]/', $decoded ) ) { return ''; }
+        }
+        $path = preg_replace( '#/+#', '/', $path );
+        return is_string( $path ) && '' !== $path ? $path : '';
     }
 
     private static function normalized_port( array $parts ) {
@@ -90,7 +100,7 @@ final class RouteSecurity {
         $sections = is_array( $sections ) ? $sections : array();
         $sections['route_override_security'] = array(
             'label' => __( 'Route override security', 'sabri-unified-application-shell' ),
-            'policy' => 'relative-or-https;same-site-default;external-explicit-allowlist;no-query-fragment-credentials',
+            'policy' => 'relative-or-https;same-site-default;external-explicit-allowlist;no-query-fragment-credentials;decoded-path-canonicalization',
             'runtime_revalidation' => true,
         );
         return $sections;

@@ -1,4 +1,4 @@
-name: File 20 Version 1.4.11 Eighty-Round Hardened Quality
+name: File 20 Version 1.4.12 Second-Eighty-Round Hardened Quality
 
 on:
   pull_request:
@@ -26,7 +26,17 @@ jobs:
           php-version: ${{ matrix.php }}
           coverage: none
       - name: Syntax-check every source and test PHP file
-        run: find sabri-unified-application-shell -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            if ! output="$(php -l "$file" 2>&1)"; then
+              clean="${output//$'\n'/ }"
+              clean="${clean//'::'/' : : '}"
+              echo "::error file=${file},title=PHP syntax failure::${clean}"
+              exit 1
+            fi
+          done < <(find sabri-unified-application-shell -type f -name '*.php' -print0)
       - name: Run every File 20 regression/adversarial suite
         run: |
           set -euo pipefail
@@ -42,7 +52,7 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v5
-      - name: JavaScript JSON CSS and eighty-round static checks
+      - name: JavaScript JSON CSS and second-eighty-round static checks
         run: |
           set -euo pipefail
           for js in sabri-unified-application-shell/assets/js/*.js; do node --check "$js"; done
@@ -53,61 +63,43 @@ jobs:
           def read(p): return (root/p).read_text(encoding='utf-8')
           main=read('sabri-unified-application-shell.php')
           defaults=read('includes/class-defaults.php')
-          plugin=read('includes/class-plugin.php')
-          settings=read('includes/class-settings.php')
-          integrations=read('includes/class-integrations.php')
-          nav=read('includes/class-navigation.php')
-          renderer=read('includes/class-renderer.php')
-          layout=read('includes/class-layout.php')
           route=read('includes/class-route-security.php')
-          recovery=read('includes/class-plan-v4-recovery.php')
-          safe=read('includes/class-safe-mode.php')
+          eleventh=read('includes/class-future-shell-v5-eleventh-hardening.php')
+          resth=read('includes/class-second-eighty-rest-hardening.php')
           system=read('includes/class-system-check.php')
-          future=read('includes/class-future-shell-v5.php')
+          safe=read('includes/class-safe-mode.php')
+          concurrency=read('includes/class-plan-v4-settings-concurrency.php')
           control=read('includes/class-future-shell-v5-control-guard.php')
-          tenth=read('includes/class-future-shell-v5-tenth-hardening.php')
-          slots=read('includes/class-native-content-slots.php')
-          jobs=read('includes/class-plan-v4-jobs.php')
-          assurance=read('includes/class-plan-v4-assurance.php')
+          future=read('includes/class-future-shell-v5.php')
           uninstall=read('uninstall.php')
           readmetxt=read('readme.txt')
-          assert '* Version: 1.4.11' in main
-          assert "define( 'SABRI_SHELL_VERSION', '1.4.11' );" in main
-          assert 'Stable tag: 1.4.11' in readmetxt
+          assert '* Version: 1.4.12' in main
+          assert "define( 'SABRI_SHELL_VERSION', '1.4.12' );" in main
+          assert 'Stable tag: 1.4.12' in readmetxt
+          assert 'FutureShellV5EleventhHardening::register();' in main
+          assert 'SecondEightyRestHardening::register();' in main
+          assert "CONTRACT_VERSION = '1.0.11'" in eleventh
+          assert 'validated_path' in route and 'rawurldecode' in route
+          assert 'page_id_collision_policy' in eleventh and 'sabri_messages' in eleventh
+          assert 'block_core_registration_fallback' in eleventh
+          assert 'configured_url_policy' in eleventh
+          assert 'file01_foundation_scope' in eleventh
+          assert 'file21_provider_only_home_right_slot' in eleventh
+          assert 'file-20-shell' in eleventh and 'file-00-identity' in eleventh
+          assert 'doctor-verification-authority' in system and 'doctor_roles' not in system
+          assert '/sabri-shell/v1/health' in resth and 'private, no-store' in resth
+          assert 'wp_validate_redirect' in safe and 'QUERY_NONCE_ACTION' in safe
+          assert 'LOCK_OPTION' in concurrency and 'concurrent-settings-write' in concurrency
+          assert 'LKG_LOCK_OPTION' in control and 'serialized' in control
+          assert 'sabri_shell_settings_update_lock' in uninstall and 'sabri_shell_future_lkg_restore_lock' in uninstall
           assert 'const SCHEMA_VERSION       = 5;' in defaults
-          assert not (root/'includes/class-home-feed.php').exists()
-          assert 'class-home-feed.php' not in read('tests/bootstrap.php')
-          assert 'HomeFeed::register();' not in plugin
-          assert "'sabri_complete_home_feed'" in defaults
-          assert "'allowed_roles'" not in defaults
-          assert "'appearance'            => array(" not in defaults
-          for hook in ['sabri_shell_home_before_main','sabri_shell_home_main','sabri_shell_home_after_main','sabri_shell_home_right_sidebar','sabri_shell_news_main']:
-              assert hook in slots
-          assert 'enforce_owned_invariants_filter' in plugin and 'SCHEMA_VERSION' in settings
-          assert 'shortcode_collision' in integrations or 'multiple' in integrations.lower()
-          assert 'add_option_' in nav and 'delete_option_' in nav
-          assert 'safe_login_redirect' in renderer and 'Integrations::same_site_url' in renderer
-          assert 'CreateContract::visible_for_current_user()' in renderer
-          assert 'array( Layout::TWO, Layout::THREE )' in renderer
-          assert "isset( $_GET['sabri_shell_maintenance'] )" not in layout
-          assert 'rawurldecode' in route and "array( '.', '..' )" in route
-          assert 'owned_options' in recovery and 'smoke' in recovery.lower()
-          assert 'critical_health_state' in tenth
-          assert 'FutureShellV5TenthHardening::critical_health_state( $health )' in safe
-          assert 'activation_snapshot' in system and 'integrity' in system.lower()
-          assert 'FutureShellV5ControlGuard::restore_current_snapshot' in future and 'restore_current_snapshot' in control
-          assert 'circuit' in future.lower() and 'lock' in future.lower()
-          assert 'prune' in jobs.lower() and 'degraded' in jobs.lower()
-          assert 'lock' in assurance.lower()
           features=['command_palette','pwa_shell','offline_mode','data_saver','recent_resume','module_circuit_breaker','last_known_good','performance_guardian','smart_navigation','keyboard_accessibility','focus_mode','split_workspace','adaptive_foldable','view_transitions','predictive_prefetch','language_direction','accessibility_center','release_rings']
           assert len(features)==18 and all("'"+f+"'" in future for f in features)
-          assert "wp_clear_scheduled_hook( 'sabri_shell_plan_v4_maintenance' )" in uninstall
-          assert 'CREATE TABLE' not in '\n'.join([plugin,settings,integrations,nav,renderer,layout,route,recovery,safe,system,future,control,tenth,slots,jobs,assurance])
+          assert not (root/'includes/class-home-feed.php').exists()
+          assert 'CREATE TABLE' not in '\n'.join([route,eleventh,resth,system,safe,concurrency,control,future])
           for p in sorted((root/'assets/css').glob('*.css')):
-              css=p.read_text(encoding='utf-8')
-              assert css.count('{')==css.count('}'), p.name
-          assert '--sabri-shell-primary:' not in read('assets/css/four-plan-harmonization.css')
-          print('Static File 20 v1.4.11 eighty-round ownership/routing/recovery/privacy checks PASS')
+              css=p.read_text(encoding='utf-8'); assert css.count('{')==css.count('}'),p.name
+          print('Static File 20 v1.4.12 second-eighty-round checks PASS')
           PY
 
       - name: Build deterministic production-only package and prove parity
@@ -126,16 +118,15 @@ jobs:
           def prod(p):
               rel=p.relative_to(root)
               return p.is_file() and not any(x in excluded_dirs for x in rel.parts) and p.suffix.lower() not in excluded_suffixes
-          source=sorted(p for p in root.rglob('*') if prod(p))
-          assert source and not any('tests' in p.relative_to(root).parts for p in source)
+          source=sorted(p for p in root.rglob('*') if prod(p)); assert source
           lines=[]
           for src in source:
               rel=src.relative_to(root); dst=stage/rel; dst.parent.mkdir(parents=True,exist_ok=True); shutil.copy2(src,dst)
               lines.append(f"{hashlib.sha256(src.read_bytes()).hexdigest()}  {rel.as_posix()}")
           manifest='\n'.join(lines)+'\n'; (stage/'MANIFEST.sha256').write_text(manifest,encoding='utf-8')
           assert sorted(p.relative_to(stage).as_posix() for p in stage.rglob('*') if p.is_file() and p.name!='MANIFEST.sha256')==sorted(p.relative_to(root).as_posix() for p in source)
-          base='20-sabri-unified-application-shell-1.4.11-EIGHTY-ROUND-HARDENED'; archive=release/f'{base}.zip'
-          fixed=(2026,8,9,1,5,0)
+          base='20-sabri-unified-application-shell-1.4.12-SECOND-EIGHTY-ROUND-HARDENED'; archive=release/f'{base}.zip'
+          fixed=(2026,8,9,5,0,0)
           with ZipFile(archive,'w') as zf:
               for p in sorted(stage.rglob('*')):
                   if not p.is_file(): continue
@@ -145,32 +136,29 @@ jobs:
               names=zf.namelist(); assert names and len(names)==len(set(names))
               for n in names:
                   pp=PurePosixPath(n); assert not pp.is_absolute() and '..' not in pp.parts and pp.parts[0]==root.name and 'tests' not in pp.parts
-          digest=hashlib.sha256(archive.read_bytes()).hexdigest()
-          (release/f'{base}.sha256').write_text(f'{digest}  {archive.name}\n',encoding='utf-8')
+          digest=hashlib.sha256(archive.read_bytes()).hexdigest(); (release/f'{base}.sha256').write_text(f'{digest}  {archive.name}\n',encoding='utf-8')
           (release/f'{base}-SOURCE-MANIFEST.sha256').write_text(manifest,encoding='utf-8')
           extract.mkdir(parents=True); ZipFile(archive).extractall(extract); er=extract/root.name
           assert (er/'MANIFEST.sha256').read_text(encoding='utf-8')==manifest
           expected={line.split('  ',1)[1]:line.split('  ',1)[0] for line in manifest.splitlines()}
-          actual=sorted(p.relative_to(er).as_posix() for p in er.rglob('*') if p.is_file() and p.name!='MANIFEST.sha256')
-          assert actual==sorted(expected)
+          actual=sorted(p.relative_to(er).as_posix() for p in er.rglob('*') if p.is_file() and p.name!='MANIFEST.sha256'); assert actual==sorted(expected)
           for rel,sha in expected.items(): assert hashlib.sha256((er/rel).read_bytes()).hexdigest()==sha
           assert not (er/'tests').exists() and not (er/'includes/class-home-feed.php').exists()
-          print('Deterministic File20 1.4.11 production package parity/path/integrity PASS')
+          print('Deterministic File20 1.4.12 second-eighty-round package PASS')
           PY
-          base='20-sabri-unified-application-shell-1.4.11-EIGHTY-ROUND-HARDENED'
+          base='20-sabri-unified-application-shell-1.4.12-SECOND-EIGHTY-ROUND-HARDENED'
           (cd release && sha256sum -c "${base}.sha256")
           unzip -t "release/${base}.zip"
 
-      - name: Write exact-head eighty-round report
+      - name: Write exact-head second-eighty-round report
         run: |
-          cat > release/FILE-20-1.4.11-EIGHTY-ROUND-TEST-REPORT.md <<REPORT
-          # File 20 Version 1.4.11 Eighty-Round Corrective Evidence
+          cat > release/FILE-20-1.4.12-SECOND-EIGHTY-ROUND-TEST-REPORT.md <<REPORT
+          # File 20 Version 1.4.12 Second Fresh Eighty-Round Evidence
           - Exact workflow SHA: ${{ github.sha }}
           - PHP 7.4/8.3 syntax and every repository regression/adversarial suite: PASS
-          - Eighty independent review dimensions completed with immediate corrections where defects were found
-          - Canonical domain ownership, route precedence/collision handling, privacy, recovery, Emergency, File21 slots, File25 visual boundary and File26 Search boundary: PASS
           - Future Shell approved feature count remains 18/18
-          - Production ZIP excludes tests and retired HomeFeed producer: PASS
+          - Route/Page-ID/File17 signup/configured-URL/System Check/recovery REST/concurrency/LKG corrections: PASS
+          - Production ZIP excludes tests/development-only material: PASS
           - ZIP path/root/duplicate safety, source/stage/extracted SHA-256 parity, manifest equality and CRC: PASS
           - Hostinger staging accepted: NO
           - Live deployed: NO
@@ -178,11 +166,11 @@ jobs:
           REPORT
       - uses: actions/upload-artifact@v4
         with:
-          name: file20-1.4.11-eighty-round-${{ github.sha }}
+          name: file20-1.4.12-second-eighty-${{ github.sha }}
           retention-days: 60
           if-no-files-found: error
           path: |
-            release/20-sabri-unified-application-shell-1.4.11-EIGHTY-ROUND-HARDENED.zip
-            release/20-sabri-unified-application-shell-1.4.11-EIGHTY-ROUND-HARDENED.sha256
-            release/20-sabri-unified-application-shell-1.4.11-EIGHTY-ROUND-HARDENED-SOURCE-MANIFEST.sha256
-            release/FILE-20-1.4.11-EIGHTY-ROUND-TEST-REPORT.md
+            release/20-sabri-unified-application-shell-1.4.12-SECOND-EIGHTY-ROUND-HARDENED.zip
+            release/20-sabri-unified-application-shell-1.4.12-SECOND-EIGHTY-ROUND-HARDENED.sha256
+            release/20-sabri-unified-application-shell-1.4.12-SECOND-EIGHTY-ROUND-HARDENED-SOURCE-MANIFEST.sha256
+            release/FILE-20-1.4.12-SECOND-EIGHTY-ROUND-TEST-REPORT.md

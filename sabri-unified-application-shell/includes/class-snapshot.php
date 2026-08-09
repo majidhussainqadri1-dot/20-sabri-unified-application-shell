@@ -63,6 +63,24 @@ final class Snapshot {
 		return hash_equals( hash( 'sha256', wp_json_encode( $snapshot ) ), $hash );
 	}
 
+	/** Verify an option is exactly present/absent with the intended value. */
+	private static function option_matches( $option, $exists, $value = null ) {
+		$sentinel = new \stdClass();
+		$stored = get_option( $option, $sentinel );
+		if ( ! $exists ) {
+			return $stored === $sentinel;
+		}
+		return $stored !== $sentinel && $stored === $value;
+	}
+
+	/** Record a fail-closed legacy rollback error without exposing state. */
+	private static function rollback_failed( $stage ) {
+		if ( class_exists( __NAMESPACE__ . '\\PlanV4Audit', false ) ) {
+			PlanV4Audit::record( 'activation_snapshot_rollback_failed', array( 'stage' => sanitize_key( (string) $stage ), 'format_version' => self::FORMAT_VERSION ) );
+		}
+		return false;
+	}
+
 	/**
 	 * Legacy convenience rollback now obeys the same File-20-only boundaries.
 	 * New operator workflows should use PlanV4Recovery preview/execute instead.
@@ -86,25 +104,31 @@ final class Snapshot {
 				/* Never erase an active Emergency Disable flag through legacy activation rollback. */
 				if ( $emergency_before ) { return false; }
 				delete_option( Defaults::OPTION_NAME );
+				if ( ! self::option_matches( Defaults::OPTION_NAME, false ) ) { return self::rollback_failed( 'settings-delete' ); }
 			} else {
 				if ( ! is_array( $snapshot['settings'] ) ) { return false; }
 				$restored_settings = $snapshot['settings'];
 				$restored_settings['emergency_disabled'] = $emergency_before;
 				update_option( Defaults::OPTION_NAME, $restored_settings, false );
+				if ( ! self::option_matches( Defaults::OPTION_NAME, true, $restored_settings ) ) { return self::rollback_failed( 'settings-write' ); }
 			}
 		}
 		if ( class_exists( __NAMESPACE__ . '\\FutureShellV5', false ) && array_key_exists( 'future_settings', $snapshot ) ) {
 			if ( null === $snapshot['future_settings'] ) {
 				delete_option( FutureShellV5::OPTION );
+				if ( ! self::option_matches( FutureShellV5::OPTION, false ) ) { return self::rollback_failed( 'future-settings-delete' ); }
 			} else {
 				update_option( FutureShellV5::OPTION, $snapshot['future_settings'], false );
+				if ( ! self::option_matches( FutureShellV5::OPTION, true, $snapshot['future_settings'] ) ) { return self::rollback_failed( 'future-settings-write' ); }
 			}
 		}
 		if ( array_key_exists( 'flush_scheduled', $snapshot ) ) {
 			if ( null === $snapshot['flush_scheduled'] ) {
 				delete_option( 'sabri_shell_flush_rewrite_rules' );
+				if ( ! self::option_matches( 'sabri_shell_flush_rewrite_rules', false ) ) { return self::rollback_failed( 'rewrite-flag-delete' ); }
 			} else {
 				update_option( 'sabri_shell_flush_rewrite_rules', $snapshot['flush_scheduled'], false );
+				if ( ! self::option_matches( 'sabri_shell_flush_rewrite_rules', true, $snapshot['flush_scheduled'] ) ) { return self::rollback_failed( 'rewrite-flag-write' ); }
 			}
 		}
 
@@ -115,8 +139,9 @@ final class Snapshot {
 		Integrations::invalidate_cache();
 		PlanV4PrivacyCache::purge();
 		update_option( 'sabri_shell_flush_rewrite_rules', 1, false );
+		if ( ! self::option_matches( 'sabri_shell_flush_rewrite_rules', true, 1 ) ) { return self::rollback_failed( 'rewrite-flag-schedule' ); }
 		if ( class_exists( __NAMESPACE__ . '\\PlanV4Audit', false ) ) {
-			PlanV4Audit::record( 'activation_snapshot_rollback', array( 'format_version' => self::FORMAT_VERSION, 'cache_purged' => true ) );
+			PlanV4Audit::record( 'activation_snapshot_rollback', array( 'format_version' => self::FORMAT_VERSION, 'cache_purged' => true, 'post_write_verified' => true ) );
 		}
 		return true;
 	}
