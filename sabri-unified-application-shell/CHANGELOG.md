@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.4.11 — 2026-08-09 — Eighty-Round Corrective Consolidation
+
+- Reopened merged `1.4.10` for eighty independent review passes; previous green CI was historical evidence only.
+- Consolidated File 20 ownership boundaries directly into core code, including File21 Home/News, File25 visual, File26 Search and File00 privileged-identity truth.
+- Advanced settings schema to 5 and enforced retired/inert domain-owned state on all File20 settings writes.
+- Hardened routing uniqueness/owner/access validation, provider semantic-version truth, Minimal/Immersive classification, right-sidebar ownership, public profile/doctor projection and safe action URL handoff.
+- Hardened recovery snapshots, rollback allowlists/smoke tests, settings-row concurrency, LKG compatibility entry points, circuit-breaker state, assurance queue serialization and dynamic shortcode cache cleanup.
+- Removed the retired local HomeFeed source file and dead/legacy admin/mobile/appearance paths.
+- Preserved exactly eighteen Future Shell v5 enhancements and added no companion-domain backend.
+- Hostinger staging, real companion/browser/accessibility testing, backup/restore/rollback rehearsal, Founder acceptance, live deployment and operational acceptance remain separate gates.
+
 ## 1.4.10 — 2026-08-09 — Tenth Fresh Ten-Round Corrective Hardening
 
 - Reopened merged `1.4.9` from scratch against File20 v5.0, the central QA/ownership constitution, File21 native-slot law and the latest reviewed File00 evidence.

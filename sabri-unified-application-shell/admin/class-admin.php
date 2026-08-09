@@ -30,7 +30,6 @@ final class Admin {
 			'right-sidebar' => __( 'Right Sidebar', 'sabri-unified-application-shell' ),
 			'mobile'        => __( 'Mobile', 'sabri-unified-application-shell' ),
 			'integrations'  => __( 'Integrations', 'sabri-unified-application-shell' ),
-			'appearance'    => __( 'Appearance', 'sabri-unified-application-shell' ),
 			'system-check'  => __( 'System Check', 'sabri-unified-application-shell' ),
 			'repair'        => __( 'Repair', 'sabri-unified-application-shell' ),
 			'safe-mode'     => __( 'Safe Mode', 'sabri-unified-application-shell' ),
@@ -44,9 +43,6 @@ final class Admin {
 	 */
 	public static function register() {
 		add_action( 'admin_menu', array( __CLASS__, 'menu' ) );
-		add_action( 'admin_post_sabri_shell_repair', array( __CLASS__, 'handle_repair' ) );
-		add_action( 'admin_post_sabri_shell_rollback', array( __CLASS__, 'handle_rollback' ) );
-		add_action( 'admin_post_sabri_shell_emergency', array( __CLASS__, 'handle_emergency' ) );
 	}
 
 	/**
@@ -94,8 +90,9 @@ final class Admin {
 		if ( in_array( $active, array( 'system-check', 'repair' ), true ) ) {
 			self::render_special_tab( $active, $settings );
 		} else {
-			echo '<form method="post" action="options.php">';
+			echo '<form method="post" action="options.php" data-sabri-shell-settings>';
 			settings_fields( 'sabri_shell_settings' );
+			echo '<input type="hidden" name="sabri_shell_settings_row_version" value="' . esc_attr( PlanV4SettingsConcurrency::current_version() ) . '">';
 			echo '<input type="hidden" name="' . esc_attr( Defaults::OPTION_NAME ) . '[_active_tab]" value="' . esc_attr( $active ) . '">';
 			self::render_tab( $active, $settings );
 			submit_button();
@@ -164,9 +161,6 @@ final class Admin {
 				break;
 			case 'integrations':
 				self::integrations( $settings );
-				break;
-			case 'appearance':
-				self::appearance( $settings );
 				break;
 			case 'safe-mode':
 				self::safe_mode( $settings );
@@ -248,7 +242,6 @@ final class Admin {
 		foreach ( array( 'search', 'create', 'messages', 'notifications', 'help', 'language', 'profile' ) as $key ) {
 			self::checkbox( 'header[' . $key . ']', ucfirst( $key ), $header[ $key ] );
 		}
-		self::textarea( 'header[allowed_roles]', __( 'Allowed Create roles', 'sabri-unified-application-shell' ), implode( "\n", $header['allowed_roles'] ), __( 'Existing role slugs only. The shell does not grant publishing capabilities.', 'sabri-unified-application-shell' ) );
 	}
 
 	/**
@@ -314,7 +307,6 @@ final class Admin {
 			}
 		}
 		self::textarea( 'right_sidebar[announcement]', __( 'Announcement', 'sabri-unified-application-shell' ), $settings['right_sidebar']['announcement'] );
-		self::text( 'right_sidebar[emergency_notice]', __( 'Emergency notice', 'sabri-unified-application-shell' ), $settings['right_sidebar']['emergency_notice'] );
 	}
 
 	/**
@@ -345,35 +337,13 @@ final class Admin {
 		foreach ( array( 'notifications', 'network', 'messages', 'marketplace', 'appointments', 'language' ) as $key ) {
 			echo '<tr><th>' . esc_html( ucfirst( $key ) ) . '</th><td>' . esc_html( ! empty( $detected[ $key ] ) ? __( 'Detected', 'sabri-unified-application-shell' ) : __( 'Not detected', 'sabri-unified-application-shell' ) ) . '</td></tr>';
 		}
-		echo '<tr><th>' . esc_html__( 'Doctor roles', 'sabri-unified-application-shell' ) . '</th><td>' . esc_html( implode( ', ', $detected['doctor_roles'] ) ) . '</td></tr>';
-		echo '<tr><th>' . esc_html__( 'Verified doctor roles', 'sabri-unified-application-shell' ) . '</th><td>' . esc_html( implode( ', ', $detected['verified_doctor_roles'] ) ) . '</td></tr>';
 		echo '<tr><th>' . esc_html__( 'Clinic post types', 'sabri-unified-application-shell' ) . '</th><td>' . esc_html( implode( ', ', $detected['clinic_post_types'] ) ) . '</td></tr>';
 		echo '</tbody></table>';
-		echo '<h3>' . esc_html__( 'Configured functions', 'sabri-unified-application-shell' ) . '</h3>';
-		foreach ( $settings['integrations']['functions'] as $key => $function ) {
-			self::text( 'integrations[functions][' . $key . ']', ucfirst( $key ), $function );
-		}
 		echo '<h3>' . esc_html__( 'Configured URLs', 'sabri-unified-application-shell' ) . '</h3>';
 		foreach ( $settings['integrations']['urls'] as $key => $url ) {
 			self::url( 'integrations[urls][' . $key . ']', ucfirst( $key ), $url );
 		}
 		echo '<p>' . esc_html__( 'The shell only links to existing integrations. It does not create duplicate messaging, appointment, marketplace, notification, publishing, or profile databases.', 'sabri-unified-application-shell' ) . '</p>';
-	}
-
-	/**
-	 * Appearance tab.
-	 *
-	 * @param array<string,mixed> $settings Settings.
-	 * @return void
-	 */
-	private static function appearance( array $settings ) {
-		$appearance = $settings['appearance'];
-		echo '<h2>' . esc_html__( 'Appearance', 'sabri-unified-application-shell' ) . '</h2>';
-		self::select( 'appearance[color_mode]', __( 'Color mode', 'sabri-unified-application-shell' ), $appearance['color_mode'], array( 'light' => __( 'Light', 'sabri-unified-application-shell' ), 'dark' => __( 'Dark', 'sabri-unified-application-shell' ), 'system' => __( 'System', 'sabri-unified-application-shell' ) ) );
-		self::select( 'appearance[density]', __( 'Density', 'sabri-unified-application-shell' ), $appearance['density'], array( 'comfortable' => __( 'Comfortable', 'sabri-unified-application-shell' ), 'compact' => __( 'Compact', 'sabri-unified-application-shell' ) ) );
-		self::text( 'appearance[primary_color]', __( 'Primary bright orange', 'sabri-unified-application-shell' ), $appearance['primary_color'] );
-		self::number( 'appearance[border_radius]', __( 'Border radius', 'sabri-unified-application-shell' ), $appearance['border_radius'], 0, 20 );
-		self::text( 'appearance[font_scale]', __( 'Font scale', 'sabri-unified-application-shell' ), $appearance['font_scale'] );
 	}
 
 	/**
@@ -383,10 +353,9 @@ final class Admin {
 	 * @return void
 	 */
 	private static function safe_mode( array $settings ) {
+		unset( $settings );
 		echo '<h2>' . esc_html__( 'Safe Mode', 'sabri-unified-application-shell' ) . '</h2>';
-		echo '<p>' . esc_html__( 'Administrators can add ?sabri_shell_safe=1 to a public URL to suppress the shell for that request.', 'sabri-unified-application-shell' ) . '</p>';
-		echo '<p>' . esc_html__( 'A developer can also define SABRI_SHELL_DISABLE as true in wp-config.php for an emergency constant kill switch.', 'sabri-unified-application-shell' ) . '</p>';
-		self::checkbox( 'emergency_disabled', __( 'Emergency Disable', 'sabri-unified-application-shell' ), $settings['emergency_disabled'] );
+		echo '<p>' . esc_html__( 'Safe Mode URLs are nonce-bound and administrator-only. Use the hardened controls on this page. A developer may also define SABRI_SHELL_DISABLE as true in wp-config.php for an emergency constant kill switch.', 'sabri-unified-application-shell' ) . '</p>';
 	}
 
 	/**
@@ -432,20 +401,9 @@ final class Admin {
 	 * @return void
 	 */
 	private static function repair( array $settings ) {
-		echo '<h2>' . esc_html__( 'Repair', 'sabri-unified-application-shell' ) . '</h2>';
-		echo '<p>' . esc_html__( 'Complete Repair merges missing defaults, clears shell caches, schedules one rewrite-rule flush, revalidates schema, and refreshes integration detection. It never deletes posts, pages, users, media, comments, or companion-plugin data.', 'sabri-unified-application-shell' ) . '</p>';
-		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
-		wp_nonce_field( 'sabri_shell_repair' );
-		echo '<input type="hidden" name="action" value="sabri_shell_repair">';
-		submit_button( __( 'Run Complete Repair', 'sabri-unified-application-shell' ), 'primary', 'submit', false );
-		echo '</form>';
-		echo '<hr>';
-		echo '<p>' . esc_html__( 'Rollback restores only shell-owned settings from the activation snapshot.', 'sabri-unified-application-shell' ) . '</p>';
-		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
-		wp_nonce_field( 'sabri_shell_rollback' );
-		echo '<input type="hidden" name="action" value="sabri_shell_rollback">';
-		submit_button( __( 'Rollback Shell Settings', 'sabri-unified-application-shell' ), 'secondary', 'submit', false );
-		echo '</form>';
+		unset( $settings );
+		echo '<h2>' . esc_html__( 'Repair and Rollback', 'sabri-unified-application-shell' ) . '</h2>';
+		echo '<p>' . esc_html__( 'Use the hardened dry-run repair and schema-compatible rollback controls shown above. Legacy one-click recovery forms are retired.', 'sabri-unified-application-shell' ) . '</p>';
 	}
 
 	/**
@@ -454,10 +412,7 @@ final class Admin {
 	 * @return void
 	 */
 	public static function handle_repair() {
-		self::require_manage_options( 'sabri_shell_repair' );
-		Repair::run();
-		wp_safe_redirect( add_query_arg( array( 'page' => 'sabri-shell', 'tab' => 'repair', 'sabri_shell_notice' => 'repaired' ), admin_url( 'admin.php' ) ) );
-		exit;
+		wp_die( esc_html__( 'This legacy repair handler is retired. Use the hardened File 20 recovery controls.', 'sabri-unified-application-shell' ) );
 	}
 
 	/**
@@ -466,10 +421,7 @@ final class Admin {
 	 * @return void
 	 */
 	public static function handle_rollback() {
-		self::require_manage_options( 'sabri_shell_rollback' );
-		$success = Snapshot::rollback();
-		wp_safe_redirect( add_query_arg( array( 'page' => 'sabri-shell', 'tab' => 'repair', 'sabri_shell_notice' => $success ? 'rollback-success' : 'rollback-missing' ), admin_url( 'admin.php' ) ) );
-		exit;
+		wp_die( esc_html__( 'This legacy rollback handler is retired. Use the hardened File 20 recovery controls.', 'sabri-unified-application-shell' ) );
 	}
 
 	/**
@@ -478,12 +430,7 @@ final class Admin {
 	 * @return void
 	 */
 	public static function handle_emergency() {
-		self::require_manage_options( 'sabri_shell_emergency' );
-		$settings                       = Settings::get();
-		$settings['emergency_disabled'] = ! empty( $_POST['disable'] );
-		update_option( Defaults::OPTION_NAME, $settings, false );
-		wp_safe_redirect( add_query_arg( array( 'page' => 'sabri-shell', 'tab' => 'safe-mode', 'sabri_shell_notice' => $settings['emergency_disabled'] ? 'emergency-on' : 'emergency-off' ), admin_url( 'admin.php' ) ) );
-		exit;
+		wp_die( esc_html__( 'This legacy emergency handler is retired. Use the hardened File 20 recovery controls.', 'sabri-unified-application-shell' ) );
 	}
 
 	/**

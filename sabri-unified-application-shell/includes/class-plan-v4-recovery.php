@@ -209,9 +209,9 @@ final class PlanV4Recovery {
                 return new \WP_Error( 'sabri_shell_snapshot_changed', __( 'The selected rollback snapshot is no longer available or valid.', 'sabri-unified-application-shell' ), array( 'status' => 409 ) );
             }
             $pre = self::create_snapshot( 'pre-rollback' );
+            $restorable = self::owned_options();
             foreach ( (array) $target['state'] as $option => $entry ) {
-                if ( in_array( $option, array( PlanV4SettingsConcurrency::VERSION_OPTION, SafeMode::EMERGENCY_META_OPTION ), true ) ) { continue; }
-                if ( 0 !== strpos( $option, 'sabri_shell_' ) && 0 !== strpos( $option, 'sabri_unified_shell_' ) ) { continue; }
+                if ( ! in_array( $option, $restorable, true ) ) { continue; }
                 if ( ! is_array( $entry ) || ! array_key_exists( 'exists', $entry ) || ! array_key_exists( 'value', $entry ) ) { throw new \RuntimeException( 'ambiguous_snapshot_state' ); }
                 if ( ! self::restore_option_entry( $option, $entry, $emergency_before ) ) { throw new \RuntimeException( 'rollback_option_verification_failed' ); }
             }
@@ -224,7 +224,13 @@ final class PlanV4Recovery {
             Navigation::invalidate_cache();
             Integrations::invalidate_cache();
             PlanV4PrivacyCache::purge();
-            $smoke = class_exists( __NAMESPACE__ . '\\Layout', false ) && in_array( Layout::current_mode(), Layout::modes(), true );
+            $restored_settings = Settings::get();
+            $smoke = class_exists( __NAMESPACE__ . '\\Layout', false )
+                && in_array( Layout::current_mode(), Layout::modes(), true )
+                && isset( $restored_settings['schema_version'] )
+                && Defaults::SCHEMA_VERSION === absint( $restored_settings['schema_version'] )
+                && is_array( Navigation::resolved() )
+                && PlanV4Audit::verify_chain();
             if ( ! $smoke ) {
                 do_action( 'sabri_shell_rollback_failed', array( 'snapshot_id' => $snapshot_id, 'pre_rollback_snapshot_id' => $pre['id'] ) );
                 PlanV4Audit::record( 'rollback_failed', array( 'snapshot_id' => $snapshot_id, 'pre_rollback_snapshot_id' => $pre['id'], 'reason' => 'smoke-test' ) );
@@ -277,6 +283,8 @@ final class PlanV4Recovery {
     public static function create_snapshot( $reason ) {
         $state = array();
         foreach ( self::owned_options() as $option ) { $state[ $option ] = self::capture_option_state( $option ); }
+        $captured_settings = isset( $state[ Defaults::OPTION_NAME ]['value'] ) && is_array( $state[ Defaults::OPTION_NAME ]['value'] ) ? $state[ Defaults::OPTION_NAME ]['value'] : array();
+        $captured_schema = isset( $captured_settings['schema_version'] ) ? absint( $captured_settings['schema_version'] ) : 0;
         $snapshot = array(
             'id' => function_exists( 'wp_generate_uuid4' ) ? wp_generate_uuid4() : uniqid( 'f20-snapshot-', true ),
             'reason' => sanitize_key( $reason ),
@@ -285,7 +293,7 @@ final class PlanV4Recovery {
             'source' => 'file-20-plan-v4-recovery',
             'snapshot_format' => self::SNAPSHOT_FORMAT,
             'plugin_version' => defined( 'SABRI_SHELL_VERSION' ) ? SABRI_SHELL_VERSION : '0.0.0',
-            'schema_version' => Defaults::SCHEMA_VERSION,
+            'schema_version' => $captured_schema,
             'settings_row_version' => PlanV4SettingsConcurrency::current_version(),
             'emergency_state' => SafeMode::emergency_disabled() ? 'preserved-disabled' : 'preserved-enabled',
             'contract_fingerprint' => hash( 'sha256', wp_json_encode( PlanV4ContractHealth::providers() ) ),
@@ -298,7 +306,7 @@ final class PlanV4Recovery {
         $snapshots = (array) get_option( self::SNAPSHOTS, array() );
         $snapshots[] = $snapshot;
         update_option( self::SNAPSHOTS, array_slice( $snapshots, -self::MAX_SNAPSHOTS ), false );
-        PlanV4Audit::record( 'snapshot_created', array( 'snapshot_id' => $snapshot['id'], 'reason' => $snapshot['reason'], 'schema_version' => Defaults::SCHEMA_VERSION, 'snapshot_format' => self::SNAPSHOT_FORMAT, 'settings_row_version' => $snapshot['settings_row_version'] ) );
+        PlanV4Audit::record( 'snapshot_created', array( 'snapshot_id' => $snapshot['id'], 'reason' => $snapshot['reason'], 'schema_version' => $captured_schema, 'snapshot_format' => self::SNAPSHOT_FORMAT, 'settings_row_version' => $snapshot['settings_row_version'] ) );
         return $snapshot;
     }
 
@@ -328,15 +336,15 @@ final class PlanV4Recovery {
             if ( count( $rows ) >= self::MAX_DIFF_ROWS ) { break; }
             if ( ! is_array( $config ) ) { continue; }
             $page_id = isset( $config['page_id'] ) ? absint( $config['page_id'] ) : 0;
-            if ( ! $page_id || self::valid_bound_page( $page_id ) ) { continue; }
+            if ( ! $page_id || self::valid_bound_page( $key, $page_id ) ) { continue; }
             $rows[] = array( 'path' => 'navigation.' . sanitize_key( (string) $key ) . '.page_id', 'before' => $page_id, 'after' => 0, 'reason' => 'configured-page-is-not-a-published-wordpress-page' );
         }
         return $rows;
     }
 
-    private static function valid_bound_page( $page_id ) {
+    private static function valid_bound_page( $key, $page_id ) {
         $post = get_post( absint( $page_id ) );
-        return $post && 'page' === $post->post_type && 'publish' === get_post_status( $post );
+        return $post && 'page' === $post->post_type && 'publish' === get_post_status( $post ) && Navigation::page_owner_compatible( sanitize_key( (string) $key ), absint( $page_id ) );
     }
 
     private static function quarantine_stale_page_bindings() {
@@ -347,7 +355,7 @@ final class PlanV4Recovery {
         foreach ( $navigation as $key => $config ) {
             if ( ! is_array( $config ) ) { continue; }
             $page_id = isset( $config['page_id'] ) ? absint( $config['page_id'] ) : 0;
-            if ( $page_id && ! self::valid_bound_page( $page_id ) ) { $after['navigation'][ $key ]['page_id'] = 0; }
+            if ( $page_id && ! self::valid_bound_page( $key, $page_id ) ) { $after['navigation'][ $key ]['page_id'] = 0; }
         }
         if ( $before === $after ) { return true; }
         update_option( Defaults::OPTION_NAME, $after, false );
@@ -364,8 +372,7 @@ final class PlanV4Recovery {
             case 'plan_v4_normalize_settings':
                 $current = get_option( Defaults::OPTION_NAME, array() );
                 $current = is_array( $current ) ? $current : array();
-                $target = Settings::deep_merge( Defaults::settings(), $current );
-                $target['schema_version'] = Defaults::SCHEMA_VERSION;
+                $target = Settings::enforce_owned_invariants( Settings::deep_merge( Defaults::settings(), $current ) );
                 return self::diff_values( $current, $target );
             case 'plan_v4_quarantine_stale_page_bindings': return self::stale_page_binding_diff();
             case 'plan_v4_rebuild_contract_health': return array( array( 'path' => 'provider_health_cache', 'before' => 'current-cached-evidence', 'after' => 'invalidated-and-authoritatively-rechecked' ) );
@@ -428,8 +435,14 @@ final class PlanV4Recovery {
 
     private static function overall_state() {
         if ( ! PlanV4Audit::verify_chain() ) { return 'repair_required'; }
-        foreach ( PlanV4ContractHealth::health() as $provider ) {
-            if ( isset( $provider['state'] ) && in_array( $provider['state'], array( 'collision', 'error', 'invalid' ), true ) ) { return 'degraded'; }
+        $health = PlanV4ContractHealth::health();
+        if ( class_exists( __NAMESPACE__ . '\\FutureShellV5TenthHardening', false ) ) {
+            $critical = FutureShellV5TenthHardening::critical_health_state( $health );
+            if ( 'healthy' !== $critical ) { return $critical; }
+        }
+        foreach ( (array) $health as $provider ) {
+            $state = is_array( $provider ) && isset( $provider['state'] ) ? sanitize_key( (string) $provider['state'] ) : 'unknown';
+            if ( ! in_array( $state, array( 'healthy', 'disabled' ), true ) ) { return 'degraded'; }
         }
         return 'healthy';
     }

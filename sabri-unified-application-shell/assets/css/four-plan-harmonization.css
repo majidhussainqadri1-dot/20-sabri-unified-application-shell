@@ -1,10 +1,6 @@
 /* File 20 v1.3.0 — latest Founder/recovered/Top-20 harmonization guardrails. */
 
-/* Latest central directive: green is the continuity fallback; File 25 remains visual owner. */
-body.sabri-shell-enabled {
-	--sabri-shell-primary: #15803d;
-}
-
+/* File 25 owns the active visual token. Continuity fallback is injected only when File 25 is unavailable. */
 /* No page-level horizontal overflow may be created by shell chrome. */
 html,
 body.sabri-shell-enabled {

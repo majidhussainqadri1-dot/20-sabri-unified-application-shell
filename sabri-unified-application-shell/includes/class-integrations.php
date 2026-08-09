@@ -15,12 +15,20 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Detects companion modules without duplicating their backends.
  */
 final class Integrations {
+	const SHORTCODE_CACHE_KEYS_OPTION = 'sabri_shell_shortcode_cache_keys';
+	const MAX_SHORTCODE_CACHE_KEYS    = 64;
 	/**
 	 * Request-level detection cache.
 	 *
 	 * @var array<string,mixed>|null
 	 */
 	private static $detected = null;
+
+	/** @var array<string,string> Request-level shortcode lookup cache. */
+	private static $shortcode_lookup = array();
+
+	/** @var array<string,array<int,int>> Collision evidence keyed by shortcode set. */
+	private static $shortcode_collisions = array();
 
 	/**
 	 * Detect integration status.
@@ -33,19 +41,14 @@ final class Integrations {
 		}
 
 		$settings = Settings::get();
-		$roles    = self::roles();
-
 		self::$detected = array(
-			'notifications'         => self::has_configured_function( 'notifications', $settings ) || shortcode_exists( 'sabri_notifications' ) || shortcode_exists( 'sabri_notification_bell' ) || ( class_exists( 'SUN_Utils' ) && is_callable( array( 'SUN_Utils', 'page_url' ) ) ) || ! empty( $settings['integrations']['urls']['notifications'] ),
-			'network'               => self::has_configured_function( 'network', $settings ) || shortcode_exists( 'sabri_network' ) || class_exists( 'SN_Activator' ) || (int) get_option( 'sn_network_page_id', 0 ) > 0,
-			'messages'              => self::has_configured_function( 'messages', $settings ) || shortcode_exists( 'sabri_messages' ) || shortcode_exists( 'sabri_network' ) || class_exists( 'SN_Activator' ) || ! empty( $settings['integrations']['urls']['messages'] ),
+			'notifications'         => shortcode_exists( 'sabri_notifications' ) || shortcode_exists( 'sabri_notification_bell' ) || ( class_exists( 'SUN_Utils' ) && is_callable( array( 'SUN_Utils', 'page_url' ) ) ) || ! empty( $settings['integrations']['urls']['notifications'] ),
+			'network'               => shortcode_exists( 'sabri_network' ) || class_exists( 'SN_Activator' ) || (int) get_option( 'sn_network_page_id', 0 ) > 0,
+			'messages'              => shortcode_exists( 'sabri_messages' ) || shortcode_exists( 'sabri_network' ) || class_exists( 'SN_Activator' ) || ! empty( $settings['integrations']['urls']['messages'] ),
 			'marketplace'           => shortcode_exists( 'sabri_marketplace' ) || class_exists( 'SMP_Activator' ) || (int) get_option( 'smp_marketplace_page_id', 0 ) > 0,
-			'appointments'          => self::has_configured_function( 'appointments', $settings ) || shortcode_exists( 'swc_my_appointments' ) || shortcode_exists( 'swc_request_appointment' ) || ! empty( self::page_id( 'appointments' ) ) || ! empty( $settings['integrations']['urls']['appointments'] ),
+			'appointments'          => shortcode_exists( 'swc_my_appointments' ) || shortcode_exists( 'swc_request_appointment' ) || ! empty( self::page_id( 'appointments' ) ) || ! empty( $settings['integrations']['urls']['appointments'] ),
 			'language'              => '' !== self::language_switcher(),
-			'doctor_roles'          => array_values( array_intersect( self::doctor_role_candidates(), $roles ) ),
-			'verified_doctor_roles' => array_values( array_intersect( self::verified_doctor_role_candidates(), $roles ) ),
 			'clinic_post_types'     => self::existing_post_types( array( 'doctor', 'clinic', 'global_clinic', 'sabri_clinic' ) ),
-			'configured_functions'  => $settings['integrations']['functions'],
 			'configured_urls'       => $settings['integrations']['urls'],
 		);
 
@@ -59,6 +62,27 @@ final class Integrations {
 	 */
 	public static function invalidate_cache() {
 		self::$detected = null;
+		self::$shortcode_lookup = array();
+		self::$shortcode_collisions = array();
+		$keys = get_option( self::SHORTCODE_CACHE_KEYS_OPTION, array() );
+		if ( is_array( $keys ) ) {
+			foreach ( array_slice( array_values( array_unique( array_map( 'sanitize_key', $keys ) ) ), 0, self::MAX_SHORTCODE_CACHE_KEYS ) as $key ) {
+				if ( 0 === strpos( $key, 'sabri_shell_shortcode_page_' ) ) { delete_transient( $key ); }
+			}
+		}
+		delete_option( self::SHORTCODE_CACHE_KEYS_OPTION );
+	}
+
+	/** Track bounded dynamic shortcode transients so cache invalidation/uninstall is complete. */
+	private static function register_shortcode_cache_key( $key ) {
+		$key = sanitize_key( (string) $key );
+		if ( 0 !== strpos( $key, 'sabri_shell_shortcode_page_' ) ) { return; }
+		$keys = get_option( self::SHORTCODE_CACHE_KEYS_OPTION, array() );
+		$keys = is_array( $keys ) ? array_values( array_unique( array_filter( array_map( 'sanitize_key', $keys ) ) ) ) : array();
+		if ( ! in_array( $key, $keys, true ) ) {
+			$keys[] = $key;
+			update_option( self::SHORTCODE_CACHE_KEYS_OPTION, array_slice( $keys, -self::MAX_SHORTCODE_CACHE_KEYS ), false );
+		}
 	}
 
 	/**
@@ -149,8 +173,9 @@ final class Integrations {
 	 * @return string
 	 */
 	public static function auth_url( $kind, $redirect = '' ) {
-		$kind = sanitize_key( $kind );
-		$url  = self::page_url( $kind );
+		$kind     = sanitize_key( $kind );
+		$redirect = self::same_site_url( $redirect );
+		$url      = self::page_url( $kind );
 		$shortcodes = array(
 			'login'    => array( 'sabri_auth_login', 'sabri_login' ),
 			'signup'   => array( 'sabri_auth_signup', 'sabri_register' ),
@@ -188,20 +213,37 @@ final class Integrations {
 		if ( ! $user_id ) {
 			return '';
 		}
-		if ( class_exists( 'SDD_Helpers' ) && is_callable( array( 'SDD_Helpers', 'profile_url' ) ) ) {
-			return (string) \SDD_Helpers::profile_url( $user_id );
+		$assertions = self::membership_assertions( $user_id );
+		if ( ! self::assertions_allow_public_identity( $assertions ) ) {
+			return '';
 		}
-		if ( class_exists( 'SPD_Helpers' ) && is_callable( array( 'SPD_Helpers', 'profile_url' ) ) ) {
-			return (string) \SPD_Helpers::profile_url( $user_id );
+
+		foreach ( array(
+			array( 'SDD_Helpers', 'profile_url' ),
+			array( 'SPD_Helpers', 'profile_url' ),
+		) as $provider ) {
+			if ( class_exists( $provider[0] ) && is_callable( $provider ) ) {
+				$url = call_user_func( $provider, $user_id );
+				$url = self::same_site_url( $url );
+				if ( $url ) {
+					return $url;
+				}
+			}
 		}
 
 		$url  = self::page_url( 'profile' );
 		$user = get_userdata( $user_id );
 		if ( $url && $user ) {
-			return add_query_arg( 'user', $user->user_nicename, $url );
+			return self::same_site_url( add_query_arg( 'user', $user->user_nicename, $url ) );
 		}
 		$url = self::find_page_by_shortcodes( array( 'sabri_profile', 'sabri_member_profile' ) );
-		return $url ? $url : get_author_posts_url( $user_id );
+		if ( $url && $user ) {
+			return self::same_site_url( add_query_arg( 'user', $user->user_nicename, $url ) );
+		}
+
+		/* Never fall back to the generic WordPress author archive: File 03 owns
+		 * the public profile projection and may intentionally withhold it. */
+		return '';
 	}
 
 	/**
@@ -214,7 +256,8 @@ final class Integrations {
 		if ( ! $url ) {
 			$url = self::find_page_by_shortcodes( array( 'sabri_publish_form' ) );
 		}
-		return (string) apply_filters( 'sabri_shell_create_url', $url );
+		$url = apply_filters( 'sabri_shell_create_url', $url );
+		return self::same_site_url( $url );
 	}
 
 	/**
@@ -228,37 +271,39 @@ final class Integrations {
 		if ( 'notifications' === $key && class_exists( 'SUN_Utils' ) && is_callable( array( 'SUN_Utils', 'page_url' ) ) ) {
 			$url = \SUN_Utils::page_url();
 			if ( $url ) {
-				return (string) $url;
+				$url = self::same_site_url( $url );
+				if ( $url ) { return $url; }
 			}
 		}
 		if ( 'messages' === $key && class_exists( 'SN_Activator' ) && is_callable( array( 'SN_Activator', 'messages_url' ) ) ) {
 			$url = \SN_Activator::messages_url();
 			if ( $url ) {
-				return (string) $url;
+				$url = self::same_site_url( $url );
+				if ( $url ) { return $url; }
 			}
 		}
 		if ( 'network' === $key && class_exists( 'SN_Activator' ) && is_callable( array( 'SN_Activator', 'network_url' ) ) ) {
 			$url = \SN_Activator::network_url();
 			if ( $url ) {
-				return (string) $url;
+				$url = self::same_site_url( $url );
+				if ( $url ) { return $url; }
 			}
 		}
 		if ( 'messages' === $key && class_exists( 'SN_Activator' ) && is_callable( array( 'SN_Activator', 'network_url' ) ) ) {
 			$url = \SN_Activator::network_url();
 			if ( $url ) {
-				return (string) $url;
+				$url = self::same_site_url( $url );
+				if ( $url ) { return $url; }
 			}
 		}
 		if ( 'marketplace' === $key && class_exists( 'SMP_Activator' ) && is_callable( array( 'SMP_Activator', 'marketplace_url' ) ) ) {
-			$url = \SMP_Activator::marketplace_url();
-			if ( $url ) {
-				return (string) $url;
-			}
+			$url = self::same_site_url( \SMP_Activator::marketplace_url() );
+			if ( $url ) { return $url; }
 		}
 
 		$url = self::page_url( $key );
 		if ( $url ) {
-			return $url;
+			return self::same_site_url( $url );
 		}
 
 		$shortcodes = array(
@@ -268,7 +313,7 @@ final class Integrations {
 			'marketplace'   => array( 'sabri_marketplace' ),
 			'appointments'  => array( 'swc_my_appointments', 'swc_request_appointment' ),
 		);
-		return ! empty( $shortcodes[ $key ] ) ? self::find_page_by_shortcodes( $shortcodes[ $key ] ) : '';
+		return ! empty( $shortcodes[ $key ] ) ? self::same_site_url( self::find_page_by_shortcodes( $shortcodes[ $key ] ) ) : '';
 	}
 
 	/**
@@ -294,7 +339,7 @@ final class Integrations {
 		}
 		$contract = isset( $assertions['contract_version'] ) ? (string) $assertions['contract_version'] : '';
 		$subject  = isset( $assertions['user_id'] ) ? absint( $assertions['user_id'] ) : 0;
-		if ( $subject !== $user_id || '' === $contract || version_compare( $contract, '1.1.2', '<' ) ) {
+		if ( $subject !== $user_id || ! self::valid_semver( $contract ) || version_compare( $contract, '1.1.2', '<' ) ) {
 			return array( '_contract_error' => true );
 		}
 		return $assertions;
@@ -433,28 +478,24 @@ final class Integrations {
 
 		$founder          = self::is_founder( $user_id );
 		$approved_fields  = array();
-		$file03_available = class_exists( 'SPD_Verification_Adapter' ) && is_callable( array( 'SPD_Verification_Adapter', 'directory_eligible' ) );
+		$file03_available = class_exists( 'SPD_Verification_Adapter' )
+			&& is_callable( array( 'SPD_Verification_Adapter', 'directory_eligible' ) )
+			&& is_callable( array( 'SPD_Verification_Adapter', 'approved_fields' ) );
 
-		if ( $file03_available ) {
-			if ( ! $founder && ! \SPD_Verification_Adapter::directory_eligible( $user_id ) ) {
-				return array();
-			}
-			if ( is_callable( array( 'SPD_Verification_Adapter', 'approved_fields' ) ) ) {
-				$approved_fields = \SPD_Verification_Adapter::approved_fields( $user_id );
-				$approved_fields = is_array( $approved_fields ) ? $approved_fields : array();
-			}
-		} else {
-			$assertions = self::membership_assertions( $user_id );
-			if ( ! self::assertions_allow_public_identity( $assertions ) ) {
-				return array();
-			}
-			if ( ! $founder && ( 'doctor' !== ( $assertions['membership_type'] ?? '' ) || empty( $assertions['public_profile_allowed'] ) ) ) {
-				return array();
-			}
+		if ( ! $file03_available ) {
+			return array();
+		}
+		if ( ! $founder && ! \SPD_Verification_Adapter::directory_eligible( $user_id ) ) {
+			return array();
+		}
+		$approved_fields = \SPD_Verification_Adapter::approved_fields( $user_id );
+		$approved_fields = is_array( $approved_fields ) ? $approved_fields : array();
+		if ( empty( $approved_fields ) ) {
+			return array();
 		}
 
 		$data = array(
-			'name'      => (string) ( $approved_fields['display_name'] ?? $user->display_name ),
+			'name'      => (string) ( $approved_fields['display_name'] ?? '' ),
 			'profile'   => self::profile_url( $user_id ),
 			'country'   => (string) ( $approved_fields['country'] ?? '' ),
 			'city'      => (string) ( $approved_fields['city'] ?? '' ),
@@ -530,47 +571,51 @@ final class Integrations {
 		return '';
 	}
 
+
 	/**
-	 * Get available role names.
+	 * Consume File 07/native verified-doctor discovery without role-label scans.
 	 *
-	 * @return array<int,string>
+	 * @param int $limit Maximum results.
+	 * @return array<int,int>
 	 */
-	public static function roles() {
-		if ( ! function_exists( 'wp_roles' ) ) {
-			return array();
+	public static function verified_doctor_user_ids( $limit = 5 ) {
+		$limit = max( 1, min( 20, absint( $limit ) ) );
+		$ids = apply_filters( 'sabri_shell_verified_doctor_user_ids', array(), $limit );
+		if ( ! is_array( $ids ) ) { return array(); }
+		$out = array();
+		foreach ( array_values( array_unique( array_map( 'absint', $ids ) ) ) as $user_id ) {
+			if ( $user_id && self::is_verified_doctor( $user_id ) && self::doctor_public_data( $user_id ) ) {
+				$out[] = $user_id;
+			}
+			if ( count( $out ) >= $limit ) { break; }
 		}
-		$roles = wp_roles();
-		return $roles && ! empty( $roles->roles ) && is_array( $roles->roles ) ? array_keys( $roles->roles ) : array();
+		return $out;
 	}
 
-	/**
-	 * Candidate doctor roles across Membership Core and legacy modules.
-	 *
-	 * @return array<int,string>
-	 */
-	public static function doctor_role_candidates() {
-		return array( 'sabri_doctor', 'sabri_verified_doctor', 'sabri_doctor_pending', 'sabri_doctor_verified', 'doctor', 'verified_doctor', 'approved_doctor', 'founder' );
+
+	/** Accept only same-site HTTP(S) URLs for internal platform destinations. */
+	public static function same_site_url( $url ) {
+		$url = trim( (string) $url );
+		if ( '' === $url ) { return ''; }
+		if ( 0 === strpos( $url, '/' ) && 0 !== strpos( $url, '//' ) ) {
+			$url = home_url( $url );
+		}
+		$clean = esc_url_raw( $url, array( 'http', 'https' ) );
+		if ( ! $clean ) { return ''; }
+		$parts = wp_parse_url( $clean );
+		$home  = wp_parse_url( home_url( '/' ) );
+		if ( ! is_array( $parts ) || ! is_array( $home ) || empty( $parts['host'] ) || empty( $home['host'] ) ) { return ''; }
+		$scheme = isset( $parts['scheme'] ) ? strtolower( (string) $parts['scheme'] ) : '';
+		$home_scheme = isset( $home['scheme'] ) ? strtolower( (string) $home['scheme'] ) : '';
+		$port = isset( $parts['port'] ) ? absint( $parts['port'] ) : ( 'https' === $scheme ? 443 : 80 );
+		$home_port = isset( $home['port'] ) ? absint( $home['port'] ) : ( 'https' === $home_scheme ? 443 : 80 );
+		if ( ! in_array( $scheme, array( 'http', 'https' ), true ) || $scheme !== $home_scheme || strtolower( (string) $parts['host'] ) !== strtolower( (string) $home['host'] ) || $port !== $home_port ) { return ''; }
+		return wp_validate_redirect( $clean, '' );
 	}
 
-	/**
-	 * Candidate verified doctor roles.
-	 *
-	 * @return array<int,string>
-	 */
-	public static function verified_doctor_role_candidates() {
-		return array( 'sabri_verified_doctor', 'sabri_doctor_verified', 'verified_doctor', 'approved_doctor' );
-	}
-
-	/**
-	 * Determine whether a configured callback exists.
-	 *
-	 * @param string              $key Integration key.
-	 * @param array<string,mixed> $settings Settings.
-	 * @return bool
-	 */
-	private static function has_configured_function( $key, array $settings ) {
-		$function = isset( $settings['integrations']['functions'][ $key ] ) ? $settings['integrations']['functions'][ $key ] : '';
-		return $function && function_exists( $function );
+	/** Strict bounded semantic-version shape for executable contracts. */
+	private static function valid_semver( $version ) {
+		return is_string( $version ) && 1 === preg_match( '/^\\d+\\.\\d+\\.\\d+(?:[-+][0-9A-Za-z.-]+)?$/', $version );
 	}
 
 	/**
@@ -597,19 +642,34 @@ final class Integrations {
 	 */
 	public static function find_page_by_shortcodes( array $shortcodes ) {
 		$shortcodes = array_values( array_unique( array_filter( array_map( 'sanitize_key', $shortcodes ) ) ) );
+		$shortcodes = array_values( array_filter( $shortcodes, 'shortcode_exists' ) );
 		if ( empty( $shortcodes ) ) {
 			return '';
 		}
+		sort( $shortcodes, SORT_STRING );
+		$signature = implode( '|', $shortcodes );
+		if ( array_key_exists( $signature, self::$shortcode_lookup ) ) {
+			return self::$shortcode_lookup[ $signature ];
+		}
 
-		/*
-		 * Never request every Page in one unbounded query. The shell scans in
-		 * deterministic batches and stops after a documented ceiling. Companion
-		 * page maps remain the preferred resolution contract, so this is only a
-		 * bounded compatibility fallback.
-		 */
-		$per_page   = 100;
-		$max_pages  = 50;
-		for ( $page_number = 1; $page_number <= $max_pages; $page_number++ ) {
+		$epoch = class_exists( Navigation::class ) ? absint( get_option( Navigation::CACHE_EPOCH_OPTION, 1 ) ) : 1;
+		$cache_key = 'sabri_shell_shortcode_page_' . md5( $signature . '|' . $epoch );
+		self::register_shortcode_cache_key( $cache_key );
+		$cached = get_transient( $cache_key );
+		if ( is_array( $cached ) && isset( $cached['status'] ) ) {
+			if ( 'unique' === $cached['status'] && ! empty( $cached['url'] ) ) {
+				self::$shortcode_lookup[ $signature ] = self::same_site_url( $cached['url'] );
+				return self::$shortcode_lookup[ $signature ];
+			}
+			self::$shortcode_lookup[ $signature ] = '';
+			return '';
+		}
+
+		$per_page = 100;
+		$max_batches = 10; // At most 1,000 Pages per compatibility scan.
+		$matches = array();
+		$scan_complete = false;
+		for ( $page_number = 1; $page_number <= $max_batches; $page_number++ ) {
 			$pages = get_posts(
 				array(
 					'post_type'              => 'page',
@@ -623,22 +683,49 @@ final class Integrations {
 				)
 			);
 			if ( empty( $pages ) ) {
+				$scan_complete = true;
 				break;
 			}
 			foreach ( $pages as $page ) {
 				$content = isset( $page->post_content ) ? (string) $page->post_content : '';
 				foreach ( $shortcodes as $shortcode ) {
 					if ( has_shortcode( $content, $shortcode ) ) {
-						$url = get_permalink( $page );
-						return $url ? (string) $url : '';
+						$matches[ absint( $page->ID ) ] = true;
+						break;
 					}
 				}
+				if ( count( $matches ) > 1 ) { break 2; }
 			}
 			if ( count( $pages ) < $per_page ) {
+				$scan_complete = true;
 				break;
 			}
 		}
-		return '';
+
+		$ids = array_keys( $matches );
+		if ( count( $ids ) > 1 ) {
+			self::$shortcode_collisions[ $signature ] = array_map( 'absint', $ids );
+			set_transient( $cache_key, array( 'status' => 'collision' ), 10 * MINUTE_IN_SECONDS );
+			do_action( 'sabri_shell_shortcode_page_collision', $shortcodes, self::$shortcode_collisions[ $signature ] );
+			self::$shortcode_lookup[ $signature ] = '';
+			return '';
+		}
+		if ( 1 !== count( $ids ) || ! $scan_complete ) {
+			set_transient( $cache_key, array( 'status' => $scan_complete ? 'none' : 'incomplete' ), 10 * MINUTE_IN_SECONDS );
+			self::$shortcode_lookup[ $signature ] = '';
+			return '';
+		}
+
+		$url = self::published_page_url( $ids[0] );
+		$url = self::same_site_url( $url );
+		set_transient( $cache_key, array( 'status' => $url ? 'unique' : 'invalid', 'url' => $url ), 10 * MINUTE_IN_SECONDS );
+		self::$shortcode_lookup[ $signature ] = $url;
+		return $url;
+	}
+
+	/** Return request-level shortcode collision evidence for diagnostics. */
+	public static function shortcode_collisions() {
+		return self::$shortcode_collisions;
 	}
 
 	/**
@@ -652,7 +739,10 @@ final class Integrations {
 		if ( ! $page_id || 'publish' !== get_post_status( $page_id ) ) {
 			return '';
 		}
+		if ( function_exists( 'get_post_type' ) && 'page' !== get_post_type( $page_id ) ) {
+			return '';
+		}
 		$url = get_permalink( $page_id );
-		return $url ? (string) $url : '';
+		return $url ? self::same_site_url( $url ) : '';
 	}
 }

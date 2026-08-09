@@ -94,7 +94,11 @@ final class ContextNavigation {
 	 * @return bool
 	 */
 	private static function should_render() {
-		if ( is_admin() || wp_doing_ajax() || is_front_page() ) {
+		if ( is_admin() || wp_doing_ajax() || is_front_page() || SafeMode::disabled() ) {
+			return false;
+		}
+		$mode = Layout::current_mode();
+		if ( ! in_array( $mode, array( Layout::TWO, Layout::THREE ), true ) ) {
 			return false;
 		}
 
@@ -140,30 +144,30 @@ final class ContextNavigation {
 	 * @return string
 	 */
 	private static function section_fallback_url( $home_url ) {
-		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- parsed as URL path and sanitized below.
-		$path        = wp_parse_url( $request_uri, PHP_URL_PATH );
-		$home_path   = wp_parse_url( $home_url, PHP_URL_PATH );
-
-		if ( ! is_string( $path ) || '' === $path ) {
+		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- parsed as path only.
+		$current_path = wp_parse_url( $request_uri, PHP_URL_PATH );
+		if ( ! is_string( $current_path ) || '' === $current_path ) {
 			return $home_url;
 		}
-
-		$home_path = is_string( $home_path ) ? trailingslashit( $home_path ) : '/';
-		if ( '/' !== $home_path && 0 === strpos( trailingslashit( $path ), $home_path ) ) {
-			$path = substr( $path, strlen( untrailingslashit( $home_path ) ) );
+		$current_path = untrailingslashit( preg_replace( '#/+#', '/', $current_path ) );
+		$current_path = '' === $current_path ? '/' : $current_path;
+		$best_url = $home_url;
+		$best_len = 0;
+		foreach ( Navigation::resolved() as $item ) {
+			if ( ! is_array( $item ) || empty( $item['url'] ) ) { continue; }
+			$url = self::same_origin_url( (string) $item['url'], '' );
+			if ( '' === $url ) { continue; }
+			$target_path = wp_parse_url( $url, PHP_URL_PATH );
+			if ( ! is_string( $target_path ) || '' === $target_path ) { continue; }
+			$target_path = untrailingslashit( preg_replace( '#/+#', '/', $target_path ) );
+			$target_path = '' === $target_path ? '/' : $target_path;
+			if ( '/' === $target_path || $target_path === $current_path ) { continue; }
+			if ( 0 === strpos( $current_path . '/', $target_path . '/' ) && strlen( $target_path ) > $best_len ) {
+				$best_url = $url;
+				$best_len = strlen( $target_path );
+			}
 		}
-
-		$segments = array_values( array_filter( explode( '/', trim( $path, '/' ) ) ) );
-		if ( count( $segments ) < 2 ) {
-			return $home_url;
-		}
-
-		$section = sanitize_title( rawurldecode( $segments[0] ) );
-		if ( '' === $section ) {
-			return $home_url;
-		}
-
-		return home_url( '/' . $section . '/' );
+		return $best_url;
 	}
 
 	/**

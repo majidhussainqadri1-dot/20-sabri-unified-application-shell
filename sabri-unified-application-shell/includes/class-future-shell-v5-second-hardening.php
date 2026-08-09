@@ -324,39 +324,37 @@ final class FutureShellV5SecondHardening {
 	/** Keep circuit metadata bounded and discard expired or malformed states. */
 	public static function bound_circuit_state( $module = '', $context = array() ) {
 		unset( $module, $context );
-		$all = get_option( FutureShellV5::CIRCUIT_OPTION, array() );
-		if ( ! is_array( $all ) ) {
-			update_option( FutureShellV5::CIRCUIT_OPTION, array(), false );
-			return;
-		}
-		$now = time();
-		$clean = array();
-		foreach ( $all as $key => $state ) {
-			$key = sanitize_key( $key );
-			if ( '' === $key || ! is_array( $state ) ) {
-				continue;
+		$token = FutureShellV5::acquire_circuit_lock();
+		if ( '' === $token ) { return; }
+		try {
+			$all = get_option( FutureShellV5::CIRCUIT_OPTION, array() );
+			if ( ! is_array( $all ) ) {
+				update_option( FutureShellV5::CIRCUIT_OPTION, array(), false );
+				return;
 			}
-			$opened = absint( $state['opened_at'] ?? 0 );
-			$last   = absint( $state['last_failure_at'] ?? 0 );
-			if ( $opened && ( $now - $opened ) > FutureShellV5::CIRCUIT_COOLDOWN ) {
-				continue;
+			$now = time();
+			$clean = array();
+			foreach ( $all as $key => $state ) {
+				$key = sanitize_key( $key );
+				if ( '' === $key || ! is_array( $state ) ) { continue; }
+				$opened = absint( $state['opened_at'] ?? 0 );
+				$last   = absint( $state['last_failure_at'] ?? 0 );
+				if ( $opened && ( $now - $opened ) > FutureShellV5::CIRCUIT_COOLDOWN ) { continue; }
+				if ( ! $opened && $last && ( $now - $last ) > FutureShellV5::CIRCUIT_COOLDOWN ) { continue; }
+				$state['failures']        = min( FutureShellV5::CIRCUIT_THRESHOLD, absint( $state['failures'] ?? 0 ) );
+				$state['opened_at']       = $opened;
+				$state['last_failure_at'] = $last;
+				$clean[ $key ] = $state;
 			}
-			if ( ! $opened && $last && ( $now - $last ) > FutureShellV5::CIRCUIT_COOLDOWN ) {
-				continue;
-			}
-			$state['failures']        = min( FutureShellV5::CIRCUIT_THRESHOLD, absint( $state['failures'] ?? 0 ) );
-			$state['opened_at']       = $opened;
-			$state['last_failure_at'] = $last;
-			$clean[ $key ] = $state;
-		}
-		uasort( $clean, static function ( $a, $b ) {
-			$at = max( absint( $a['opened_at'] ?? 0 ), absint( $a['last_failure_at'] ?? 0 ) );
-			$bt = max( absint( $b['opened_at'] ?? 0 ), absint( $b['last_failure_at'] ?? 0 ) );
-			return $bt <=> $at;
-		} );
-		$clean = array_slice( $clean, 0, self::MAX_CIRCUITS, true );
-		if ( $clean !== $all ) {
-			update_option( FutureShellV5::CIRCUIT_OPTION, $clean, false );
+			uasort( $clean, static function ( $a, $b ) {
+				$at = max( absint( $a['opened_at'] ?? 0 ), absint( $a['last_failure_at'] ?? 0 ) );
+				$bt = max( absint( $b['opened_at'] ?? 0 ), absint( $b['last_failure_at'] ?? 0 ) );
+				return $bt <=> $at;
+			} );
+			$clean = array_slice( $clean, 0, self::MAX_CIRCUITS, true );
+			if ( $clean !== $all ) { update_option( FutureShellV5::CIRCUIT_OPTION, $clean, false ); }
+		} finally {
+			FutureShellV5::release_circuit_lock( $token );
 		}
 	}
 

@@ -13,6 +13,8 @@ final class FutureShellV5 {
     const OPTION = 'sabri_shell_future_v5';
     const LKG_OPTION = 'sabri_shell_future_lkg';
     const CIRCUIT_OPTION = 'sabri_shell_future_circuits';
+    const CIRCUIT_LOCK_OPTION = 'sabri_shell_future_circuit_lock';
+    const CIRCUIT_LOCK_TTL = 10;
     const CRITICAL_OPTION = 'sabri_shell_future_critical_failures';
     const SW_QUERY = 'sabri_shell_future_sw';
     const MANIFEST_QUERY = 'sabri_shell_future_manifest';
@@ -222,34 +224,47 @@ final class FutureShellV5 {
     }
 
     public static function restore_lkg( $reason = 'automatic' ) {
-        $snapshot = get_option( self::LKG_OPTION, array() );
-        if ( ! is_array( $snapshot ) || empty( $snapshot['hash'] ) || ! isset( $snapshot['settings'] ) || ! is_array( $snapshot['settings'] ) ) { return false; }
-        $copy = $snapshot; unset( $copy['hash'] );
-        if ( ! hash_equals( $snapshot['hash'], hash( 'sha256', wp_json_encode( $copy ) ) ) ) { return false; }
-        self::$restoring = true;
-        update_option( Defaults::OPTION_NAME, $snapshot['settings'], false );
-        self::$restoring = false;
-        Navigation::invalidate_cache(); Integrations::invalidate_cache();
-        do_action( 'sabri_shell_lkg_restored', array( 'reason' => sanitize_key( $reason ), 'captured_at' => $snapshot['captured_at'] ) );
-        return true;
+        /* All restore entry points, including compatibility callers, must use
+         * the same current-version/schema, Emergency-preserving, concurrency-
+         * aware transaction as automatic recovery. Never expose the legacy
+         * direct update_option restore path. */
+        if ( class_exists( __NAMESPACE__ . '\\FutureShellV5ControlGuard', false ) ) {
+            return FutureShellV5ControlGuard::restore_current_snapshot( $reason, array( 'source' => 'compatibility-api' ) );
+        }
+        return false;
     }
 
     public static function record_module_failure( $module, $context = array() ) {
         if ( ! self::feature_enabled( 'module_circuit_breaker' ) ) { return; }
         $module = sanitize_key( $module ); if ( '' === $module ) { return; }
-        $all = (array) get_option( self::CIRCUIT_OPTION, array() );
-        $state = isset( $all[ $module ] ) && is_array( $all[ $module ] ) ? $all[ $module ] : array( 'failures' => 0, 'opened_at' => 0 );
-        if ( ! empty( $state['opened_at'] ) && time() - absint( $state['opened_at'] ) > self::CIRCUIT_COOLDOWN ) { $state = array( 'failures' => 0, 'opened_at' => 0 ); }
-        $state['failures'] = absint( $state['failures'] ) + 1; $state['last_failure_at'] = time();
-        if ( $state['failures'] >= self::CIRCUIT_THRESHOLD ) { $state['opened_at'] = time(); }
-        $all[ $module ] = $state; update_option( self::CIRCUIT_OPTION, $all, false );
+        $token = self::acquire_circuit_lock();
+        if ( '' === $token ) {
+            do_action( 'sabri_shell_circuit_lock_contended', array( 'module' => $module ) );
+            return;
+        }
+        try {
+            $all = (array) get_option( self::CIRCUIT_OPTION, array() );
+            $state = isset( $all[ $module ] ) && is_array( $all[ $module ] ) ? $all[ $module ] : array( 'failures' => 0, 'opened_at' => 0 );
+            if ( ! empty( $state['opened_at'] ) && time() - absint( $state['opened_at'] ) > self::CIRCUIT_COOLDOWN ) { $state = array( 'failures' => 0, 'opened_at' => 0 ); }
+            $state['failures'] = absint( $state['failures'] ) + 1; $state['last_failure_at'] = time();
+            if ( $state['failures'] >= self::CIRCUIT_THRESHOLD ) { $state['opened_at'] = time(); }
+            $all[ $module ] = $state; update_option( self::CIRCUIT_OPTION, $all, false );
+        } finally {
+            self::release_circuit_lock( $token );
+        }
         unset( $context );
     }
 
     public static function record_module_success( $module ) {
         $module = sanitize_key( $module ); if ( '' === $module ) { return; }
-        $all = (array) get_option( self::CIRCUIT_OPTION, array() );
-        if ( isset( $all[ $module ] ) ) { unset( $all[ $module ] ); update_option( self::CIRCUIT_OPTION, $all, false ); }
+        $token = self::acquire_circuit_lock();
+        if ( '' === $token ) { return; }
+        try {
+            $all = (array) get_option( self::CIRCUIT_OPTION, array() );
+            if ( isset( $all[ $module ] ) ) { unset( $all[ $module ] ); update_option( self::CIRCUIT_OPTION, $all, false ); }
+        } finally {
+            self::release_circuit_lock( $token );
+        }
     }
 
     public static function circuit_open( $module ) {

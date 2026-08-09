@@ -22,6 +22,8 @@ final class Navigation {
 		add_action( 'update_option_' . Defaults::OPTION_NAME, array( __CLASS__, 'invalidate_cache' ) );
 		foreach ( array( 'spf_page_map', 'spd_page_map', 'sdd_page_map', 'swc_page_map', 'svw_page_map', 'srl_page_map', 'spl_page_map', 'srf_page_map', 'sai_page_map', 'sa_page_map', 'snp_page_map', 'sn_page_map', 'sn_network_page_id', 'smp_marketplace_page_id', 'page_on_front', 'page_for_posts', 'show_on_front', 'permalink_structure' ) as $option ) {
 			add_action( 'update_option_' . $option, array( __CLASS__, 'invalidate_cache' ) );
+			add_action( 'add_option_' . $option, array( __CLASS__, 'invalidate_cache' ) );
+			add_action( 'delete_option_' . $option, array( __CLASS__, 'invalidate_cache' ) );
 		}
 		add_action( 'save_post_page', array( __CLASS__, 'invalidate_cache' ) );
 		add_action( 'trashed_post', array( __CLASS__, 'invalidate_cache' ) );
@@ -37,7 +39,9 @@ final class Navigation {
 	public static function invalidate_cache() {
 		self::$resolved = null;
 		Integrations::invalidate_cache();
-		$epoch = absint( get_option( self::CACHE_EPOCH_OPTION, 1 ) );
+		$epoch  = absint( get_option( self::CACHE_EPOCH_OPTION, 1 ) );
+		$locale = function_exists( 'determine_locale' ) ? determine_locale() : get_locale();
+		delete_transient( Defaults::NAV_CACHE_KEY . '_' . md5( $locale . '|' . $epoch ) );
 		update_option( self::CACHE_EPOCH_OPTION, $epoch + 1, false );
 		delete_transient( Defaults::NAV_CACHE_KEY );
 	}
@@ -103,7 +107,7 @@ final class Navigation {
 		/* Priority 1a: explicit File 20 configured published Page ID. */
 		$page_id = isset( $config['page_id'] ) ? absint( $config['page_id'] ) : 0;
 		$url = self::published_page_url( $page_id );
-		if ( $url ) {
+		if ( $url && self::page_owner_compatible( $key, $page_id ) && self::route_result_allowed( $key, $url, 'configured_page_id', $destination ) ) {
 			$item['url'] = $url;
 			$item['reason'] = 'configured_page_id';
 			$item['source_priority'] = 1;
@@ -113,7 +117,7 @@ final class Navigation {
 		/* Priority 1b: a registered companion page-map is still Page-ID evidence. */
 		$registered_page_id = Integrations::page_id( $key );
 		$url = self::published_page_url( $registered_page_id );
-		if ( $url ) {
+		if ( $url && self::route_result_allowed( $key, $url, 'registered_page_map', $destination ) ) {
 			$item['url'] = $url;
 			$item['reason'] = 'registered_page_map';
 			$item['source_priority'] = 1;
@@ -123,7 +127,7 @@ final class Navigation {
 		/* WordPress front-page mapping is canonical Page-ID evidence for Home. */
 		if ( 'home' === $key && 'page' === get_option( 'show_on_front' ) ) {
 			$url = self::published_page_url( absint( get_option( 'page_on_front' ) ) );
-			if ( $url ) {
+			if ( $url && self::route_result_allowed( $key, $url, 'wordpress_front_page_id', $destination ) ) {
 				$item['url'] = $url;
 				$item['reason'] = 'wordpress_front_page_id';
 				$item['source_priority'] = 1;
@@ -140,7 +144,7 @@ final class Navigation {
 			$shortcodes = array_merge( $shortcodes, $destination['shortcodes'] );
 		}
 		$url = self::find_page_by_shortcodes( array_filter( array_unique( $shortcodes ) ) );
-		if ( $url ) {
+		if ( $url && self::route_result_allowed( $key, $url, 'page_shortcode', $destination ) ) {
 			$item['url'] = $url;
 			$item['reason'] = 'page_shortcode';
 			$item['source_priority'] = 2;
@@ -149,9 +153,9 @@ final class Navigation {
 
 		/* Priority 3: canonical post-type/WordPress posts archive. */
 		$post_type = isset( $destination['post_type'] ) ? sanitize_key( $destination['post_type'] ) : '';
-		if ( $post_type && 'post' !== $post_type && post_type_exists( $post_type ) ) {
+		if ( $post_type && 'post' !== $post_type && self::public_archive_available( $key, $post_type ) ) {
 			$archive = get_post_type_archive_link( $post_type );
-			if ( $archive ) {
+			if ( $archive && self::route_result_allowed( $key, $archive, 'post_type_archive', $destination ) ) {
 				$item['url'] = $archive;
 				$item['reason'] = 'post_type_archive';
 				$item['source_priority'] = 3;
@@ -160,14 +164,14 @@ final class Navigation {
 		}
 		if ( 'post' === $post_type ) {
 			$url = self::published_page_url( absint( get_option( 'page_for_posts' ) ) );
-			if ( $url ) {
+			if ( $url && self::route_result_allowed( $key, $url, 'posts_page', $destination ) ) {
 				$item['url'] = $url;
 				$item['reason'] = 'posts_page';
 				$item['source_priority'] = 3;
 				return $item;
 			}
 		}
-		if ( 'home' === $key && 'posts' === get_option( 'show_on_front' ) ) {
+		if ( 'home' === $key && 'posts' === get_option( 'show_on_front' ) && self::route_result_allowed( $key, home_url( '/' ), 'wordpress_posts_home_archive', $destination ) ) {
 			$item['url'] = home_url( '/' );
 			$item['reason'] = 'wordpress_posts_home_archive';
 			$item['source_priority'] = 3;
@@ -183,7 +187,7 @@ final class Navigation {
 			$slugs = array_merge( $slugs, $destination['slugs'] );
 		}
 		$url = self::find_page_by_slugs( array_filter( array_unique( $slugs ) ) );
-		if ( $url ) {
+		if ( $url && self::route_result_allowed( $key, $url, 'slug_match', $destination ) ) {
 			$item['url'] = $url;
 			$item['reason'] = 'slug_match';
 			$item['source_priority'] = 4;
@@ -193,7 +197,7 @@ final class Navigation {
 		/* Priority 5: explicit strict validated URL override only. */
 		if ( ! empty( $config['url_override'] ) ) {
 			$url = RouteSecurity::sanitize_override( $config['url_override'] );
-			if ( $url ) {
+			if ( $url && self::route_result_allowed( $key, $url, 'validated_url_override', $destination ) ) {
 				$item['url'] = $url;
 				$item['reason'] = 'validated_url_override';
 				$item['source_priority'] = 5;
@@ -203,6 +207,33 @@ final class Navigation {
 
 		/* Priority 6: honest unavailable; never manufacture a dead/hash URL. */
 		return $item;
+	}
+
+
+	/** Reject a configured Page ID already claimed by another canonical destination. */
+	public static function page_owner_compatible( $key, $page_id ) {
+		$page_id = absint( $page_id );
+		if ( ! $page_id ) { return false; }
+		foreach ( array_keys( Defaults::destinations() ) as $other_key ) {
+			if ( $other_key === $key ) { continue; }
+			$other_id = Integrations::page_id( $other_key );
+			if ( $other_id && $other_id === $page_id ) { return false; }
+		}
+		return (bool) apply_filters( 'sabri_shell_route_page_owner_compatible', true, sanitize_key( $key ), $page_id );
+	}
+
+	/** Require a genuinely public native archive and allow its owner to fail closed. */
+	private static function public_archive_available( $key, $post_type ) {
+		if ( ! post_type_exists( $post_type ) || ! function_exists( 'get_post_type_object' ) ) { return false; }
+		$object = get_post_type_object( $post_type );
+		if ( ! is_object( $object ) || empty( $object->has_archive ) || ( empty( $object->public ) && empty( $object->publicly_queryable ) ) ) { return false; }
+		return (bool) apply_filters( 'sabri_shell_route_archive_owner_healthy', true, sanitize_key( $key ), sanitize_key( $post_type ) );
+	}
+
+	/** Final access/owner-health policy gate shared by every route source. */
+	private static function route_result_allowed( $key, $url, $source, array $destination ) {
+		if ( ! $url ) { return false; }
+		return (bool) apply_filters( 'sabri_shell_route_result_allowed', true, sanitize_key( $key ), (string) $url, sanitize_key( $source ), $destination );
 	}
 
 	private static function published_page_url( $page_id ) {
@@ -233,10 +264,15 @@ final class Navigation {
 	}
 
 	public static function is_active_url( $url ) {
+		$target = wp_parse_url( (string) $url );
+		$home   = wp_parse_url( home_url( '/' ) );
+		if ( ! is_array( $target ) || ! is_array( $home ) ) { return false; }
+		if ( ! empty( $target['host'] ) && ( empty( $home['host'] ) || strtolower( (string) $target['host'] ) !== strtolower( (string) $home['host'] ) ) ) {
+			return false;
+		}
 		$current = self::current_url_path();
-		$target  = wp_parse_url( $url, PHP_URL_PATH );
-		if ( ! $target ) { $target = '/'; }
-		return untrailingslashit( $current ) === untrailingslashit( $target );
+		$path = isset( $target['path'] ) && is_string( $target['path'] ) ? $target['path'] : '/';
+		return untrailingslashit( $current ) === untrailingslashit( $path );
 	}
 
 	private static function current_url_path() {

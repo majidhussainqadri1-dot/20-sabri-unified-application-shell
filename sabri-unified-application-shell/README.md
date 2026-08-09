@@ -2,7 +2,7 @@
 
 Sabri Unified Application Shell is the canonical responsive WordPress application shell for the **Sabri Social Homeopathy Platform**.
 
-- Version: `1.4.10`
+- Version: `1.4.11`
 - File 22 Create contract: `1.0.1`
 - Central-plan contract: `1.0.0`
 - Four-plan harmonization contract: `1.0.0`
@@ -38,6 +38,10 @@ Provider health now binds File25/File01-B rows to their actually advertised sema
 
 Presence-aware recovery snapshots, under-lock repair/rollback revalidation, stale Page-ID quarantine, strict route overrides and exact route precedence, File20-only explicit uninstall cleanup, audit integrity, Safe Mode, PWA privacy, five release rings, File19 one-bell, File24 assurance/native enforcement and all CF-01..CF-06 native-owner boundaries remain in force.
 
+## Version 1.4.11 — eighty-round consolidation
+
+The merged 1.4.10 baseline was reopened for eighty distinct source/contract/recovery/privacy/QA reviews. This release directly consolidates the resulting corrections into core File 20 code: domain-owned Home/News/search/doctor/sidebar fallbacks are removed or fail closed, File25 visual ownership is structural-only, schema-5 settings invariants are enforced on every write, route and provider evidence is stricter, recovery/concurrency paths are revalidated, dynamic caches and uninstall state are bounded, and Future Shell control-plane/circuit/assurance mutations are serialized or fail closed. The approved Future Shell scope remains exactly 18 enhancements.
+
 ## Conditional-module law preserved
 
 CF-01 clinical records, CF-02 support/appeals, CF-03 financial operations, CF-04 secure media, CF-05 analytics and CF-06 localization remain conditional native-owner domains. File20 provides route/layout/UI/privacy integration only.
@@ -46,4 +50,4 @@ CF-01 clinical records, CF-02 support/appeals, CF-03 financial operations, CF-04
 
 ## Staging acceptance
 
-Repository completion is not production acceptance. Hostinger staging must verify the exact `1.4.10` package/head/checksum, real File00–26 and any activated CF contracts, File21 native mount/no-duplication, File25 visual truth, File26 unavailable/no-fallback behavior, File00 critical-health behavior, Emergency gate, strict route precedence/overrides, repair/rollback, root/subdirectory privacy/layout, System Check, PWA, browsers/devices, accessibility, RTL/LTR, low-data/offline behavior, backup/restore and Founder acceptance before production promotion.
+Repository completion is not production acceptance. Hostinger staging must verify the exact `1.4.11` package/head/checksum, real File00–26 and any activated CF contracts, File21 native mount/no-duplication, File25 visual truth, File26 unavailable/no-fallback behavior, File00 critical-health behavior, Emergency gate, strict route precedence/overrides, repair/rollback, root/subdirectory privacy/layout, System Check, PWA, browsers/devices, accessibility, RTL/LTR, low-data/offline behavior, backup/restore and Founder acceptance before production promotion.

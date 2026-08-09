@@ -146,9 +146,8 @@ final class Layout {
 		 * not be able to hide ordinary navigation. Native owners opt in through
 		 * the contract filter, canonical routes or registered post types.
 		 */
-		$request = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
-		$path    = strtolower( (string) wp_parse_url( $request, PHP_URL_PATH ) );
-		if ( preg_match( '#/(reels?|video-wall/(watch|live)|live-broadcast|pdf-reader|read-pdf)(/|$)#', $path ) ) {
+		$path = self::site_relative_request_path();
+		if ( preg_match( '#^/(reels?|video-wall/(watch|live)|live-broadcast|pdf-reader|read-pdf)(/|$)#', $path ) ) {
 			return true;
 		}
 
@@ -176,12 +175,14 @@ final class Layout {
 		if ( function_exists( 'is_singular' ) && is_singular() && function_exists( 'post_password_required' ) && post_password_required() ) {
 			return true;
 		}
-		if ( ! empty( $_GET['print'] ) || ! empty( $_GET['sabri_shell_maintenance'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only display mode.
+		if ( ! empty( $_GET['print'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only print presentation.
+			return true;
+		}
+		if ( (bool) apply_filters( 'sabri_shell_maintenance_mode_active', false ) ) {
 			return true;
 		}
 
-		$request = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
-		$path    = (string) wp_parse_url( $request, PHP_URL_PATH );
+		$path = self::site_relative_request_path();
 		$task_slugs = array(
 			'wp-login.php', 'login', 'signup', 'register', 'lostpassword', 'password-reset', 'account-verification',
 			'account-login', 'create-account', 'complete-profile', 'forgot-password', 'account-access-required',
@@ -189,14 +190,31 @@ final class Layout {
 			'membership-application', 'membership-status', 'guardian-consent', 'membership-security',
 			'platform-system-check', 'platform-foundation', 'safe-mode', 'repair', 'maintenance',
 		);
-		$segments = array_values( array_filter( explode( '/', trim( strtolower( $path ), '/' ) ) ) );
-		if ( array_intersect( $segments, $task_slugs ) ) {
-			return true;
+		$relative = trim( strtolower( $path ), '/' );
+		foreach ( $task_slugs as $task_slug ) {
+			if ( $relative === $task_slug || 0 === strpos( $relative, $task_slug . '/' ) ) {
+				return true;
+			}
 		}
-		if ( preg_match( '#/(wp-json|feed|robots\.txt|sitemap[^/]*)#i', $path ) ) {
+		if ( preg_match( '#^/(wp-json|feed|robots\.txt|sitemap[^/]*)(/|$)#i', $path ) ) {
 			return true;
 		}
 		return false;
+	}
+
+	/** Return a normalized request path relative to the WordPress home scope. */
+	private static function site_relative_request_path() {
+		$request = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '/'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- parsed as path only.
+		$path = wp_parse_url( $request, PHP_URL_PATH );
+		$path = is_string( $path ) && '' !== $path ? preg_replace( '#/+#', '/', '/' . ltrim( $path, '/' ) ) : '/';
+		$home_path = wp_parse_url( home_url( '/' ), PHP_URL_PATH );
+		$home_path = is_string( $home_path ) && '' !== $home_path ? untrailingslashit( preg_replace( '#/+#', '/', '/' . ltrim( $home_path, '/' ) ) ) : '';
+		if ( '/' === $home_path ) { $home_path = ''; }
+		if ( '' !== $home_path && ( $path === $home_path || 0 === strpos( $path, $home_path . '/' ) ) ) {
+			$path = substr( $path, strlen( $home_path ) );
+		}
+		$path = '' === $path ? '/' : $path;
+		return strtolower( '/' . ltrim( $path, '/' ) );
 	}
 
 	/** Return current public page ID when available. */

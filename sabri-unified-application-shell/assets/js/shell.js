@@ -231,14 +231,9 @@
 		var left = document.querySelector('.sabri-shell-left-sidebar:not(.sabri-shell-left-sidebar-drawer)');
 		var right = document.querySelector('.sabri-shell-right-sidebar:not(.sabri-shell-right-sidebar-drawer)');
 		var target = resolveContentTarget();
-		var anchor = document.getElementById('sabri-shell-main-content');
-
 		if (!target) {
 			document.body.classList.add('sabri-shell-layout-unresolved');
 			return;
-		}
-		if (anchor && !target.contains(anchor)) {
-			target.insertBefore(anchor, target.firstChild);
 		}
 		target.classList.add('sabri-shell-content-column');
 		target.setAttribute('data-sabri-shell-content-column', 'true');

@@ -339,7 +339,7 @@ final class FourPlanHarmonization {
 		}
 		$current['mobile']['bottom_nav'] = false;
 		$current['visual_owner'] = 'file-25';
-		$current['schema_version'] = Defaults::SCHEMA_VERSION;
+		$current = Settings::enforce_owned_invariants( $current );
 		update_option( Defaults::OPTION_NAME, $current, false );
 		update_option( self::MIGRATION_OPTION, SABRI_SHELL_VERSION, false );
 		Navigation::invalidate_cache();

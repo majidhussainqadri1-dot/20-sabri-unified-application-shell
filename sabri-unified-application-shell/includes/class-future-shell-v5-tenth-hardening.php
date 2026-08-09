@@ -32,7 +32,7 @@ final class FutureShellV5TenthHardening {
         if ( ! is_array( $value ) ) { return $value; }
         $value['home_feed'] = array( 'retired' => true, 'auto_insert' => false, 'posts_count' => 0 );
         if ( isset( $value['navigation']['home']['shortcode'] ) && 'sabri_shell_home_feed' === sanitize_key( (string) $value['navigation']['home']['shortcode'] ) ) {
-            $value['navigation']['home']['shortcode'] = '';
+            $value['navigation']['home']['shortcode'] = 'sabri_complete_home_feed';
         }
         return $value;
     }

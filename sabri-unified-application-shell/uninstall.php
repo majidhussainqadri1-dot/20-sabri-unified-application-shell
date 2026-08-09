@@ -25,6 +25,13 @@ wp_clear_scheduled_hook( 'sabri_shell_plan_v4_maintenance' );
  * Exhaustive current File-20-owned option allowlist.
  * Keep this explicit: no wildcard deletion and no companion-domain option names.
  */
+$shortcode_cache_keys = get_option( 'sabri_shell_shortcode_cache_keys', array() );
+if ( is_array( $shortcode_cache_keys ) ) {
+	foreach ( array_slice( array_values( array_unique( array_map( 'sanitize_key', $shortcode_cache_keys ) ) ), 0, 64 ) as $transient_name ) {
+		if ( 0 === strpos( $transient_name, 'sabri_shell_shortcode_page_' ) ) { delete_transient( $transient_name ); }
+	}
+}
+
 $file20_options = array(
 	'sabri_shell_settings',
 	'sabri_unified_shell_settings',
@@ -38,6 +45,7 @@ $file20_options = array(
 	'sabri_shell_plan_v4_audit_anchor',
 	'sabri_shell_plan_v4_audit_lock',
 	'sabri_shell_plan_v4_assurance_queue',
+	'sabri_shell_plan_v4_assurance_lock',
 	'sabri_shell_plan_v4_job_state',
 	'sabri_shell_plan_v4_job_lock',
 	'sabri_shell_plan_v4_snapshots',
@@ -46,8 +54,10 @@ $file20_options = array(
 	'sabri_shell_future_v5',
 	'sabri_shell_future_lkg',
 	'sabri_shell_future_circuits',
+	'sabri_shell_future_circuit_lock',
 	'sabri_shell_future_critical_failures',
 	'sabri_shell_emergency_state',
+	'sabri_shell_shortcode_cache_keys',
 	'sabri_shell_four_plan_migration',
 );
 

@@ -4,13 +4,15 @@ Tags: application shell, navigation, layout, accessibility, pwa, offline
 Requires at least: 6.0
 Tested up to: 7.0.1
 Requires PHP: 7.4
-Stable tag: 1.4.10
+Stable tag: 1.4.11
 License: GPLv2 or later
 Text Domain: sabri-unified-application-shell
 
 Responsive canonical application shell and integration layer for the Sabri Social Homeopathy Platform.
 
 == Description ==
+
+Version 1.4.11 is the eighty-round consolidation release. It retires residual File20-owned domain fallbacks, hardens route/access/provider truth, consolidates schema-5 ownership invariants, closes recovery/concurrency/control-plane races, and preserves exactly eighteen Future Shell enhancements without adding a foreign backend.
 
 File 20 owns the global structural shell and continuity layer; native-domain data, authorization, enforcement and activation remain with canonical companion files.
 
@@ -27,7 +29,7 @@ Hostinger staging testing and Founder acceptance remain required before producti
 == Installation ==
 
 1. Back up files and database and prove restore.
-2. Install or upgrade the exact 1.4.10 candidate on staging only and flush rewrite rules.
+2. Install or upgrade the exact 1.4.11 candidate on staging only and flush rewrite rules.
 3. Verify the package has one canonical root, no tests/development-only material, and matching embedded/external source manifests.
 4. Run Sabri Shell System Check; Unknown/Unavailable/Incompatible critical states must never be treated as Healthy.
 5. Confirm File 21 mounts through the five native Home/News slots without duplicate shortcode/page rendering.
@@ -38,6 +40,12 @@ Hostinger staging testing and Founder acceptance remain required before producti
 10. Complete Hostinger staging, backup/restore/rollback rehearsal, accessibility/browser/device checks and Founder acceptance before production.
 
 == Changelog ==
+
+= 1.4.11 =
+* Completed eighty fresh corrective review passes over merged 1.4.10; every discovered File20-owned defect was corrected before the next pass.
+* Consolidated Home/News, File25 visual, File26 search, File00 identity, route/access, provider, sidebar, recovery, concurrency, privacy and uninstall boundaries directly into core source.
+* Advanced settings schema to 5, removed retired domain-owned configuration/runtime paths, hardened LKG/circuit/assurance state and dynamic shortcode cache cleanup, and preserved exactly 18 Future Shell enhancements.
+* Repository/CI evidence remains separate from Hostinger staging, Founder acceptance, live deployment and operational acceptance.
 
 = 1.4.10 =
 * Completed a tenth fresh ten-round corrective review over merged 1.4.9.

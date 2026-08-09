@@ -43,7 +43,7 @@ final class Settings {
 			$raw = array();
 		}
 
-		return self::deep_merge( Defaults::settings(), $raw );
+		return self::enforce_owned_invariants( self::deep_merge( Defaults::settings(), $raw ) );
 	}
 
 	/**
@@ -59,6 +59,7 @@ final class Settings {
 
 		$merged                   = self::deep_merge( Defaults::settings(), $current );
 		$merged['schema_version'] = Defaults::SCHEMA_VERSION;
+		$merged = self::enforce_owned_invariants( $merged );
 		update_option( Defaults::OPTION_NAME, $merged, false );
 	}
 
@@ -114,18 +115,72 @@ final class Settings {
 				$output['integrations'] = self::sanitize_integrations_group( isset( $input['integrations'] ) && is_array( $input['integrations'] ) ? $input['integrations'] : array(), $existing['integrations'] );
 				break;
 
-			case 'appearance':
-				/* File 25 owns appearance; File 20 refuses parallel visual writes. */
-				break;
 		}
 
 		$output['schema_version'] = Defaults::SCHEMA_VERSION;
-		$output                  = self::deep_merge( $defaults, $output );
+		$output                  = self::enforce_owned_invariants( self::deep_merge( $defaults, $output ) );
 
 		Navigation::invalidate_cache();
 		Integrations::invalidate_cache();
 
 		return $output;
+	}
+
+
+	/**
+	 * Enforce non-negotiable File 20 ownership/safety invariants on every read/write.
+	 *
+	 * Historical keys may exist in old database rows, but they cannot reactivate
+	 * retired File 20 domain behavior or role/visual authority.
+	 *
+	 * @param array<string,mixed> $settings Settings.
+	 * @return array<string,mixed>
+	 */
+	public static function enforce_owned_invariants( array $settings ) {
+		$settings['schema_version'] = Defaults::SCHEMA_VERSION;
+		$settings['home_feed'] = array(
+			'retired'     => true,
+			'auto_insert' => false,
+			'posts_count' => 0,
+		);
+		if ( isset( $settings['navigation']['home']['shortcode'] ) && 'sabri_shell_home_feed' === sanitize_key( (string) $settings['navigation']['home']['shortcode'] ) ) {
+			$settings['navigation']['home']['shortcode'] = 'sabri_complete_home_feed';
+		}
+		if ( isset( $settings['header'] ) && is_array( $settings['header'] ) ) {
+			unset( $settings['header']['allowed_roles'] );
+		}
+		if ( isset( $settings['mobile'] ) && is_array( $settings['mobile'] ) ) {
+			$settings['mobile']['bottom_nav'] = false;
+		}
+		if ( isset( $settings['integrations'] ) && is_array( $settings['integrations'] ) ) {
+			unset( $settings['integrations']['functions'] );
+		}
+		if ( isset( $settings['right_sidebar']['home_modules'] ) && is_array( $settings['right_sidebar']['home_modules'] ) ) {
+			foreach ( array( 'doctors', 'latest_posts', 'research', 'marketplace' ) as $legacy_domain_module ) {
+				unset( $settings['right_sidebar']['home_modules'][ $legacy_domain_module ] );
+			}
+		}
+		if ( isset( $settings['right_sidebar']['clinic_modules'] ) && is_array( $settings['right_sidebar']['clinic_modules'] ) ) {
+			foreach ( array( 'finder', 'filters', 'doctors', 'emergency' ) as $legacy_domain_module ) {
+				unset( $settings['right_sidebar']['clinic_modules'][ $legacy_domain_module ] );
+			}
+		}
+		if ( isset( $settings['right_sidebar']['single_modules'] ) && is_array( $settings['right_sidebar']['single_modules'] ) ) {
+			unset( $settings['right_sidebar']['single_modules']['reviews'], $settings['right_sidebar']['single_modules']['safety'] );
+		}
+		if ( isset( $settings['right_sidebar'] ) && is_array( $settings['right_sidebar'] ) ) {
+			unset( $settings['right_sidebar']['emergency_notice'] );
+		}
+		return $settings;
+	}
+
+	/** Enforce core invariants for every programmatic option write, not only Settings API submissions. */
+	public static function enforce_owned_invariants_filter( $value, $old_value, $option ) {
+		unset( $option );
+		if ( ! is_array( $value ) ) {
+			return is_array( $old_value ) ? $old_value : Defaults::settings();
+		}
+		return self::enforce_owned_invariants( $value );
 	}
 
 	/**
@@ -214,11 +269,6 @@ final class Settings {
 		$output['help']           = self::bool_from_input( $input, 'help', $existing['help'] );
 		$output['language']       = self::bool_from_input( $input, 'language', $existing['language'] );
 		$output['profile']        = self::bool_from_input( $input, 'profile', $existing['profile'] );
-		$roles = isset( $input['allowed_roles'] ) ? $input['allowed_roles'] : array();
-		if ( is_string( $roles ) ) {
-			$roles = preg_split( '/[\s,]+/', $roles );
-		}
-		$output['allowed_roles'] = array_values( array_filter( array_map( 'sanitize_key', is_array( $roles ) ? $roles : array() ) ) );
 
 		return $output;
 	}
@@ -292,7 +342,6 @@ final class Settings {
 		$output['clinic_modules']    = self::sanitize_bool_map( isset( $input['clinic_modules'] ) && is_array( $input['clinic_modules'] ) ? $input['clinic_modules'] : array(), $existing['clinic_modules'] );
 		$output['single_modules']    = self::sanitize_bool_map( isset( $input['single_modules'] ) && is_array( $input['single_modules'] ) ? $input['single_modules'] : array(), $existing['single_modules'] );
 		$output['announcement']      = sanitize_textarea_field( isset( $input['announcement'] ) ? $input['announcement'] : '' );
-		$output['emergency_notice']  = sanitize_text_field( isset( $input['emergency_notice'] ) ? $input['emergency_notice'] : $existing['emergency_notice'] );
 
 		return $output;
 	}
@@ -325,31 +374,9 @@ final class Settings {
 	private static function sanitize_integrations_group( array $input, array $existing ) {
 		$output = $existing;
 
-		foreach ( array( 'notifications', 'network', 'messages', 'appointments' ) as $key ) {
-			$output['functions'][ $key ] = sanitize_key( isset( $input['functions'][ $key ] ) ? $input['functions'][ $key ] : '' );
-		}
-
 		foreach ( array( 'messages', 'notifications', 'appointments', 'help', 'whatsapp' ) as $key ) {
 			$output['urls'][ $key ] = self::sanitize_url( isset( $input['urls'][ $key ] ) ? $input['urls'][ $key ] : '' );
 		}
-
-		return $output;
-	}
-
-	/**
-	 * Sanitize appearance settings.
-	 *
-	 * @param array<string,mixed> $input Input.
-	 * @param array<string,mixed> $existing Existing.
-	 * @return array<string,mixed>
-	 */
-	private static function sanitize_appearance_group( array $input, array $existing ) {
-		$output                  = $existing;
-		$output['color_mode']    = in_array( isset( $input['color_mode'] ) ? $input['color_mode'] : 'system', array( 'light', 'dark', 'system' ), true ) ? $input['color_mode'] : 'system';
-		$output['density']       = in_array( isset( $input['density'] ) ? $input['density'] : 'comfortable', array( 'comfortable', 'compact' ), true ) ? $input['density'] : 'comfortable';
-		$output['primary_color'] = self::sanitize_hex_color( isset( $input['primary_color'] ) ? $input['primary_color'] : $existing['primary_color'], '#15803d' );
-		$output['border_radius'] = self::int_range( $input, 'border_radius', 0, 20, $existing['border_radius'] );
-		$output['font_scale']    = self::float_range( $input, 'font_scale', 0.9, 1.2, $existing['font_scale'] );
 
 		return $output;
 	}
@@ -459,7 +486,7 @@ final class Settings {
 				}
 				list( $id, $mode ) = array_map( 'trim', explode( ':', $line, 2 ) );
 				$id = absint( $id );
-				if ( $id && in_array( $mode, array( 'default', 'three', 'two', 'minimal' ), true ) ) {
+				if ( $id && in_array( $mode, array( 'default', 'three', 'two', 'minimal', 'immersive' ), true ) ) {
 					$output[ $id ] = $mode;
 				}
 			}
@@ -469,7 +496,7 @@ final class Settings {
 		if ( is_array( $value ) ) {
 			foreach ( $value as $id => $mode ) {
 				$id = absint( $id );
-				if ( $id && in_array( $mode, array( 'default', 'three', 'two', 'minimal' ), true ) ) {
+				if ( $id && in_array( $mode, array( 'default', 'three', 'two', 'minimal', 'immersive' ), true ) ) {
 					$output[ $id ] = $mode;
 				}
 			}
@@ -547,6 +574,17 @@ final class Settings {
 		}
 
 		if ( ! preg_match( '/^[#.:\[\]\(\)=\^\$\*~\|\w\s>+,-]+$/', $selector ) ) {
+			return '';
+		}
+
+		/* Custom hide selectors are a bounded compatibility escape hatch, not a
+		 * whole-document styling language. Require a concrete class/id anchor and
+		 * reject universal/pseudo-only selectors that could hide the entire shell
+		 * or an arbitrarily broad theme subtree. */
+		if ( false === strpos( $selector, '.' ) && false === strpos( $selector, '#' ) ) {
+			return '';
+		}
+		if ( preg_match( '/(^|[>+~\s,])\*(?=($|[>+~\s,.:#\[]))/', $selector ) || preg_match( '/(^|[>+~\s,]):(root|not|is|where|has)\b/i', $selector ) ) {
 			return '';
 		}
 
