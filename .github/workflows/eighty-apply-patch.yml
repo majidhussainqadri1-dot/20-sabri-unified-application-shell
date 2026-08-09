@@ -1,0 +1,55 @@
+name: File 20 Eighty-Round Patch Applicator
+
+on:
+  push:
+    branches:
+      - audit/file20-eighty-round-2026-08-09
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: ${{ !contains(github.event.head_commit.message, '[eighty-patch-applied]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - name: Reconstruct and apply reviewed source patch
+        run: |
+          set -euo pipefail
+          cat .github/file20-eighty-patch/chunk-* | base64 -d | gzip -d > /tmp/file20-eighty.patch
+          patch -p1 --forward < /tmp/file20-eighty.patch
+          rm -f sabri-unified-application-shell/includes/class-home-feed.php
+      - name: Validate corrected source before committing
+        run: |
+          set -euo pipefail
+          find sabri-unified-application-shell -type f -name '*.php' -print0 | xargs -0 -n1 php -l >/dev/null
+          for js in sabri-unified-application-shell/assets/js/*.js; do node --check "$js"; done
+          python -m json.tool sabri-unified-application-shell/contracts/file20-central-plan-v4.json >/dev/null
+          python - <<'PY'
+          from pathlib import Path
+          for p in Path('sabri-unified-application-shell/assets/css').glob('*.css'):
+              s=p.read_text(encoding='utf-8')
+              assert s.count('{') == s.count('}'), p
+          print('eighty-round source validation PASS')
+          PY
+      - name: Commit reviewed corrections
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A sabri-unified-application-shell
+          if git diff --cached --quiet; then
+            echo 'No source changes to commit.'
+            exit 0
+          fi
+          git commit -m 'File 20 eighty-round: apply consolidated source corrections [eighty-patch-applied]'
+          git push origin HEAD:audit/file20-eighty-round-2026-08-09
