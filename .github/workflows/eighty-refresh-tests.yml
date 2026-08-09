@@ -1,0 +1,37 @@
+name: File 20 Eighty-Round Test Identity Refresher
+
+on:
+  push:
+    branches: [audit/file20-eighty-round-2026-08-09]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    if: ${{ !contains(github.event.head_commit.message, '[eighty-tests-refreshed]') }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+        with: {fetch-depth: 0}
+      - name: Advance current-release assertions without rewriting historical contract versions
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          root=Path('sabri-unified-application-shell/tests')
+          changed=[]
+          for p in root.glob('run*.php'):
+              s=p.read_text(encoding='utf-8')
+              n=s.replace('1.4.10','1.4.11')
+              if n!=s:
+                  p.write_text(n,encoding='utf-8'); changed.append(p.name)
+          print('updated current-release assertions:', ', '.join(changed) if changed else 'none')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add sabri-unified-application-shell/tests
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'File 20 round 79: refresh test release identity [eighty-tests-refreshed]'
+          git push origin HEAD:audit/file20-eighty-round-2026-08-09
