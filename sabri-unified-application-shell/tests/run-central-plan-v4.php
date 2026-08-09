@@ -18,8 +18,8 @@ $layout = $read('includes/class-layout.php');
 $assets = $read('includes/class-assets.php');
 $css = $read('assets/css/shell-central-plan-v4.css');
 
-$assert(strpos($main, '* Version: 1.4.10') !== false, 'Plugin header must be 1.4.10.');
-$assert(strpos($main, "define( 'SABRI_SHELL_VERSION', '1.4.10' )") !== false, 'Runtime version must be 1.4.10.');
+$assert(strpos($main, '* Version: 1.4.11') !== false, 'Plugin header must be 1.4.11.');
+$assert(strpos($main, "define( 'SABRI_SHELL_VERSION', '1.4.11' )") !== false, 'Runtime version must be 1.4.11.');
 $assert(strpos($main, 'CentralPlanContract::register()') !== false, 'Central-plan contract must register.');
 $assert(strpos($main, 'FutureShellV5SeventhHardening::register()') !== false, 'Seventh conditional-module layer must register.');
 $assert(strpos($main, 'FutureShellV5EighthHardening::register()') !== false && strpos($eighth, "CONTRACT_VERSION = '1.0.8'") !== false, 'Eighth corrective layer must remain registered.');

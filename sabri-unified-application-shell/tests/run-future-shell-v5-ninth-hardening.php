@@ -15,7 +15,7 @@ $uninstall = (string) file_get_contents( $root . '/uninstall.php' );
 $fail = array();
 $assert = static function ( $ok, $label ) use ( &$fail ): void { if ( ! $ok ) { $fail[] = $label; } };
 
-$assert( false !== strpos( $main, '* Version: 1.4.10' ) && false !== strpos( $main, "SABRI_SHELL_VERSION', '1.4.10" ), 'current release identity 1.4.10' );
+$assert( false !== strpos( $main, '* Version: 1.4.11' ) && false !== strpos( $main, "SABRI_SHELL_VERSION', '1.4.11" ), 'current release identity 1.4.11' );
 $assert( false !== strpos( $main, 'RouteSecurity::register();' ), 'route security registered' );
 $assert( false !== strpos( $main, 'FutureShellV5NinthHardening::register();' ) && false !== strpos( $ninth, "CONTRACT_VERSION = '1.0.9'" ), 'ninth contract preserved' );
 $assert( false !== strpos( $defaults, 'const SCHEMA_VERSION       = 4;' ), 'settings schema 4' );
@@ -47,4 +47,4 @@ $assert( false !== strpos( $uninstall, "wp_clear_scheduled_hook( 'sabri_shell_pl
 $combined = $main . $defaults . $safe . $recovery . $concurrency . $route . $nav . $ninth . $uninstall;
 $assert( false === strpos( $combined, 'CREATE TABLE' ) && false === strpos( $combined, 'dbDelta(' ) && false === strpos( $combined, 'INSERT INTO' ), 'no companion-domain database ownership introduced' );
 if ( $fail ) { fwrite( STDERR, "Future Shell v5 ninth preservation FAIL: " . implode( '; ', $fail ) . "\n" ); exit( 1 ); }
-echo "Future Shell v5 ninth hardening preservation under 1.4.10 PASS\n";
+echo "Future Shell v5 ninth hardening preservation under 1.4.11 PASS\n";

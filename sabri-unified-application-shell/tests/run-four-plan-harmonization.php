@@ -14,7 +14,7 @@ $defaults = file_get_contents($root . '/includes/class-defaults.php');
 $settings = file_get_contents($root . '/includes/class-settings.php');
 $css = file_get_contents($root . '/assets/css/four-plan-harmonization.css');
 $basecss = file_get_contents($root . '/assets/css/shell.css');
-$assert(strpos($main, 'Version: 1.4.10') !== false && strpos($main, "SABRI_SHELL_VERSION', '1.4.10") !== false, 'release identity 1.4.10');
+$assert(strpos($main, 'Version: 1.4.11') !== false && strpos($main, "SABRI_SHELL_VERSION', '1.4.11") !== false, 'release identity 1.4.11');
 $assert(strpos($main, 'FourPlanHarmonization::register') !== false, 'harmonization registered');
 $assert(strpos($main, 'FutureShellV5SeventhHardening::register') !== false, 'seventh conditional harmonization registered');
 $assert(strpos($main, 'FutureShellV5EighthHardening::register') !== false && strpos($eighth, "CONTRACT_VERSION = '1.0.8'") !== false, 'eighth corrective harmonization preserved');
@@ -51,6 +51,6 @@ $assert(strpos($js, 'rebalanceNavigation') !== false && strpos($js, 'data-sabri-
 $assert(strpos($renderer, 'get_search_query()') === false && strpos($renderer, 'name="s"') === false, 'dormant native WordPress search fallback removed from renderer');
 $assert(strpos($renderer, 'array_slice( $visible, 0, 6 )') !== false && strpos($renderer, 'array_slice( $visible, 6 )') !== false, 'conservative direct navigation set');
 $assert(!preg_match("/'bottom_nav'\s*=>\s*true/", $defaults), 'stale destination bottom-nav metadata removed');
-$assert(strpos($readme, 'Version: `1.4.10`') !== false && strpos($readmetxt, 'Stable tag: 1.4.10') !== false, 'release documentation identity 1.4.10');
+$assert(strpos($readme, 'Version: `1.4.11`') !== false && strpos($readmetxt, 'Stable tag: 1.4.11') !== false, 'release documentation identity 1.4.11');
 $assert(strpos($review, 'green continuity fallback') !== false && stripos($review, '#FF8A1F') === false, 'review register uses current visual-policy truth');
 echo 'Four-plan plus conditional/tenth harmonization assertions: ' . count($checks) . " passed\n";

@@ -8,7 +8,7 @@ $seventh = file_get_contents( $root . '/includes/class-future-shell-v5-seventh-h
 $fail    = array();
 $assert = static function ( $condition, $label ) use ( &$fail ): void { if ( ! $condition ) { $fail[] = $label; } };
 
-$assert( false !== strpos( $main, '* Version: 1.4.10' ) && false !== strpos( $main, "SABRI_SHELL_VERSION', '1.4.10" ), 'release identity 1.4.10 preserves seventh hardening' );
+$assert( false !== strpos( $main, '* Version: 1.4.11' ) && false !== strpos( $main, "SABRI_SHELL_VERSION', '1.4.11" ), 'release identity 1.4.11 preserves seventh hardening' );
 $assert( false !== strpos( $main, 'class-future-shell-v5-seventh-hardening.php' ) && false !== strpos( $main, 'FutureShellV5SeventhHardening::register();' ), 'seventh hardening loaded and registered' );
 $assert( false !== strpos( $seventh, "CONTRACT_VERSION = '1.0.7'" ) && false !== strpos( $seventh, 'CONDITIONAL_COUNT = 6' ), 'seventh contract and exact conditional count' );
 foreach ( array( 'CF-01', 'CF-02', 'CF-03', 'CF-04', 'CF-05', 'CF-06' ) as $id ) { $assert( false !== strpos( $seventh, "\$registry['{$id}']" ), 'conditional registry includes ' . $id ); }
@@ -33,4 +33,4 @@ $assert( false === strpos( $seventh, 'CREATE TABLE' ) && false === strpos( $seve
 $assert( false === strpos( $seventh, 'wp_insert_user' ) && false === strpos( $seventh, 'wp_create_user' ) && false === strpos( $seventh, 'wp_mail(' ), 'no identity or delivery backend creation' );
 $assert( false === strpos( $seventh, 'PaymentSettled' ) && false === strpos( $seventh, 'PrescriptionCreated' ), 'no financial or clinical event truth fabricated' );
 if ( $fail ) { fwrite( STDERR, "Future Shell v5 seventh hardening FAIL: " . implode( '; ', $fail ) . "\n" ); exit( 1 ); }
-echo "Future Shell v5 seventh hardening preserved under 1.4.10: CF-01..CF-06 conditional contracts, privacy boundaries, financial law, media cache authority and no foreign backend PASS\n";
+echo "Future Shell v5 seventh hardening preserved under 1.4.11: CF-01..CF-06 conditional contracts, privacy boundaries, financial law, media cache authority and no foreign backend PASS\n";

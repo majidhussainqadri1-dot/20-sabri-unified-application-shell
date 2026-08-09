@@ -5,7 +5,7 @@ $main   = file_get_contents( $root . '/sabri-unified-application-shell.php' );
 $future = file_get_contents( $root . '/includes/class-future-shell-v5.php' );
 $fail   = array();
 $checks = array(
-    'release 1.4.10 preserves fifth hardening' => false !== strpos( $main, '* Version: 1.4.10' ) && false !== strpos( $main, "define( 'SABRI_SHELL_VERSION', '1.4.10' );" ),
+    'release 1.4.11 preserves fifth hardening' => false !== strpos( $main, '* Version: 1.4.11' ) && false !== strpos( $main, "define( 'SABRI_SHELL_VERSION', '1.4.11' );" ),
     'fifth hardening loaded' => false !== strpos( $main, 'class-future-shell-v5-fifth-hardening.php' ) && false !== strpos( $main, 'FutureShellV5FifthHardening::register();' ),
     'contract 1.0.5' => false !== strpos( $fifth, "CONTRACT_VERSION = '1.0.5'" ),
     'old final evaluator retired' => false !== strpos( $fifth, "remove_filter( 'sabri_shell_future_feature_enabled', array( FutureShellV5Hardening::class, 'narrow_feature_enablement' ), 999999 )" ),
@@ -19,4 +19,4 @@ $checks = array(
 );
 foreach ( $checks as $name => $ok ) { if ( ! $ok ) { $fail[] = $name; } }
 if ( $fail ) { fwrite( STDERR, "Future Shell v5 fifth hardening FAIL: " . implode( '; ', $fail ) . "\n" ); exit(1); }
-echo "Future Shell v5 fifth hardening preserved under 1.4.10: exact five-state rings, explicit internal-principal contract, manager-only configuration and no foreign backend PASS\n";
+echo "Future Shell v5 fifth hardening preserved under 1.4.11: exact five-state rings, explicit internal-principal contract, manager-only configuration and no foreign backend PASS\n";

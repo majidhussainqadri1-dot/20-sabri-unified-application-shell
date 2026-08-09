@@ -14,7 +14,7 @@ $health  = $read( 'includes/class-plan-v4-contract-health.php' );
 $fail = array();
 $assert = static function ( $ok, $label ) use ( &$fail ): void { if ( ! $ok ) { $fail[] = $label; } };
 
-$assert( false !== strpos( $main, '* Version: 1.4.10' ) && false !== strpos( $main, "SABRI_SHELL_VERSION', '1.4.10" ), 'release identity 1.4.10' );
+$assert( false !== strpos( $main, '* Version: 1.4.11' ) && false !== strpos( $main, "SABRI_SHELL_VERSION', '1.4.11" ), 'release identity 1.4.11' );
 $assert( false !== strpos( $main, 'FutureShellV5TenthHardening::register();' ), 'tenth hardening registered' );
 $assert( false !== strpos( $tenth, "CONTRACT_VERSION = '1.0.10'" ), 'tenth contract 1.0.10' );
 
