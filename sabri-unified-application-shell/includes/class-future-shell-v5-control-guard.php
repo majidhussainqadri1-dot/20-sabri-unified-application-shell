@@ -77,8 +77,10 @@ final class FutureShellV5ControlGuard {
 			}
 			if ( ! $success ) { return false; }
 			PlanV4SettingsConcurrency::record_programmatic_change( $before, $current, 'lkg-restore' );
-			Navigation::invalidate_cache(); Integrations::invalidate_cache();
-			do_action( 'sabri_shell_lkg_restored', array( 'reason' => sanitize_key( $reason ), 'captured_at' => sanitize_text_field( (string) $snapshot['captured_at'] ), 'guarded' => true, 'serialized' => true ) );
+			Navigation::invalidate_cache();
+			Integrations::invalidate_cache();
+			if ( class_exists( __NAMESPACE__ . '\\PlanV4PrivacyCache', false ) ) { PlanV4PrivacyCache::purge(); }
+			do_action( 'sabri_shell_lkg_restored', array( 'reason' => sanitize_key( $reason ), 'captured_at' => sanitize_text_field( (string) $snapshot['captured_at'] ), 'guarded' => true, 'serialized' => true, 'cache_purged' => true ) );
 			return true;
 		} finally {
 			self::release_lkg_lock( $lock );
