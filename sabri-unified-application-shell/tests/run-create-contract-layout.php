@@ -120,10 +120,10 @@ namespace Sabri\UnifiedShell {
 	$integrations = file_get_contents( $root . '/includes/class-integrations.php' );
 	$navigation = file_get_contents( $root . '/includes/class-navigation.php' );
 	$assert( false !== strpos( $contract, 'if ( ! $base_allowed )' ), 'File 22 filter is a deny-only narrowing gate.' );
-	$assert( false !== strpos( $renderer, 'sabri_shell_create_visible_for_current_user()' ), 'Server-rendered Create markup consumes the exact visibility contract.' );
+	$assert( false !== strpos( $renderer, 'CreateContract::visible_for_current_user()' ), 'Server-rendered Create markup consumes the exact package-owned visibility contract.' );
 	$assert( false === strpos( $renderer, "create_or_doctors'] ||" ), 'Explicit mobile Create configuration cannot bypass authorization.' );
 	$assert( false === strpos( $integrations, "'posts_per_page'         => -1" ) && false === strpos( $navigation, "'posts_per_page'         => -1" ), 'Shortcode fallback discovery contains no unbounded Page query.' );
-	$assert( false !== strpos( $integrations, '$max_pages  = 50;' ), 'Shortcode compatibility scan has an explicit page ceiling.' );
+	$assert( false !== strpos( $integrations, '$per_page = 100;' ) && false !== strpos( $integrations, '$max_batches = 10;' ) && false !== strpos( $integrations, "'status' =>" ) && false !== strpos( $integrations, "'incomplete'" ), 'Shortcode compatibility scan is explicitly bounded and fails closed when incomplete.' );
 	$doctor_projection = explode( 'public static function doctor_public_data', $integrations, 2 )[1];
 	$doctor_projection = explode( 'public static function language_switcher', $doctor_projection, 2 )[0];
 	$assert( false === strpos( $doctor_projection, 'smc_get_profile' ) && false === strpos( $doctor_projection, 'SPD_Helpers::get' ), 'Public doctor projection never falls back to raw File 00/File 03 metadata getters.' );

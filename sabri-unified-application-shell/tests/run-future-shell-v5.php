@@ -57,7 +57,7 @@ $assert( false !== strpos( $eighth, "CONTRACT_VERSION = '1.0.8'" ) && false !== 
 $assert( false !== strpos( $ninth, "CONTRACT_VERSION = '1.0.9'" ) && false !== strpos( $ninth, "'approved_feature_count' => 18" ), 'ninth hardening preserved' );
 $assert( false !== strpos( $tenth, "CONTRACT_VERSION = '1.0.10'" ) && false !== strpos( $tenth, "'approved_feature_count' => 18" ), 'tenth hardening exact scope' );
 
-$assert( false !== strpos( $defaults, 'const SCHEMA_VERSION       = 4;' ) && false === strpos( $defaults, "'appearance'            => array(" ), 'schema4 with no fresh File20 visual state' );
+$assert( false !== strpos( $defaults, 'const SCHEMA_VERSION       = 5;' ) && false === strpos( $defaults, "'appearance'            => array(" ), 'schema5 with no fresh File20 visual state' );
 $assert( false === strpos( $plugin, 'HomeFeed::register();' ) && false !== strpos( $tenth, "'auto_insert' => false" ), 'File21 owns Home feed and legacy File20 state is inert' );
 foreach ( array('sabri_shell_home_before_main','sabri_shell_home_main','sabri_shell_home_after_main','sabri_shell_home_right_sidebar','sabri_shell_news_main') as $slot ) { $assert( false !== strpos( $slots, $slot ), 'native File21 slot ' . $slot ); }
 $assert( false !== strpos( $slots, "'' !== trim( \$main ) ? \$main : \$content" ), 'native main output replaces legacy page fallback' );

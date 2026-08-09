@@ -43,7 +43,7 @@ final class Renderer {
 	 * @return void
 	 */
 	public static function claim_notifications_output() {
-		if ( Layout::MINIMAL === Layout::current_mode() || ! is_user_logged_in() ) {
+		if ( ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) || ! is_user_logged_in() ) {
 			return;
 		}
 		if ( class_exists( 'SUN_Shortcodes' ) ) {
@@ -81,7 +81,7 @@ final class Renderer {
 	 */
 	public static function render_shell_start() {
 		$mode = Layout::current_mode();
-		if ( Layout::MINIMAL === $mode ) {
+		if ( ! in_array( $mode, array( Layout::TWO, Layout::THREE ), true ) ) {
 			return;
 		}
 
@@ -121,7 +121,7 @@ final class Renderer {
 	 */
 	public static function render_shell_footer() {
 		$mode = Layout::current_mode();
-		if ( Layout::MINIMAL === $mode ) {
+		if ( ! in_array( $mode, array( Layout::TWO, Layout::THREE ), true ) ) {
 			return;
 		}
 
@@ -168,7 +168,7 @@ final class Renderer {
 
 		echo '<nav class="sabri-shell-header-actions" aria-label="' . esc_attr__( 'Account and platform actions', 'sabri-unified-application-shell' ) . '">';
 
-		if ( self::can_show_create( $settings ) && ! empty( $settings['header']['create'] ) ) {
+		if ( CreateContract::visible_for_current_user() ) {
 			$create_url = Integrations::create_url();
 			echo '<a class="sabri-shell-action sabri-shell-create-action" href="' . esc_url( $create_url ) . '">' . esc_html__( 'Create', 'sabri-unified-application-shell' ) . '</a>';
 		}
@@ -878,12 +878,18 @@ final class Renderer {
 		$home     = home_url( '/' );
 		$referrer = wp_get_referer();
 		if ( $referrer ) {
-			return wp_validate_redirect( $referrer, $home );
+			$validated = Integrations::same_site_url( $referrer );
+			if ( $validated ) {
+				return $validated;
+			}
 		}
 
 		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
 		if ( is_string( $request_uri ) && 0 === strpos( $request_uri, '/' ) && 0 !== strpos( $request_uri, '//' ) ) {
-			return wp_validate_redirect( home_url( $request_uri ), $home );
+			$validated = Integrations::same_site_url( home_url( $request_uri ) );
+			if ( $validated ) {
+				return $validated;
+			}
 		}
 
 		return $home;

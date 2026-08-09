@@ -24,13 +24,16 @@ final class LayoutCorrection {
 		if ( ! is_array( $classes ) ) {
 			$classes = array();
 		}
+		if ( ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) ) {
+			return array_values( array_unique( $classes ) );
+		}
 		$classes[] = 'sabri-shell-corrective-1-2-0-r3';
 		return array_values( array_unique( $classes ) );
 	}
 
 	/** Load only File 20-owned containment and target-recovery assets. */
 	public static function enqueue() {
-		if ( Layout::MINIMAL === Layout::current_mode() ) {
+		if ( ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) ) {
 			return;
 		}
 		$asset_version = SABRI_SHELL_VERSION . '-publication-layout-r3';

@@ -172,7 +172,7 @@ final class FutureShellV5 {
     }
 
     public static function enqueue() {
-        if ( is_admin() || Layout::MINIMAL === Layout::current_mode() ) { return; }
+        if ( is_admin() || ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) ) { return; }
         wp_enqueue_style( 'sabri-shell-future-v5', SABRI_SHELL_URL . 'assets/css/future-shell-v5.css', array(), SABRI_SHELL_VERSION );
         wp_enqueue_script( 'sabri-shell-future-v5', SABRI_SHELL_URL . 'assets/js/future-shell-v5.js', array(), SABRI_SHELL_VERSION, true );
         $enabled = array();
@@ -195,13 +195,14 @@ final class FutureShellV5 {
     }
 
     public static function body_classes( $classes ) {
+        if ( ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) ) { return $classes; }
         if ( self::feature_enabled( 'adaptive_foldable' ) ) { $classes[] = 'sabri-shell-adaptive-v5'; }
         if ( self::feature_enabled( 'view_transitions' ) ) { $classes[] = 'sabri-shell-view-transitions'; }
         return $classes;
     }
 
     public static function render() {
-        if ( is_admin() || Layout::MINIMAL === Layout::current_mode() ) { return; }
+        if ( is_admin() || ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) ) { return; }
         echo '<div id="sabri-shell-connectivity" class="sabri-shell-connectivity" role="status" aria-live="polite" hidden></div>';
         echo '<dialog id="sabri-shell-command-palette" class="sabri-shell-command-palette" aria-labelledby="sabri-shell-command-title"><form method="dialog"><button class="sabri-shell-dialog-close" value="close" aria-label="' . esc_attr__( 'Close', 'sabri-unified-application-shell' ) . '">&times;</button></form><h2 id="sabri-shell-command-title">' . esc_html__( 'Quick Command', 'sabri-unified-application-shell' ) . '</h2><label class="screen-reader-text" for="sabri-shell-command-input">' . esc_html__( 'Search commands', 'sabri-unified-application-shell' ) . '</label><input id="sabri-shell-command-input" type="search" autocomplete="off" placeholder="' . esc_attr__( 'Search or type a command', 'sabri-unified-application-shell' ) . '"><div id="sabri-shell-command-results" role="listbox"></div></dialog>';
         echo '<dialog id="sabri-shell-accessibility-center" class="sabri-shell-accessibility-center" aria-labelledby="sabri-shell-a11y-title"><form method="dialog"><button class="sabri-shell-dialog-close" value="close" aria-label="' . esc_attr__( 'Close', 'sabri-unified-application-shell' ) . '">&times;</button></form><h2 id="sabri-shell-a11y-title">' . esc_html__( 'Accessibility and Reading Preferences', 'sabri-unified-application-shell' ) . '</h2><div class="sabri-shell-pref-grid"><button type="button" data-sabri-pref="font">' . esc_html__( 'Larger text', 'sabri-unified-application-shell' ) . '</button><button type="button" data-sabri-pref="contrast">' . esc_html__( 'High contrast', 'sabri-unified-application-shell' ) . '</button><button type="button" data-sabri-pref="focus">' . esc_html__( 'Strong focus', 'sabri-unified-application-shell' ) . '</button><button type="button" data-sabri-pref="spacing">' . esc_html__( 'Comfort spacing', 'sabri-unified-application-shell' ) . '</button><button type="button" data-sabri-pref="motion">' . esc_html__( 'Reduce motion', 'sabri-unified-application-shell' ) . '</button><button type="button" data-sabri-pref="data">' . esc_html__( 'Data saver', 'sabri-unified-application-shell' ) . '</button></div><div class="sabri-shell-language-quick"><h3>' . esc_html__( 'Language', 'sabri-unified-application-shell' ) . '</h3>';

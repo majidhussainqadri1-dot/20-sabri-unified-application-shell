@@ -186,7 +186,7 @@ final class FourPlanHarmonization {
 
 	/** Enqueue latest structural guardrails and welcome-frequency client bridge. */
 	public static function enqueue() {
-		if ( Layout::MINIMAL === Layout::current_mode() ) {
+		if ( ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) ) {
 			return;
 		}
 		wp_enqueue_style(

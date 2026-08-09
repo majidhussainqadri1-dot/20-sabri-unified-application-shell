@@ -18,7 +18,7 @@ $assert = static function ( $ok, $label ) use ( &$fail ): void { if ( ! $ok ) { 
 $assert( false !== strpos( $main, '* Version: 1.4.11' ) && false !== strpos( $main, "SABRI_SHELL_VERSION', '1.4.11" ), 'current release identity 1.4.11' );
 $assert( false !== strpos( $main, 'RouteSecurity::register();' ), 'route security registered' );
 $assert( false !== strpos( $main, 'FutureShellV5NinthHardening::register();' ) && false !== strpos( $ninth, "CONTRACT_VERSION = '1.0.9'" ), 'ninth contract preserved' );
-$assert( false !== strpos( $defaults, 'const SCHEMA_VERSION       = 4;' ), 'settings schema 4' );
+$assert( false !== strpos( $defaults, 'const SCHEMA_VERSION       = 5;' ), 'settings schema 5' );
 $assert( false === strpos( $defaults, "'appearance'            => array(" ), 'File20 no longer creates appearance defaults' );
 $assert( false !== strpos( $defaults, 'File 25 is the sole visual-design authority' ), 'File25 ownership documented in defaults' );
 $assert( false !== strpos( $safe, "pre_update_option_' . Defaults::OPTION_NAME" ) && false !== strpos( $safe, 'emergency_direct_write_blocked' ), 'direct Emergency write guard' );
@@ -26,7 +26,7 @@ $assert( false !== strpos( $safe, 'private static $emergency_write_authorized' )
 $assert( false !== strpos( $recovery, 'const SNAPSHOT_FORMAT = 2;' ), 'presence-aware snapshot format 2' );
 $assert( false !== strpos( $recovery, "'exists' => \$value !== \$sentinel" ) && false !== strpos( $recovery, 'delete_option( $option )' ), 'snapshot distinguishes absence from null' );
 $locked = strpos( $recovery, '$locked_preview = self::preview_rollback( $snapshot_id )' );
-$pre = strpos( $recovery, "$pre = self::create_snapshot( 'pre-rollback' )" );
+$pre = strpos( $recovery, "\$pre = self::create_snapshot( 'pre-rollback' )" );
 $assert( false !== $locked && false !== $pre && $locked < $pre, 'rollback revalidates target under lock before retention mutation' );
 $assert( false !== strpos( $recovery, 'sabri_shell_stale_repair_locked' ), 'repair concurrency revalidated under lock' );
 $assert( false !== strpos( $recovery, 'plan_v4_quarantine_stale_page_bindings' ) && false !== strpos( $recovery, 'stale_page_binding_diff' ), 'selectable page-map repair and dry-run diff' );

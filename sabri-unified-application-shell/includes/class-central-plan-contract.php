@@ -30,7 +30,7 @@ final class CentralPlanContract {
 
 	/** Enqueue central-plan structural corrections after the base shell. */
 	public static function enqueue() {
-		if ( Layout::MINIMAL === Layout::current_mode() ) {
+		if ( ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) ) {
 			return;
 		}
 		wp_enqueue_style( 'sabri-shell-central-plan-v4', SABRI_SHELL_URL . 'assets/css/shell-central-plan-v4.css', array( 'sabri-shell' ), SABRI_SHELL_VERSION );
@@ -57,6 +57,9 @@ final class CentralPlanContract {
 			return 0 !== strpos( (string) $class_name, 'sabri-shell-theme-' )
 				&& 0 !== strpos( (string) $class_name, 'sabri-shell-density-' );
 		} ) );
+		if ( ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) ) {
+			return array_values( array_unique( $classes ) );
+		}
 		$contract  = self::visual_contract();
 		$classes[] = 'sabri-shell-central-plan-v4';
 		$classes[] = 'sabri-shell-visual-' . sanitize_html_class( $contract['status'] );

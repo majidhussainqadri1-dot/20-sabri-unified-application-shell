@@ -92,7 +92,7 @@
 | 77 | NO DEFECT | Audit chain/retention/privacy-erasure flow passed this review; no stronger cryptographic claim is inferred. |
 | 78 | DEFECT | File24 assurance queue had read/modify/write race; owner-token lock added. |
 | 79 | DEFECT | Release identity/docs/tests/workflow/package gates were stale for 1.4.11/schema5/eighty-round source; synchronized. |
-| 80 | FINAL CLOSURE | Exact final PR-head and merged-main quality + Baseline Archive Integrity determine the final classification. Any failure is a Round-80 defect and must be corrected/retested before completion. |
+| 80 | DEFECT | Exact-head CI exposed an undefined Renderer Create gate, ordinary shell/UI leakage into Immersive mode, a stale deleted-HomeFeed bootstrap require, and multiple preservation assertions still bound to superseded schema/implementation spellings. Runtime and QA contracts were corrected; Round 80 remains classified as a defect even after the corrected exact head turns green. |
 
 ## Candidate after source corrections
 
@@ -108,3 +108,7 @@
 The final PR head must pass PHP 7.4/8.3 syntax, every repository regression/adversarial suite, JavaScript/JSON/CSS/static ownership/routing/recovery/privacy checks, deterministic production-package root/path/file-set/SHA/manifest/CRC parity, artifact upload and Baseline Archive Integrity. After merge, the same merged `main` commit must pass the quality and baseline workflows again.
 
 Hostinger staging, real companion/browser/device/accessibility behavior, backup/restore/rollback rehearsal, Founder acceptance, live deployment and operational acceptance remain separate and are not claimed by this audit record.
+
+## Round 80 corrective evidence
+
+The first exact-head quality run for PR #26 failed on PHP 7.4/8.3. This was treated as a real Round-80 defect, not bypassed. Corrections include: exact CreateContract rendering; strict same-origin login redirect; Two/Three-only ordinary shell chrome/assets/Future-Shell controls; removal of the deleted HomeFeed test bootstrap dependency; schema-5 preservation assertions; current File21 feed migration truth; decoded route-security assertions; exact rollback allowlist assertions; current guarded LKG method evidence; and refreshed permanent static checks. The corrected exact head must pass both Quality and Baseline Archive Integrity before merge, followed by the same two gates on merged main.

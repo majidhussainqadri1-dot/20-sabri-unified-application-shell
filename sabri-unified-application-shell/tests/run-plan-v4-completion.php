@@ -68,7 +68,8 @@ foreach (array('wp_schedule_event', 'expires', 'bounded_reconciliation', 'assura
 foreach (array('/repair/preview', '/repair/execute', '/rollback/preview', '/rollback/execute', 'dry_run', 'pre-rollback', 'smoke_test', 'recovery_lock') as $needle) {
     $assert(strpos($recovery, $needle) !== false, "Recovery missing {$needle}");
 }
-$assert(strpos($recovery, "0 !== strpos( \$option, 'sabri_shell_' )") !== false, 'Rollback is not restricted to File 20-owned option prefixes.');
+$owned = substr($recovery, strpos($recovery, 'private static function owned_options()'), 1200);
+$assert(strpos($owned, 'Defaults::OPTION_NAME') !== false && strpos($owned, 'FutureShellV5::OPTION') !== false && strpos($owned, "'sabri_shell_flush_rewrite_rules'") !== false && strpos($owned, "0 !== strpos( \$option, 'sabri_shell_' )") === false, 'Rollback is restricted to the explicit File20-owned allowlist.');
 $assert(strpos($recovery, 'expected_settings_version') !== false, 'Repair lacks stale-preview protection.');
 $assert(strpos($recovery, "'status' => 409") !== false, 'Recovery lacks conflict status paths.');
 

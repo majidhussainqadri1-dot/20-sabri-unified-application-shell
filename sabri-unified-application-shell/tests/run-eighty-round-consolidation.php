@@ -64,7 +64,7 @@ $assert(false !== strpos($integr, 'shortcode_collision') || false !== strpos($in
 $assert(false !== strpos($integr, 'version_compare') && false !== strpos($integr, 'preg_match'), 'provider versions semver-validated');
 $assert(false === strpos($integr, 'get_author_posts_url('), 'no generic WordPress author-profile fallback');
 $assert(false === strpos($integr, "array( 'sabri_verified_doctor', 'sabri_doctor_verified', 'doctor' )"), 'no role-based doctor discovery fallback');
-$assert(false !== strpos($integr, 'safe_login_redirect') && false !== strpos($integr, 'same_origin'), 'login redirect is internal/same-origin');
+$assert(false !== strpos($renderer, 'safe_login_redirect') && false !== strpos($renderer, 'Integrations::same_site_url'), 'login redirect is internal/same-origin');
 
 $assert(false !== strpos($nav, "add_action( 'add_option_" ) && false !== strpos($nav, "add_action( 'delete_option_"), 'navigation cache invalidates on companion option add/delete');
 $assert(false !== strpos($nav, 'owner') && false !== strpos($nav, 'source_priority'), 'route resolution includes owner-aware precedence evidence');
@@ -72,30 +72,31 @@ $assert(false !== strpos($nav, 'shortcode_collision') || false !== strpos($integ
 
 $assert(false === strpos($renderer, 'WP_Query') && false === strpos($renderer, 'get_users('), 'renderer does not query domain feed/doctor backends');
 $assert(false === strpos($renderer, 'Medical Safety'), 'renderer does not author clinical safety content');
-$assert(false !== strpos($renderer, 'Layout::MINIMAL') && false !== strpos($renderer, 'Layout::IMMERSIVE'), 'renderer suppresses chrome in non-shell modes');
-$assert(false !== strpos($renderer, 'sabri-shell-skip-target') || false !== strpos($renderer, 'id="sabri-shell-main"'), 'server-rendered skip target present');
+$assert(false !== strpos($renderer, 'array( Layout::TWO, Layout::THREE )'), 'renderer suppresses chrome outside Two/Three shell modes');
+$assert(false !== strpos($renderer, 'href="#sabri-shell-main-content"') && false !== strpos($renderer, 'id="sabri-shell-main-content"'), 'server-rendered skip target present');
 $assert(false !== strpos($renderer, 'aria-modal') && false !== strpos($renderer, 'role="dialog"'), 'drawer dialog semantics');
+$assert(false !== strpos($renderer, 'array( Layout::TWO, Layout::THREE )') && false !== strpos($assets = $read('includes/class-assets.php'), 'array( Layout::TWO, Layout::THREE )'), 'ordinary shell renderer/assets do not leak into Minimal/Immersive modes');
 $assert(substr_count($renderer, 'render_mobile_bottom_nav(') <= 1, 'no duplicate mobile bottom-nav renderer path');
 
 $assert(false === strpos($layout, "\$_GET['sabri_shell_maintenance']"), 'raw maintenance query cannot force layout');
 $assert(false !== strpos($layout, 'path_matches') || false !== strpos($layout, 'request_path'), 'layout classification is path-aware');
-$assert(false !== strpos($context, 'SafeMode::disabled') && false !== strpos($context, 'Layout::MINIMAL') && false !== strpos($context, 'Layout::IMMERSIVE'), 'context navigation suppressed in SafeMode/Minimal/Immersive');
-$assert(false !== strpos($context_js, 'search') && false !== strpos($context_js, 'hash'), 'context history strips query/hash before persistence');
+$assert(false !== strpos($context, 'SafeMode::disabled') && false !== strpos($context, 'array( Layout::TWO, Layout::THREE )'), 'context navigation is limited to Two/Three and suppressed in SafeMode/non-shell modes');
+$assert(false !== strpos($context_js, 'url.origin + url.pathname') && false !== strpos($context_js, 'MAX_STACK_SIZE = 20'), 'context history persists canonical query/hash-free same-origin paths within a bounded stack');
 
-$assert(false !== strpos($route, '%2e') || false !== strpos($route, 'encoded'), 'encoded dot-path ambiguity rejected');
+$assert(false !== strpos($route, 'rawurldecode') && false !== strpos($route, "array( '.', '..' )"), 'encoded dot-path ambiguity rejected after decoding');
 $assert(false !== strpos($route, '%2f') || false !== strpos($route, 'rawurldecode'), 'encoded slash ambiguity rejected');
-$assert(false !== strpos($route, '%5c') || false !== strpos($route, 'backslash'), 'encoded backslash ambiguity rejected');
+$assert(false !== strpos($route, 'rawurldecode') && substr_count($route, "'\\\\'") >= 2, 'encoded backslash ambiguity rejected after decoding');
 $assert(false !== strpos($route, 'port') && false !== strpos($route, 'scheme'), 'same-site comparison normalizes scheme/port');
 
 $assert(false !== strpos($recovery, 'private static function owned_options()') && false !== strpos($recovery, 'restore_option_entry'), 'rollback uses exact File20-owned allowlist');
 $assert(false !== strpos($recovery, 'snapshot_schema_version') && false !== strpos($recovery, 'smoke'), 'rollback uses captured schema and post-restore smoke evidence');
 $assert(false !== strpos($plugin, "create_snapshot( 'pre-schema-upgrade' )"), 'schema upgrade creates pre-upgrade recovery snapshot');
-$assert(false !== strpos($snapshot, 'emergency') && false !== strpos($snapshot, 'settings_row'), 'activation snapshot preserves Emergency/concurrency boundaries');
+$assert(false !== strpos($snapshot, 'emergency_before') && false !== strpos($snapshot, 'PlanV4SettingsConcurrency::record_programmatic_change'), 'activation snapshot preserves Emergency and advances monotonic concurrency evidence');
 $assert(false !== strpos($system, 'activation_snapshot') && false !== strpos($system, 'integrity'), 'System Check verifies activation snapshot integrity');
 $assert(false !== strpos($system, 'NativeContentSlots') || false !== strpos($system, 'native-slot'), 'System Check verifies native slot publisher');
 $assert(false !== strpos($concurrency, 'row_version') || false !== strpos($concurrency, 'VERSION_OPTION'), 'settings concurrency evidence retained');
 
-$assert(false !== strpos($future, 'restore_lkg') && false !== strpos($control, 'restore_current_lkg'), 'public LKG restore delegates to guarded path');
+$assert(false !== strpos($future, 'restore_lkg') && false !== strpos($future, 'FutureShellV5ControlGuard::restore_current_snapshot') && false !== strpos($control, 'restore_current_snapshot'), 'public LKG restore delegates to guarded path');
 $assert(false !== strpos($control, 'required') && false !== strpos($control, 'invalid_release_ring'), 'release-ring input required and malformed values fail closed');
 $assert(false !== strpos($future, 'CIRCUIT_LOCK') || false !== strpos($future, 'circuit_lock'), 'circuit-breaker mutation lock');
 $assert(false !== strpos($second, 'circuit') && false !== strpos($second, 'lock'), 'circuit cleanup uses lock');

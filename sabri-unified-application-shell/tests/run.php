@@ -2,7 +2,6 @@
 require __DIR__ . '/bootstrap.php';
 
 use Sabri\UnifiedShell\Defaults;
-use Sabri\UnifiedShell\HomeFeed;
 use Sabri\UnifiedShell\Integrations;
 use Sabri\UnifiedShell\Layout;
 use Sabri\UnifiedShell\Navigation;
@@ -67,7 +66,7 @@ $assert( ! Layout::is_excluded_request(), 'Public knowledge routes remain shell 
 
 $fallbacks = Layout::content_target_fallbacks();
 $assert( ! in_array( '.wp-site-blocks', $fallbacks, true ) && ! in_array( '#page', $fallbacks, true ) && ! in_array( '.site', $fallbacks, true ), 'Theme root wrappers are excluded from content targeting.' );
-$assert( HomeFeed::authoritative_feed_present( '[sabri_news_home]' ), 'Authoritative File 04 feed suppresses shell feed insertion.' );
+$assert( ! in_array( 'sabri_shell_home_feed', $dest['home']['shortcodes'], true ) && in_array( 'sabri_complete_home_feed', $dest['home']['shortcodes'], true ), 'File 21 Home/News provider owns the Home feed surface; retired File20 local feed shortcode is absent.' );
 
 $GLOBALS['test_users'][7] = new WP_User( 7, array( 'sabri_doctor_verified' ), 'Verified Doctor' );
 $GLOBALS['test_user_meta'][7]['_smc_doctor_verified'] = 1;

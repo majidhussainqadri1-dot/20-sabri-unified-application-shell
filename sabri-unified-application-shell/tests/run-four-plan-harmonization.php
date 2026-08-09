@@ -33,7 +33,7 @@ foreach (array('CF-01','CF-02','CF-03','CF-04','CF-05','CF-06') as $cf) { $asser
 $assert(strpos($seventh, 'single-free-tier-voluntary-donation-no-donor-advantage') !== false, 'conditional finance preserves current free/donation law');
 $assert(strpos($seventh, 'file-17-cf-04-after-activation') !== false && strpos($seventh, '1073741824') !== false, 'conditional media transfer boundary and 1GB limit');
 $assert(strpos($seventh, 'file-20-shell-surface-cf-06-locale-provider-after-activation') !== false, 'conditional localization provider boundary');
-$assert(strpos($defaults, 'const SCHEMA_VERSION       = 4;') !== false, 'settings schema 4 remains current');
+$assert(strpos($defaults, 'const SCHEMA_VERSION       = 5;') !== false, 'settings schema 5 remains current');
 $assert(strpos($defaults, "'appearance'            => array(") === false, 'fresh File20 defaults create no File25 visual state');
 $assert(strpos($tenth, "'auto_insert' => false") !== false, 'legacy File20 Home feed state forced inert');
 $assert(strpos($defaults, "'bottom_nav'               => false") !== false, 'bottom nav default disabled');

@@ -58,7 +58,7 @@ final class FutureShellV5TenthHardening {
         $classes = is_array( $classes ) ? $classes : array();
         $mode = Layout::current_mode();
         $classes[] = 'sabri-shell-layout-' . sanitize_html_class( (string) $mode );
-        if ( Layout::MINIMAL !== $mode ) { $classes[] = 'sabri-shell-enabled'; }
+        if ( in_array( $mode, array( Layout::TWO, Layout::THREE ), true ) ) { $classes[] = 'sabri-shell-enabled'; }
         $settings = Settings::get();
         $layout = isset( $settings['layout'] ) && is_array( $settings['layout'] ) ? $settings['layout'] : array();
         $classes[] = ! empty( $layout['sticky_header'] ) ? 'sabri-shell-sticky-header' : 'sabri-shell-static-header';

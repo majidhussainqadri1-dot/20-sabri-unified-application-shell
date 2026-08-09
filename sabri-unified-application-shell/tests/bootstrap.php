@@ -41,6 +41,7 @@ function sanitize_textarea_field( $value ) { return trim( strip_tags( (string) $
 function absint( $value ) { return abs( (int) $value ); }
 function esc_url_raw( $value ) { return (string) $value; }
 function wp_http_validate_url( $value ) { return (bool) filter_var( $value, FILTER_VALIDATE_URL ); }
+function wp_validate_redirect( $location, $fallback = '' ) { return is_string( $location ) && '' !== $location ? $location : $fallback; }
 function get_option( $key, $default = false ) { return array_key_exists( $key, $GLOBALS['test_options'] ) ? $GLOBALS['test_options'][ $key ] : $default; }
 function update_option( $key, $value ) { $GLOBALS['test_options'][ $key ] = $value; return true; }
 function delete_option( $key ) { unset( $GLOBALS['test_options'][ $key ] ); return true; }
@@ -140,4 +141,3 @@ require_once dirname( __DIR__ ) . '/includes/class-integrations.php';
 require_once dirname( __DIR__ ) . '/includes/class-navigation.php';
 require_once dirname( __DIR__ ) . '/includes/class-safe-mode.php';
 require_once dirname( __DIR__ ) . '/includes/class-layout.php';
-require_once dirname( __DIR__ ) . '/includes/class-home-feed.php';
