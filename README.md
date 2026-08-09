@@ -4,24 +4,20 @@ Independent repository for **File 20 — Sabri Unified Application Shell** of th
 
 ## Current lifecycle
 
-- Merged baseline entering this audit: `1.4.10` at `7b4019091d1f83ef4cd9dc3f559abb2b3a95955d`.
-- Current eighty-round candidate: **Version `1.4.11`** on `audit/file20-eighty-round-2026-08-09`.
+- Baseline reopened by this audit: merged `1.4.11` at `75e451996b3b9cbbcbb37578678759d32c404ca1`.
+- Current second fresh eighty-round candidate: **Version `1.4.12`** on `audit/file20-second-eighty-round-2026-08-09`.
 - Settings schema: **5**.
-- Future Shell v5 approved scope remains exactly **18 enhancements**; no nineteenth feature is added.
-- File 20 remains the structural shell only. Native companion domains keep their data, authorization, workflow, cache, Search, visual, clinical and publishing truth.
-- Repository/code/package/automated-QA becomes green only after the exact final PR head and merged `main` both pass the permanent quality and Baseline Archive Integrity workflows.
-- Hostinger staging, real companion integration, browser/device/accessibility acceptance, backup/restore/rollback rehearsal, Founder acceptance, live deployment and operational acceptance remain separate evidence gates.
+- Eleventh corrective hardening contract: **1.0.11**.
+- Future Shell v5 remains exactly **18 approved enhancements**; no nineteenth feature is added.
+- File 20 remains structural shell/navigation/layout/slots/diagnostics/recovery only. Native companion domains keep identity, auth, Home/News, communication, notification, appointment, marketplace, Search, visual, clinical, financial, media, analytics and localization truth.
+- Repository/code/package/automated-QA is not staging/live/operational acceptance.
 
-## Eighty-round 1.4.11 consolidation
+## Second fresh eighty-round 1.4.12 consolidation
 
-This audit reopens merged `1.4.10` from scratch rather than treating its earlier green CI as completion proof. It consolidates stale compatibility shims and domain leakage into current source invariants, including complete File20 HomeFeed retirement under File21; exact native Home/News slots; File25-only visual truth; owner/access/visibility-aware routing and duplicate-shortcode collision handling; File26-only Search; strict internal route/profile/login/Create boundaries; provider semantic-version and critical-health truth; provider-only doctor/sidebar surfaces; anchored Minimal/Immersive and SafeMode-aware context navigation; schema-5 invariant enforcement; pre-schema-upgrade snapshot and stronger rollback/activation safety; encoded-route hardening; System Check integrity/native-slot evidence; guarded LKG/release-ring/circuit/assurance concurrency; truthful maintenance failure evidence; and deterministic `1.4.11-EIGHTY-ROUND-HARDENED` packaging.
-
-## Canonical responsibility
-
-File 20 owns the global structural application shell, navigation/layout resolution, native presentation slots, diagnostics and File-20 recovery continuity. It does **not** own membership, authentication, Home/News publishing/feed data, messaging, notifications, appointments, marketplace, clinical records, support cases, financial ledgers/payments, media processing/storage, analytics warehouses, localization bundles, Search/Discovery/Ranking, security enforcement or File 25 visual truth.
+This cycle treats the prior 1.4.11 green build as historical evidence only. Corrections discovered so far include canonical decoded-path validation for absolute and relative route overrides; Page-ID single-owner collision checks across all canonical Page-ID sources; dedicated File17 Messages shortcode/Page-ID/diagnostic truth; High-Trust signup without generic WordPress registration fallback; strict internal configured URL policy; corrected File01 foundation/no-Search metadata; responsive File21 provider-only right-slot behavior; removal of stale WordPress-role doctor diagnostics; explicit File20/File00 critical-health presence; no-store recovery/System Check REST evidence; same-site nonce-bearing Safe Mode URL generation; serialized Settings API writes; and serialized LKG recovery.
 
 ## Quality boundary
 
-The permanent `1.4.11` workflow runs PHP 7.4 and 8.3 syntax plus every repository regression/adversarial suite, JavaScript/JSON/CSS/static ownership/routing/recovery/privacy checks, and deterministic production-only packaging with canonical ZIP root/path safety, source/stage/extracted SHA-256 parity, manifest equality and CRC verification.
+The permanent `1.4.12` workflow must pass PHP 7.4/8.3 syntax and every regression/adversarial suite, JavaScript/JSON/CSS/static ownership/routing/recovery/privacy checks, and deterministic production-only packaging with canonical ZIP root/path safety, exact source/stage/extracted SHA-256 parity, manifest equality and CRC validation.
 
-Repository checks establish source/package/automated-QA evidence only. Real WordPress/Hostinger staging, actual companion runtime contracts, browsers/devices, accessibility, cache behavior, PWA lifecycle, backup/restore, rollback rehearsal and Founder acceptance remain separate gates. A green repository run must never be described as live or operational acceptance.
+Hostinger staging, real companion-runtime/browser/device/accessibility behavior, backup/restore/rollback rehearsal, Founder acceptance, live deployment and operational monitoring remain separate gates.
