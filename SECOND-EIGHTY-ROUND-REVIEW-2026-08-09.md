@@ -57,7 +57,7 @@ Rule: each round starts from the corrected state produced by the preceding round
 |49|NO DEFECT|Audit chain retention anchor remained bounded/fail-closed.|
 |50|NO DEFECT|Privacy erasure rehash preserved retained-chain integrity.|
 |51|NO DEFECT|File24 assurance queue remained bounded and owner-token locked.|
-|52|DEFECT|Two Settings API POSTs could pass same optimistic version before either write; update transaction lock added.|
+|52|DEFECT|Two Settings API POSTs could pass the same optimistic version before either write; update transaction lock added.|
 |53|DEFECT|New settings lock required explicit-uninstall cleanup; allowlist updated.|
 |54|NO DEFECT|Settings schema/invariant enforcement remained idempotent.|
 |55|NO DEFECT|Programmatic normalization preserved owned invariants.|
@@ -84,7 +84,7 @@ Rule: each round starts from the corrected state produced by the preceding round
 |76|NO DEFECT|CF-01..CF-06 remain conditional integration metadata/routes only; no foreign backend created.|
 |77|NO DEFECT|Production package source set still excludes tests/development-only material and retired HomeFeed producer.|
 |78|DEFECT|Source changed while release identity/workflow/package evidence remained 1.4.11; candidate advanced to 1.4.12 with dedicated second-eighty regression and deterministic package gate.|
-|79|PENDING|Exact final PR-head PHP/static/package/baseline evidence.|
-|80|PENDING|Final corrected-head/merge closure and post-merge main verification.|
+|79|DEFECT|First exact PR-head CI had PHP syntax PASS on 7.4/8.3 but ten preservation suites still hard-coded current release 1.4.11; all stale current-release assertions were advanced to 1.4.12 without weakening their historical contract checks, then the exact-head suite was required to rerun.|
+|80|PENDING|Final corrected-head/merge closure and post-merge `main` verification.|
 
-Through Round 78: DEFECT rounds = `1,2,3,4,7,9,27,32,33,34,35,36,46,52,53,62,78`; all other completed rounds through 78 are NO DEFECT. Round 79/80 classifications are determined only by fresh exact-head evidence.
+Through Round 79: DEFECT rounds = `1,2,3,4,7,9,27,32,33,34,35,36,46,52,53,62,78,79`. All other completed rounds through 79 are NO DEFECT. Round 80 classification is determined only by the final corrected PR-head and merged-main evidence.
