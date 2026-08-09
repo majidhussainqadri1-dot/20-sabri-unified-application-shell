@@ -1,0 +1,211 @@
+name: File 20 Round 80 Corrective Fix Executor
+
+on:
+  push:
+    branches: [audit/file20-eighty-round-2026-08-09]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: ${{ !contains(github.event.head_commit.message, '[round80-fixed]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - name: Apply Round 80 source and regression corrections
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          root = Path('sabri-unified-application-shell')
+
+          def load(rel):
+              p = root / rel
+              return p, p.read_text(encoding='utf-8')
+
+          def save(rel, text):
+              (root / rel).write_text(text, encoding='utf-8')
+
+          def rep(rel, old, new, count=None):
+              p, s = load(rel)
+              n = s.count(old)
+              if n == 0:
+                  raise SystemExit(f'missing replacement target in {rel}: {old[:100]!r}')
+              if count is not None and n != count:
+                  raise SystemExit(f'unexpected target count in {rel}: expected {count}, got {n}: {old[:100]!r}')
+              s = s.replace(old, new)
+              p.write_text(s, encoding='utf-8')
+              print(f'{rel}: replaced {n} occurrence(s)')
+
+          # Runtime shell must not leak ordinary chrome into Minimal/Immersive.
+          rep('includes/class-renderer.php',
+              "\t\tif ( Layout::MINIMAL === Layout::current_mode() || ! is_user_logged_in() ) {\n\t\t\treturn;\n\t\t}",
+              "\t\tif ( ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) || ! is_user_logged_in() ) {\n\t\t\treturn;\n\t\t}", 1)
+          rep('includes/class-renderer.php',
+              "\t\tif ( Layout::MINIMAL === $mode ) {\n\t\t\treturn;\n\t\t}",
+              "\t\tif ( ! in_array( $mode, array( Layout::TWO, Layout::THREE ), true ) ) {\n\t\t\treturn;\n\t\t}", 2)
+          rep('includes/class-renderer.php',
+              "\t\tif ( self::can_show_create( $settings ) && ! empty( $settings['header']['create'] ) ) {",
+              "\t\tif ( CreateContract::visible_for_current_user() ) {", 1)
+          rep('includes/class-renderer.php',
+              "\t\t$referrer = wp_get_referer();\n\t\tif ( $referrer ) {\n\t\t\treturn wp_validate_redirect( $referrer, $home );\n\t\t}\n\n\t\t$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';\n\t\tif ( is_string( $request_uri ) && 0 === strpos( $request_uri, '/' ) && 0 !== strpos( $request_uri, '//' ) ) {\n\t\t\treturn wp_validate_redirect( home_url( $request_uri ), $home );\n\t\t}\n\n\t\treturn $home;",
+              "\t\t$referrer = wp_get_referer();\n\t\tif ( $referrer ) {\n\t\t\t$validated = Integrations::same_site_url( $referrer );\n\t\t\tif ( $validated ) {\n\t\t\t\treturn $validated;\n\t\t\t}\n\t\t}\n\n\t\t$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';\n\t\tif ( is_string( $request_uri ) && 0 === strpos( $request_uri, '/' ) && 0 !== strpos( $request_uri, '//' ) ) {\n\t\t\t$validated = Integrations::same_site_url( home_url( $request_uri ) );\n\t\t\tif ( $validated ) {\n\t\t\t\treturn $validated;\n\t\t\t}\n\t\t}\n\n\t\treturn $home;", 1)
+
+          rep('includes/class-assets.php',
+              "\t\tif ( Layout::MINIMAL === Layout::current_mode() ) {\n\t\t\treturn;\n\t\t}",
+              "\t\tif ( ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) ) {\n\t\t\treturn;\n\t\t}", 2)
+
+          rep('includes/class-central-plan-contract.php',
+              "\t\tif ( Layout::MINIMAL === Layout::current_mode() ) {\n\t\t\treturn;\n\t\t}",
+              "\t\tif ( ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) ) {\n\t\t\treturn;\n\t\t}", 1)
+          rep('includes/class-central-plan-contract.php',
+              "\t\t$contract  = self::visual_contract();",
+              "\t\tif ( ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) ) {\n\t\t\treturn array_values( array_unique( $classes ) );\n\t\t}\n\t\t$contract  = self::visual_contract();", 1)
+
+          rep('includes/class-four-plan-harmonization.php',
+              "\t\tif ( Layout::MINIMAL === Layout::current_mode() ) {\n\t\t\treturn;\n\t\t}",
+              "\t\tif ( ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) ) {\n\t\t\treturn;\n\t\t}", 1)
+
+          rep('includes/class-layout-correction.php',
+              "\t\t$classes[] = 'sabri-shell-corrective-1-2-0-r3';",
+              "\t\tif ( ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) ) {\n\t\t\treturn array_values( array_unique( $classes ) );\n\t\t}\n\t\t$classes[] = 'sabri-shell-corrective-1-2-0-r3';", 1)
+          rep('includes/class-layout-correction.php',
+              "\t\tif ( Layout::MINIMAL === Layout::current_mode() ) {\n\t\t\treturn;\n\t\t}",
+              "\t\tif ( ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) ) {\n\t\t\treturn;\n\t\t}", 1)
+
+          rep('includes/class-future-shell-v5.php',
+              "if ( is_admin() || Layout::MINIMAL === Layout::current_mode() ) { return; }",
+              "if ( is_admin() || ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) ) { return; }", 2)
+          rep('includes/class-future-shell-v5.php',
+              "    public static function body_classes( $classes ) {\n        if ( self::feature_enabled( 'adaptive_foldable' ) ) { $classes[] = 'sabri-shell-adaptive-v5'; }",
+              "    public static function body_classes( $classes ) {\n        if ( ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) ) { return $classes; }\n        if ( self::feature_enabled( 'adaptive_foldable' ) ) { $classes[] = 'sabri-shell-adaptive-v5'; }", 1)
+
+          rep('includes/class-future-shell-v5-hardening.php',
+              "\t\tif ( is_admin() || Layout::MINIMAL === Layout::current_mode() ) {\n\t\t\treturn;\n\t\t}",
+              "\t\tif ( is_admin() || ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) ) {\n\t\t\treturn;\n\t\t}", 1)
+
+          rep('includes/class-future-shell-v5-tenth-hardening.php',
+              "        if ( Layout::MINIMAL !== $mode ) { $classes[] = 'sabri-shell-enabled'; }",
+              "        if ( in_array( $mode, array( Layout::TWO, Layout::THREE ), true ) ) { $classes[] = 'sabri-shell-enabled'; }", 1)
+
+          # Deleted runtime owner must not remain in the test bootstrap.
+          rep('tests/bootstrap.php',
+              "require_once dirname( __DIR__ ) . '/includes/class-home-feed.php';\n",
+              "", 1)
+
+          # Preserve Create/shortcode regression intent against the corrected implementation.
+          rep('tests/run-create-contract-layout.php',
+              "$assert( false !== strpos( $renderer, 'sabri_shell_create_visible_for_current_user()' ), 'Server-rendered Create markup consumes the exact visibility contract.' );",
+              "$assert( false !== strpos( $renderer, 'CreateContract::visible_for_current_user()' ), 'Server-rendered Create markup consumes the exact package-owned visibility contract.' );", 1)
+          rep('tests/run-create-contract-layout.php',
+              "$assert( false !== strpos( $integrations, '$max_pages  = 50;' ), 'Shortcode compatibility scan has an explicit page ceiling.' );",
+              "$assert( false !== strpos( $integrations, '$per_page = 100;' ) && false !== strpos( $integrations, '$max_batches = 10;' ) && false !== strpos( $integrations, \"'status' => $scan_complete ? 'none' : 'incomplete'\" ), 'Shortcode compatibility scan is explicitly bounded and fails closed when incomplete.' );", 1)
+
+          # Round-80 consolidation assertions: test behavior/evidence, not superseded implementation spellings.
+          p, s = load('tests/run-eighty-round-consolidation.php')
+          s = s.replace("$assert(false !== strpos($integr, 'safe_login_redirect') && false !== strpos($integr, 'same_origin'), 'login redirect is internal/same-origin');",
+                        "$assert(false !== strpos($renderer, 'safe_login_redirect') && false !== strpos($renderer, 'Integrations::same_site_url'), 'login redirect is internal/same-origin');")
+          s = s.replace("$assert(false !== strpos($renderer, 'Layout::MINIMAL') && false !== strpos($renderer, 'Layout::IMMERSIVE'), 'renderer suppresses chrome in non-shell modes');",
+                        "$assert(false !== strpos($renderer, 'array( Layout::TWO, Layout::THREE )'), 'renderer suppresses chrome outside Two/Three shell modes');")
+          s = s.replace("$assert(false !== strpos($renderer, 'sabri-shell-skip-target') || false !== strpos($renderer, 'id=\"sabri-shell-main\"'), 'server-rendered skip target present');",
+                        "$assert(false !== strpos($renderer, 'href=\"#sabri-shell-main-content\"') && false !== strpos($renderer, 'id=\"sabri-shell-main-content\"'), 'server-rendered skip target present');")
+          s = s.replace("$assert(false !== strpos($context, 'SafeMode::disabled') && false !== strpos($context, 'Layout::MINIMAL') && false !== strpos($context, 'Layout::IMMERSIVE'), 'context navigation suppressed in SafeMode/Minimal/Immersive');",
+                        "$assert(false !== strpos($context, 'SafeMode::disabled') && false !== strpos($context, 'array( Layout::TWO, Layout::THREE )'), 'context navigation is limited to Two/Three and suppressed in SafeMode/non-shell modes');")
+          s = s.replace("$assert(false !== strpos($context_js, 'search') && false !== strpos($context_js, 'hash'), 'context history strips query/hash before persistence');",
+                        "$assert(false !== strpos($context_js, 'url.origin + url.pathname') && false !== strpos($context_js, 'MAX_STACK_SIZE = 20'), 'context history persists canonical query/hash-free same-origin paths within a bounded stack');")
+          s = s.replace("$assert(false !== strpos($route, '%2e') || false !== strpos($route, 'encoded'), 'encoded dot-path ambiguity rejected');",
+                        "$assert(false !== strpos($route, 'rawurldecode') && false !== strpos($route, \"array( '.', '..' )\"), 'encoded dot-path ambiguity rejected after decoding');")
+          s = s.replace("$assert(false !== strpos($route, '%5c') || false !== strpos($route, 'backslash'), 'encoded backslash ambiguity rejected');",
+                        "$assert(false !== strpos($route, 'rawurldecode') && false !== strpos($route, \"strpos( $decoded, '\\\\' )\"), 'encoded backslash ambiguity rejected after decoding');")
+          s = s.replace("$assert(false !== strpos($snapshot, 'emergency') && false !== strpos($snapshot, 'settings_row'), 'activation snapshot preserves Emergency/concurrency boundaries');",
+                        "$assert(false !== strpos($snapshot, 'emergency_before') && false !== strpos($snapshot, 'PlanV4SettingsConcurrency::record_programmatic_change'), 'activation snapshot preserves Emergency and advances monotonic concurrency evidence');")
+          s = s.replace("$assert(false !== strpos($future, 'restore_lkg') && false !== strpos($control, 'restore_current_lkg'), 'public LKG restore delegates to guarded path');",
+                        "$assert(false !== strpos($future, 'restore_lkg') && false !== strpos($future, 'FutureShellV5ControlGuard::restore_current_snapshot') && false !== strpos($control, 'restore_current_snapshot'), 'public LKG restore delegates to guarded path');")
+          # Add explicit immersive bleed guards.
+          anchor = "$assert(false !== strpos($renderer, 'aria-modal') && false !== strpos($renderer, 'role=\"dialog\"'), 'drawer dialog semantics');\n"
+          extra = anchor + "$assert(false !== strpos($renderer, 'array( Layout::TWO, Layout::THREE )') && false !== strpos($assets = $read('includes/class-assets.php'), 'array( Layout::TWO, Layout::THREE )'), 'ordinary shell renderer/assets do not leak into Minimal/Immersive modes');\n"
+          if anchor not in s: raise SystemExit('run-eighty immersive insertion anchor missing')
+          s = s.replace(anchor, extra, 1)
+          p.write_text(s, encoding='utf-8')
+
+          rep('tests/run-four-plan-harmonization.php',
+              "$assert(strpos($defaults, 'const SCHEMA_VERSION       = 4;') !== false, 'settings schema 4 remains current');",
+              "$assert(strpos($defaults, 'const SCHEMA_VERSION       = 5;') !== false, 'settings schema 5 remains current');", 1)
+
+          rep('tests/run-future-shell-v5-ninth-hardening.php',
+              "$assert( false !== strpos( $defaults, 'const SCHEMA_VERSION       = 4;' ), 'settings schema 4' );",
+              "$assert( false !== strpos( $defaults, 'const SCHEMA_VERSION       = 5;' ), 'settings schema 5' );", 1)
+          rep('tests/run-future-shell-v5-ninth-hardening.php',
+              "$pre = strpos( $recovery, \"$pre = self::create_snapshot( 'pre-rollback' )\" );",
+              "$pre = strpos( $recovery, \"\\$pre = self::create_snapshot( 'pre-rollback' )\" );", 1)
+
+          rep('tests/run-future-shell-v5-tenth-hardening.php',
+              "$assert( false !== strpos( $tenth, \"\\$value['navigation']['home']['shortcode'] = '';\" ), 'configured legacy feed shortcode quarantined' );",
+              "$assert( false !== strpos( $tenth, \"\\$value['navigation']['home']['shortcode'] = 'sabri_complete_home_feed';\" ), 'configured legacy File20 feed shortcode migrates to the File21-compatible provider shortcode' );", 1)
+          rep('tests/run-future-shell-v5-tenth-hardening.php',
+              "$assert( false !== strpos( $health, \"'status' => 'bounded_fallback'\" ), 'legacy fallback source remains identifiable for final override' );",
+              "$assert( false !== strpos( $health, \"'status' => 'unavailable'\" ) && false !== strpos( $health, \"'file20_fallback' => false\" ), 'base search surface is fail-closed with no File20 fallback before the final File26 override' );", 1)
+
+          rep('tests/run-future-shell-v5.php',
+              "$assert( false !== strpos( $defaults, 'const SCHEMA_VERSION       = 4;' ) && false === strpos( $defaults, \"'appearance'            => array(\" ), 'schema4 with no fresh File20 visual state' );",
+              "$assert( false !== strpos( $defaults, 'const SCHEMA_VERSION       = 5;' ) && false === strpos( $defaults, \"'appearance'            => array(\" ), 'schema5 with no fresh File20 visual state' );", 1)
+
+          p, s = load('tests/run-plan-v4-adversarial.php')
+          s = s.replace("foreach (array('Throwable', 'unavailable', 'incompatible', 'collision', 'bounded_fallback') as $needle) {",
+                        "foreach (array('Throwable', 'unavailable', 'incompatible', 'collision', 'unknown') as $needle) {")
+          s = s.replace("$assert(strpos($recovery, \"0 !== strpos( \\$option, 'sabri_shell_' )\") !== false, 'Rollback scope can escape File 20-owned options.');",
+                        "$owned = substr($recovery, strpos($recovery, 'private static function owned_options()'), 1200);\n$assert(strpos($owned, 'Defaults::OPTION_NAME') !== false && strpos($owned, 'FutureShellV5::OPTION') !== false && strpos($owned, \"'sabri_shell_four_plan_migration'\") !== false && strpos($owned, \"0 !== strpos( \\$option, 'sabri_shell_' )\") === false, 'Rollback uses an exact File20-owned option allowlist rather than a prefix wildcard.');")
+          p.write_text(s, encoding='utf-8')
+
+          p, s = load('tests/run-plan-v4-completion.php')
+          s = s.replace("$assert(strpos($recovery, \"0 !== strpos( \\$option, 'sabri_shell_' )\") !== false, 'Rollback is not restricted to File 20-owned option prefixes.');",
+                        "$owned = substr($recovery, strpos($recovery, 'private static function owned_options()'), 1200);\n$assert(strpos($owned, 'Defaults::OPTION_NAME') !== false && strpos($owned, 'FutureShellV5::OPTION') !== false && strpos($owned, \"'sabri_shell_flush_rewrite_rules'\") !== false && strpos($owned, \"0 !== strpos( \\$option, 'sabri_shell_' )\") === false, 'Rollback is restricted to the explicit File20-owned allowlist.');")
+          p.write_text(s, encoding='utf-8')
+
+          # Permanent static workflow must validate the current implementation rather than stale spellings.
+          wf = Path('.github/workflows/corrective-quality.yml')
+          s = wf.read_text(encoding='utf-8')
+          s = s.replace("          assert 'safe_login_redirect' in integrations\n", "          assert 'safe_login_redirect' in renderer and 'Integrations::same_site_url' in renderer\n")
+          s = s.replace("          assert 'Layout::MINIMAL' in renderer and 'Layout::IMMERSIVE' in renderer\n", "          assert 'CreateContract::visible_for_current_user()' in renderer\n          assert 'array( Layout::TWO, Layout::THREE )' in renderer\n")
+          s = s.replace("          assert 'encoded' in route.lower() or '%2e' in route.lower()\n", "          assert 'rawurldecode' in route and \"array( '.', '..' )\" in route\n")
+          s = s.replace("          assert 'restore_lkg' in future and 'guarded' in control.lower()\n", "          assert 'FutureShellV5ControlGuard::restore_current_snapshot' in future and 'restore_current_snapshot' in control\n")
+          s = s.replace("          assert not (root/'includes/class-home-feed.php').exists()\n", "          assert not (root/'includes/class-home-feed.php').exists()\n          assert 'class-home-feed.php' not in read('tests/bootstrap.php')\n")
+          wf.write_text(s, encoding='utf-8')
+
+          # Round 80 is a defect round because exact-head CI exposed both a real runtime bug and stale QA contracts.
+          audit = Path('EIGHTY-ROUND-REVIEW-2026-08-09.md')
+          s = audit.read_text(encoding='utf-8')
+          s = s.replace('| 80 | FINAL CLOSURE | Exact final PR-head and merged-main quality + Baseline Archive Integrity determine the final classification. Any failure is a Round-80 defect and must be corrected/retested before completion. |',
+                        '| 80 | DEFECT | Exact-head CI exposed an undefined Renderer Create gate, ordinary shell/UI leakage into Immersive mode, a stale deleted-HomeFeed bootstrap require, and multiple preservation assertions still bound to superseded schema/implementation spellings. Runtime and QA contracts were corrected; Round 80 remains classified as a defect even after the corrected exact head turns green. |')
+          if '## Round 80 corrective evidence' not in s:
+              s += "\n## Round 80 corrective evidence\n\nThe first exact-head quality run for PR #26 failed on PHP 7.4/8.3. This was treated as a real Round-80 defect, not bypassed. Corrections include: exact CreateContract rendering; strict same-origin login redirect; Two/Three-only ordinary shell chrome/assets/Future-Shell controls; removal of the deleted HomeFeed test bootstrap dependency; schema-5 preservation assertions; current File21 feed migration truth; decoded route-security assertions; exact rollback allowlist assertions; current guarded LKG method evidence; and refreshed permanent static checks. The corrected exact head must pass both Quality and Baseline Archive Integrity before merge, followed by the same two gates on merged main.\n"
+          audit.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Validate corrected working tree before commit
+        run: |
+          set -euo pipefail
+          find sabri-unified-application-shell -type f -name '*.php' -print0 | xargs -0 -n1 php -l >/dev/null
+          for test in sabri-unified-application-shell/tests/run*.php; do
+            echo "==> ${test}"
+            php "${test}"
+          done
+          for js in sabri-unified-application-shell/assets/js/*.js; do node --check "$js"; done
+          python -m json.tool sabri-unified-application-shell/contracts/file20-central-plan-v4.json >/dev/null
+      - name: Commit Round 80 corrections
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add sabri-unified-application-shell .github/workflows/corrective-quality.yml EIGHTY-ROUND-REVIEW-2026-08-09.md
+          git commit -m 'File 20 round 80: correct exact-head runtime and QA defects [round80-fixed]'
+          git push origin HEAD:audit/file20-eighty-round-2026-08-09
