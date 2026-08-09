@@ -14,7 +14,7 @@ final class FutureShellV5EleventhHardening {
         add_filter( 'option_' . Defaults::OPTION_NAME, array( __CLASS__, 'normalize_setting_read' ), PHP_INT_MAX );
         add_filter( 'default_option_' . Defaults::OPTION_NAME, array( __CLASS__, 'normalize_setting_default' ), PHP_INT_MAX, 3 );
         add_filter( 'register_url', array( __CLASS__, 'block_core_registration_fallback' ), PHP_INT_MAX );
-        add_filter( 'sabri_shell_system_check_report', array( __CLASS__, 'correct_messages_diagnostic' ), PHP_INT_MAX - 10 );
+        add_filter( 'sabri_shell_system_check_report', array( __CLASS__, 'correct_runtime_diagnostics' ), PHP_INT_MAX - 10 );
         add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_provider_slot_responsive_fix' ), 220 );
         add_filter( 'sabri_shell_system_check_sections', array( __CLASS__, 'system_check' ), 110 );
     }
@@ -102,24 +102,48 @@ final class FutureShellV5EleventhHardening {
 
     public static function block_core_registration_fallback( $url ) { unset( $url ); return ''; }
 
-    public static function correct_messages_diagnostic( $rows ) {
+    /** Correct legacy File17 Messages truth and require explicit critical-provider presence. */
+    public static function correct_runtime_diagnostics( $rows ) {
         if ( ! is_array( $rows ) ) { return $rows; }
         $map = get_option( 'sn_page_map', array() );
         $dedicated_map = is_array( $map ) && ! empty( $map['messages'] );
         $dedicated = shortcode_exists( 'sabri_messages' ) || shortcode_exists( 'sabri_communication' ) || $dedicated_map || ( class_exists( 'SN_Activator' ) && is_callable( array( 'SN_Activator', 'messages_url' ) ) );
+        $health = class_exists( __NAMESPACE__ . '\\PlanV4ContractHealth', false ) ? PlanV4ContractHealth::health() : array();
+        $required = array( 'file-20-shell', 'file-00-identity' );
+        $critical_ok = true;
+        $critical_label = 'File20 and File00 verified healthy';
+        foreach ( $required as $required_key ) {
+            if ( ! isset( $health[ $required_key ] ) || ! is_array( $health[ $required_key ] ) ) {
+                $critical_ok = false;
+                $critical_label = $required_key . ': missing health evidence';
+                break;
+            }
+            $state = isset( $health[ $required_key ]['state'] ) ? sanitize_key( (string) $health[ $required_key ]['state'] ) : 'unknown';
+            if ( 'healthy' !== $state ) {
+                $critical_ok = false;
+                $critical_label = $required_key . ': ' . $state;
+                break;
+            }
+        }
         foreach ( $rows as &$row ) {
-            if ( ! is_array( $row ) || 'messages-integration' !== ( isset( $row['id'] ) ? $row['id'] : '' ) ) { continue; }
-            $row['value'] = $dedicated ? __( 'Dedicated File 17 Messages surface detected', 'sabri-unified-application-shell' ) : __( 'Dedicated File 17 Messages surface not detected', 'sabri-unified-application-shell' );
-            $row['status'] = $dedicated ? 'pass' : 'warn';
-            $row['severity'] = $dedicated ? 'info' : 'high';
-            $row['evidence'] = 'Dedicated sabri_messages/sabri_communication shortcode, sn_page_map.messages, or SN_Activator::messages_url; generic Network evidence is insufficient.';
-            break;
+            if ( ! is_array( $row ) ) { continue; }
+            if ( 'messages-integration' === ( isset( $row['id'] ) ? $row['id'] : '' ) ) {
+                $row['value'] = $dedicated ? __( 'Dedicated File 17 Messages surface detected', 'sabri-unified-application-shell' ) : __( 'Dedicated File 17 Messages surface not detected', 'sabri-unified-application-shell' );
+                $row['status'] = $dedicated ? 'pass' : 'warn';
+                $row['severity'] = $dedicated ? 'info' : 'high';
+                $row['evidence'] = 'Dedicated sabri_messages/sabri_communication shortcode, sn_page_map.messages, or SN_Activator::messages_url; generic Network evidence is insufficient.';
+            }
+            if ( 'critical-provider-health' === ( isset( $row['id'] ) ? $row['id'] : '' ) ) {
+                $row['value'] = $critical_label;
+                $row['status'] = $critical_ok ? 'pass' : 'unknown';
+                $row['severity'] = $critical_ok ? 'info' : 'high';
+                $row['evidence'] = 'Explicit File20 self-health and File00 identity-health rows are both required; absence is not PASS.';
+            }
         }
         unset( $row );
         return $rows;
     }
 
-    /** Provider-only Home right slots must not disappear below the desktop breakpoint. */
     public static function enqueue_provider_slot_responsive_fix() {
         if ( ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) || ! wp_style_is( 'sabri-shell-central-plan-v4', 'enqueued' ) ) { return; }
         $css = '@media (max-width:1199px){.sabri-shell-right-sidebar-provider:not(.sabri-shell-right-sidebar-drawer){display:block!important;position:static!important;inset:auto!important;inline-size:auto!important;max-block-size:none!important;margin:12px var(--sabri-shell-gap,24px);border:1px solid var(--sabri-shell-border);overflow:visible!important;}}';
@@ -140,6 +164,7 @@ final class FutureShellV5EleventhHardening {
             'core_open_registration_fallback' => 'blocked-high-trust-entry-canonical-provider-only',
             'configured_url_policy' => 'internal-relative-or-same-site-https;external-whatsapp-https-only',
             'file21_provider_only_home_right_slot' => 'desktop-right-context-mobile-inline-accessible',
+            'critical_provider_truth' => 'file20-and-file00-presence-and-healthy-required-for-pass',
             'approved_feature_count' => 18,
             'staging_accepted' => false,
             'live_deployed' => false,
