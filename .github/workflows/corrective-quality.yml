@@ -76,6 +76,7 @@ jobs:
           assert 'Stable tag: 1.4.11' in readmetxt
           assert 'const SCHEMA_VERSION       = 5;' in defaults
           assert not (root/'includes/class-home-feed.php').exists()
+          assert 'class-home-feed.php' not in read('tests/bootstrap.php')
           assert 'HomeFeed::register();' not in plugin
           assert "'sabri_complete_home_feed'" in defaults
           assert "'allowed_roles'" not in defaults
@@ -85,15 +86,16 @@ jobs:
           assert 'enforce_owned_invariants_filter' in plugin and 'SCHEMA_VERSION' in settings
           assert 'shortcode_collision' in integrations or 'multiple' in integrations.lower()
           assert 'add_option_' in nav and 'delete_option_' in nav
-          assert 'safe_login_redirect' in integrations
-          assert 'Layout::MINIMAL' in renderer and 'Layout::IMMERSIVE' in renderer
+          assert 'safe_login_redirect' in renderer and 'Integrations::same_site_url' in renderer
+          assert 'CreateContract::visible_for_current_user()' in renderer
+          assert 'array( Layout::TWO, Layout::THREE )' in renderer
           assert 'sabri_shell_maintenance' not in layout
-          assert 'encoded' in route.lower() or '%2e' in route.lower()
+          assert 'rawurldecode' in route and "array( '.', '..' )" in route
           assert 'owned_options' in recovery and 'smoke' in recovery.lower()
           assert 'critical_health_state' in tenth
           assert 'FutureShellV5TenthHardening::critical_health_state( $health )' in safe
           assert 'activation_snapshot' in system and 'integrity' in system.lower()
-          assert 'restore_lkg' in future and 'guarded' in control.lower()
+          assert 'FutureShellV5ControlGuard::restore_current_snapshot' in future and 'restore_current_snapshot' in control
           assert 'circuit' in future.lower() and 'lock' in future.lower()
           assert 'prune' in jobs.lower() and 'degraded' in jobs.lower()
           assert 'lock' in assurance.lower()
