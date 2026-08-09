@@ -19,7 +19,7 @@
 			) {
 				return null;
 			}
-			return url.href;
+			return url.origin + url.pathname;
 		} catch (error) {
 			return null;
 		}
@@ -46,7 +46,7 @@
 	}
 
 	function rememberCurrentPage() {
-		var current = window.location.href;
+		var current = safeSameOriginUrl(window.location.href) || (window.location.origin + window.location.pathname);
 		var stack = readStack();
 
 		try {
@@ -70,7 +70,7 @@
 	}
 
 	function previousStackUrl() {
-		var current = window.location.href;
+		var current = safeSameOriginUrl(window.location.href) || (window.location.origin + window.location.pathname);
 		var stack = readStack();
 
 		while (stack.length && stack[stack.length - 1] === current) {
@@ -92,7 +92,7 @@
 	}
 
 	function navigateBack(link) {
-		var current = window.location.href;
+		var current = safeSameOriginUrl(window.location.href) || (window.location.origin + window.location.pathname);
 		var previous = previousStackUrl();
 		if (previous && previous !== current) {
 			managedNavigate(previous);

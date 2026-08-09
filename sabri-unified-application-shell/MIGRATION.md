@@ -2,12 +2,12 @@
 
 ## Governing Rule
 
-All installation, upgrade, repair and rollback work must be performed on staging first. Version **1.4.10** remains a repository/code/package/automated-QA candidate until Hostinger staging, real companion integration, backup/restore/rollback rehearsal and Founder acceptance pass.
+All installation, upgrade, repair and rollback work must be performed on staging first. Version **1.4.11** remains a repository/code/package/automated-QA candidate until Hostinger staging, real companion integration, backup/restore/rollback rehearsal and Founder acceptance pass.
 
-## Upgrade to 1.4.10
+## Upgrade to 1.4.11
 
 1. Verify a restorable files/database backup and record the deployed File20 version, package checksum, settings, page mappings, theme and actual companion contracts.
-2. Install the exact deterministic `1.4.10-TENTH-TEN-ROUND-HARDENED` artifact on staging only. Confirm one canonical ZIP root, no development tests and exact source/stage/extracted manifest/SHA parity.
+2. Install the exact deterministic `1.4.11-EIGHTY-ROUND-HARDENED` artifact on staging only. Confirm one canonical ZIP root, no development tests and exact source/stage/extracted manifest/SHA parity.
 3. Verify File20 no longer registers its historical local Home-feed runtime. Existing `home_feed` state must be migrated to `retired=true`, `auto_insert=false`, `posts_count=0`; configured `sabri_shell_home_feed` must not remain an active route source.
 4. With File21 available, verify the five exact hooks: `sabri_shell_home_before_main`, `sabri_shell_home_main`, `sabri_shell_home_after_main`, `sabri_shell_home_right_sidebar`, `sabri_shell_news_main`. Native File21 main output must replace legacy page/shortcode fallback rather than duplicate it; fallback remains only when native output is absent.
 5. Verify fresh File20 defaults create no Appearance group and runtime body classes are structural only; File25 remains visual owner. Legacy Appearance values may remain migration-only evidence.
@@ -22,6 +22,10 @@ All installation, upgrade, repair and rollback work must be performed on staging
 14. In a disposable staging copy only, verify default uninstall is non-destructive and explicit `delete_on_uninstall=true` removes only File20-owned operational state/schedules.
 15. Complete `STAGING-ACCEPTANCE.md`, backup restore proof, rollback rehearsal, accessibility/browser/device/PWA checks and Founder acceptance before production promotion.
 
+## From 1.4.10
+
+The `1.4.10 → 1.4.11` upgrade is an eighty-round File20 consolidation. It advances settings schema to 5, removes retired local-domain runtime/configuration paths, strengthens canonical route/access/provider validation, hardens recovery/concurrency/control-plane state and completes dynamic File20 cache/uninstall ownership. It adds no nineteenth Future Shell feature and no companion-domain database.
+
 ## From 1.4.9
 
 The `1.4.9 → 1.4.10` upgrade is canonical-ownership and health-truth hardening. It retires the residual File20 local Home-feed runtime/state under File21 ownership, publishes the five exact native File21 slots with single-render semantics, removes residual File20 visual runtime ownership, records the reviewed File00 1.2.18 audit without falsely declaring it production-safe, removes WordPress/File20 Search fallback under File26 ownership, binds provider health to actual semantic versions, prevents critical provider states from false-green Healthy, and applies that critical gate to Emergency re-enable.
@@ -30,4 +34,4 @@ It does **not** add a nineteenth Future Shell feature, activate CF modules, crea
 
 ## Earlier versions / no shell / another shell
 
-Upgrade directly to 1.4.10 on staging after verified backup. Do not recreate intermediate packages. Validate native-owner contracts independently, avoid duplicate pages/backends/shells, and use only integrity-valid current-format/current-schema snapshots for automatic rollback.
+Upgrade directly to 1.4.11 on staging after verified backup. Do not recreate intermediate packages. Validate native-owner contracts independently, avoid duplicate pages/backends/shells, and use only integrity-valid current-format/current-schema snapshots for automatic rollback.

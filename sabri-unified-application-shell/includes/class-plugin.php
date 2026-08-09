@@ -41,6 +41,7 @@ final class Plugin {
 	 * @return void
 	 */
 	public function register() {
+		add_filter( 'pre_update_option_' . Defaults::OPTION_NAME, array( Settings::class, 'enforce_owned_invariants_filter' ), PHP_INT_MAX - 30, 3 );
 		add_action( 'admin_init', array( Settings::class, 'register' ) );
 		add_action( 'init', array( __CLASS__, 'maybe_upgrade' ), 1 );
 		Navigation::register_cache_hooks();
@@ -68,6 +69,9 @@ final class Plugin {
 		$schema  = is_array( $current ) && isset( $current['schema_version'] ) ? absint( $current['schema_version'] ) : 0;
 		if ( $schema >= Defaults::SCHEMA_VERSION ) {
 			return;
+		}
+		if ( class_exists( __NAMESPACE__ . '\\PlanV4Recovery', false ) ) {
+			PlanV4Recovery::create_snapshot( 'pre-schema-upgrade' );
 		}
 		Settings::ensure_defaults();
 		Navigation::invalidate_cache();

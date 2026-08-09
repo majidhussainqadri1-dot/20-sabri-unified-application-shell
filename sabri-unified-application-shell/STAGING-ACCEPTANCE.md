@@ -4,7 +4,7 @@ Hostinger staging acceptance is mandatory before production promotion or live ac
 
 ## Exact Candidate and Backup
 
-- Record File 20 `1.4.10`, exact GitHub head, deterministic `1.4.10-TENTH-TEN-ROUND-HARDENED` package, SHA-256 and source manifest.
+- Record File 20 `1.4.11`, exact GitHub head, deterministic `1.4.11-EIGHTY-ROUND-HARDENED` package, SHA-256 and source manifest.
 - Confirm one canonical plugin ZIP root, no development tests, safe paths/no duplicates, embedded/external manifest equality and source/stage/extracted SHA-256 parity.
 - Prove a restorable files/database backup; test fresh install and real upgrade from the actually deployed File20 version.
 

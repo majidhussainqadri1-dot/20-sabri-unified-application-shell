@@ -75,10 +75,11 @@ final class PlanV4ContractHealth {
             );
         }
         return array(
-            'owner' => 'wordpress-core',
-            'url' => home_url( '/' ),
-            'status' => 'bounded_fallback',
-            'scope' => 'local_public_content',
+            'owner' => 'file-26',
+            'url' => '',
+            'status' => 'unavailable',
+            'scope' => 'none',
+            'file20_fallback' => false,
         );
     }
 
@@ -107,11 +108,26 @@ final class PlanV4ContractHealth {
         if ( ! $available ) {
             return self::status( $key, 'unavailable', isset( $record['failure'] ) ? $record['failure'] : 'unavailable', $record );
         }
-        $version = isset( $record['version'] ) ? (string) $record['version'] : '0.0.0';
-        if ( '0.0.0' !== $version && version_compare( $version, (string) $record['minimum'], '<' ) ) {
+        $version = isset( $record['version'] ) ? (string) $record['version'] : '';
+        $minimum = isset( $record['minimum'] ) ? (string) $record['minimum'] : '';
+        if ( ! self::valid_semver( $minimum ) ) {
+            return self::status( $key, 'invalid', 'Provider minimum version is malformed.', $record );
+        }
+        if ( '' === $version || '0.0.0' === $version ) {
+            return self::status( $key, 'unknown', 'Provider is present but did not publish usable version evidence.', $record );
+        }
+        if ( ! self::valid_semver( $version ) ) {
+            return self::status( $key, 'invalid', 'Provider version evidence is malformed.', $record );
+        }
+        if ( version_compare( $version, $minimum, '<' ) ) {
             return self::status( $key, 'incompatible', 'Provider version is below the declared minimum.', $record );
         }
-        return self::status( $key, 'healthy', 'Provider provenance and probe passed.', $record );
+        return self::status( $key, 'healthy', 'Provider provenance, version and probe passed.', $record );
+    }
+
+
+    private static function valid_semver( $version ) {
+        return is_string( $version ) && 1 === preg_match( '/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/', $version );
     }
 
     private static function status( $key, $state, $message, $record ) {

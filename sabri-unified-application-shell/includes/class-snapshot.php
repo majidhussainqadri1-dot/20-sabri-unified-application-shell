@@ -36,7 +36,7 @@ final class Snapshot {
 			'actor_id'             => function_exists( 'get_current_user_id' ) ? get_current_user_id() : 0,
 			'source'               => 'file-20-activation',
 			'plugin_version'       => defined( 'SABRI_SHELL_VERSION' ) ? SABRI_SHELL_VERSION : '0.0.0',
-			'schema_version'       => Defaults::SCHEMA_VERSION,
+			'schema_version'       => is_array( $settings ) && isset( $settings['schema_version'] ) ? absint( $settings['schema_version'] ) : 0,
 			'settings'             => $settings,
 			'future_settings'      => $future,
 			'flush_scheduled'      => get_option( 'sabri_shell_flush_rewrite_rules', null ),
@@ -78,11 +78,19 @@ final class Snapshot {
 			return false;
 		}
 
+		$settings_before = get_option( Defaults::OPTION_NAME, array() );
+		$settings_before = is_array( $settings_before ) ? $settings_before : array();
+		$emergency_before = ! empty( $settings_before['emergency_disabled'] );
 		if ( array_key_exists( 'settings', $snapshot ) ) {
 			if ( null === $snapshot['settings'] ) {
+				/* Never erase an active Emergency Disable flag through legacy activation rollback. */
+				if ( $emergency_before ) { return false; }
 				delete_option( Defaults::OPTION_NAME );
 			} else {
-				update_option( Defaults::OPTION_NAME, $snapshot['settings'], false );
+				if ( ! is_array( $snapshot['settings'] ) ) { return false; }
+				$restored_settings = $snapshot['settings'];
+				$restored_settings['emergency_disabled'] = $emergency_before;
+				update_option( Defaults::OPTION_NAME, $restored_settings, false );
 			}
 		}
 		if ( class_exists( __NAMESPACE__ . '\\FutureShellV5', false ) && array_key_exists( 'future_settings', $snapshot ) ) {
@@ -100,6 +108,9 @@ final class Snapshot {
 			}
 		}
 
+		$settings_after = get_option( Defaults::OPTION_NAME, array() );
+		$settings_after = is_array( $settings_after ) ? $settings_after : array();
+		PlanV4SettingsConcurrency::record_programmatic_change( $settings_before, $settings_after, 'activation-snapshot-rollback' );
 		Navigation::invalidate_cache();
 		Integrations::invalidate_cache();
 		PlanV4PrivacyCache::purge();

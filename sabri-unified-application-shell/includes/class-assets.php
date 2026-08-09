@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class Assets {
 	/** Register public assets. */
 	public static function enqueue() {
-		if ( Layout::MINIMAL === Layout::current_mode() ) {
+		if ( ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) ) {
 			return;
 		}
 
@@ -59,7 +59,7 @@ final class Assets {
 
 	/** Print structural custom properties and optional theme visibility selectors. */
 	public static function print_custom_properties() {
-		if ( Layout::MINIMAL === Layout::current_mode() ) {
+		if ( ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) ) {
 			return;
 		}
 

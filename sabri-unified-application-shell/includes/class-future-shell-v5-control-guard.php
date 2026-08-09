@@ -50,8 +50,19 @@ final class FutureShellV5ControlGuard {
 		$allowed = array( 'disabled', 'internal', 'staging', 'limited', 'general' );
 		foreach ( $incoming['features'] as $feature => $rule ) {
 			$feature = sanitize_key( $feature );
-			if ( ! isset( FutureShellV5::features()[ $feature ] ) || ! is_array( $rule ) || ! array_key_exists( 'ring', $rule ) ) {
-				continue;
+			if ( ! isset( FutureShellV5::features()[ $feature ] ) ) {
+				return new \WP_Error(
+					'sabri_shell_unknown_future_feature',
+					__( 'Unknown Future Shell feature. No feature settings were changed.', 'sabri-unified-application-shell' ),
+					array( 'status' => 400, 'feature' => $feature )
+				);
+			}
+			if ( ! is_array( $rule ) || ! array_key_exists( 'ring', $rule ) ) {
+				return new \WP_Error(
+					'sabri_shell_release_ring_required',
+					__( 'Every updated Future Shell feature must provide an explicit release ring. No feature settings were changed.', 'sabri-unified-application-shell' ),
+					array( 'status' => 400, 'feature' => $feature )
+				);
 			}
 			$ring = is_string( $rule['ring'] ) ? sanitize_key( $rule['ring'] ) : '';
 			if ( ! in_array( $ring, $allowed, true ) ) {
@@ -104,7 +115,7 @@ final class FutureShellV5ControlGuard {
 	 * @param mixed  $context Failure context.
 	 * @return bool
 	 */
-	private static function restore_current_snapshot( $reason, $context ) {
+	public static function restore_current_snapshot( $reason, $context = array() ) {
 		$snapshot = get_option( FutureShellV5::LKG_OPTION, array() );
 		if ( ! is_array( $snapshot ) || empty( $snapshot['hash'] ) || empty( $snapshot['captured_at'] ) || ! isset( $snapshot['settings'] ) || ! is_array( $snapshot['settings'] ) ) {
 			return false;
@@ -122,10 +133,17 @@ final class FutureShellV5ControlGuard {
 		$hook = array( FutureShellV5Hardening::class, 'capture_previous_lkg' );
 		remove_action( 'update_option_' . Defaults::OPTION_NAME, $hook, 30 );
 		$success = false;
+		$before = get_option( Defaults::OPTION_NAME, array() );
+		$before = is_array( $before ) ? $before : array();
 		try {
-			$updated = update_option( Defaults::OPTION_NAME, $snapshot['settings'], false );
+			update_option( Defaults::OPTION_NAME, $snapshot['settings'], false );
 			$current = get_option( Defaults::OPTION_NAME, array() );
-			$success = $updated || ( is_array( $current ) && $current === $snapshot['settings'] );
+			$current = is_array( $current ) ? Settings::enforce_owned_invariants( $current ) : array();
+			$expected = Settings::enforce_owned_invariants( $snapshot['settings'] );
+			/* SafeMode may preserve the current emergency flag; compare all other state. */
+			$current_emergency = ! empty( $current['emergency_disabled'] );
+			$expected['emergency_disabled'] = $current_emergency;
+			$success = $current === $expected;
 		} catch ( \Throwable $error ) {
 			do_action(
 				'sabri_shell_lkg_restore_failed',
@@ -144,6 +162,7 @@ final class FutureShellV5ControlGuard {
 		if ( ! $success ) {
 			return false;
 		}
+		PlanV4SettingsConcurrency::record_programmatic_change( $before, $current, 'lkg-restore' );
 		Navigation::invalidate_cache();
 		Integrations::invalidate_cache();
 		do_action(

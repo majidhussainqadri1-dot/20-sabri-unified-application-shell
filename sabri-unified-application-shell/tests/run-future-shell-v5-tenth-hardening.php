@@ -14,14 +14,14 @@ $health  = $read( 'includes/class-plan-v4-contract-health.php' );
 $fail = array();
 $assert = static function ( $ok, $label ) use ( &$fail ): void { if ( ! $ok ) { $fail[] = $label; } };
 
-$assert( false !== strpos( $main, '* Version: 1.4.10' ) && false !== strpos( $main, "SABRI_SHELL_VERSION', '1.4.10" ), 'release identity 1.4.10' );
+$assert( false !== strpos( $main, '* Version: 1.4.11' ) && false !== strpos( $main, "SABRI_SHELL_VERSION', '1.4.11" ), 'release identity 1.4.11' );
 $assert( false !== strpos( $main, 'FutureShellV5TenthHardening::register();' ), 'tenth hardening registered' );
 $assert( false !== strpos( $tenth, "CONTRACT_VERSION = '1.0.10'" ), 'tenth contract 1.0.10' );
 
 $assert( false === strpos( $plugin, 'HomeFeed::register();' ), 'File20 local HomeFeed runtime not registered' );
 $assert( false !== strpos( $tenth, "'sabri_shell_home_feed' !== sanitize_key" ), 'retired File20 feed shortcode removed from route candidates' );
 $assert( false !== strpos( $tenth, "'auto_insert' => false" ) && false !== strpos( $tenth, "'posts_count' => 0" ), 'retired local feed persisted inert' );
-$assert( false !== strpos( $tenth, "\$value['navigation']['home']['shortcode'] = '';" ), 'configured legacy feed shortcode quarantined' );
+$assert( false !== strpos( $tenth, "\$value['navigation']['home']['shortcode'] = 'sabri_complete_home_feed';" ), 'configured legacy File20 feed shortcode migrates to the File21-compatible provider shortcode' );
 $assert( false !== strpos( $defaults, "'home_feed'" ), 'legacy defaults remain migration-readable only' );
 
 foreach ( array( 'sabri_shell_home_before_main', 'sabri_shell_home_main', 'sabri_shell_home_after_main', 'sabri_shell_home_right_sidebar', 'sabri_shell_news_main' ) as $hook ) {
@@ -38,7 +38,7 @@ $assert( false !== strpos( $tenth, 'membership-core-1.2.18-reviewed-head' ) && f
 $assert( false !== strpos( $tenth, "'production_safe_implied' => false" ) && false !== strpos( $tenth, "'known_external_release_blockers' => true" ), 'File00 audit cannot imply production safety' );
 
 $assert( false !== strpos( $tenth, 'file26_search_surface_only' ) && false !== strpos( $tenth, "'file20_fallback' => false" ), 'File26-only search surface' );
-$assert( false !== strpos( $health, "'status' => 'bounded_fallback'" ), 'legacy fallback source remains identifiable for final override' );
+$assert( false !== strpos( $health, "'status' => 'unavailable'" ) && false !== strpos( $health, "'file20_fallback' => false" ), 'base search surface is fail-closed with no File20 fallback before the final File26 override' );
 $assert( false !== strpos( $tenth, "add_filter( 'sabri_shell_search_surface'" ) && false !== strpos( $tenth, 'PHP_INT_MAX' ), 'final search fallback override is last' );
 
 $assert( false !== strpos( $tenth, 'bind_actual_provider_versions' ) && false !== strpos( $tenth, "\$providers['file-25-visual']['version']" ) && false !== strpos( $tenth, "\$providers['file-01b-registry-search']['version']" ), 'native provider versions bound into health registry' );

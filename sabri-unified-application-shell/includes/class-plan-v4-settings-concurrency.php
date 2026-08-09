@@ -12,7 +12,6 @@ final class PlanV4SettingsConcurrency {
             add_filter( 'pre_update_option_' . $option, array( __CLASS__, 'pre_update' ), 10, 3 );
         }
         add_action( 'updated_option', array( __CLASS__, 'after_update' ), 10, 3 );
-        add_action( 'admin_footer', array( __CLASS__, 'inject_version_field' ) );
         add_filter( 'sabri_shell_settings_row_version', array( __CLASS__, 'current_version' ) );
     }
 
@@ -25,8 +24,14 @@ final class PlanV4SettingsConcurrency {
         if ( ! is_admin() || ! current_user_can( 'manage_options' ) || empty( $_SERVER['REQUEST_METHOD'] ) || 'POST' !== strtoupper( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) ) ) {
             return $new_value;
         }
-        if ( ! isset( $_POST['sabri_shell_settings_row_version'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- existing settings handler owns CSRF validation.
+        $option_page = isset( $_POST['option_page'] ) ? sanitize_key( wp_unslash( $_POST['option_page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Settings API verifies the nonce.
+        if ( 'sabri_shell_settings' !== $option_page ) {
             return $new_value;
+        }
+        if ( ! isset( $_POST['sabri_shell_settings_row_version'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Settings API verifies the nonce.
+            add_settings_error( 'sabri_shell_settings', 'sabri_shell_settings_version_missing', __( 'The settings concurrency token is missing. Reload the page and submit again.', 'sabri-unified-application-shell' ), 'error' );
+            PlanV4Audit::record( 'settings_conflict', array( 'expected_version' => 'missing', 'current_version' => self::current_version(), 'reason' => 'missing-concurrency-token' ) );
+            return $old_value;
         }
         $expected = absint( wp_unslash( $_POST['sabri_shell_settings_row_version'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
         $current = self::current_version();
@@ -77,30 +82,6 @@ final class PlanV4SettingsConcurrency {
         return $next;
     }
 
-    public static function inject_version_field() {
-        if ( ! current_user_can( 'manage_options' ) ) {
-            return;
-        }
-        $screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-        if ( ! $screen || false === strpos( (string) $screen->id, 'sabri' ) ) {
-            return;
-        }
-        $version = self::current_version();
-        ?>
-        <script>
-        document.addEventListener('DOMContentLoaded', function () {
-          document.querySelectorAll('form[action="options.php"], form[data-sabri-shell-settings]').forEach(function (form) {
-            if (form.querySelector('input[name="sabri_shell_settings_row_version"]')) return;
-            var input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'sabri_shell_settings_row_version';
-            input.value = <?php echo wp_json_encode( (string) $version ); ?>;
-            form.appendChild(input);
-          });
-        });
-        </script>
-        <?php
-    }
 }
 
 PlanV4SettingsConcurrency::register();

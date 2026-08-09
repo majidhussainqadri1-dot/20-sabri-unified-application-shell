@@ -14,7 +14,7 @@ $defaults = file_get_contents($root . '/includes/class-defaults.php');
 $settings = file_get_contents($root . '/includes/class-settings.php');
 $css = file_get_contents($root . '/assets/css/four-plan-harmonization.css');
 $basecss = file_get_contents($root . '/assets/css/shell.css');
-$assert(strpos($main, 'Version: 1.4.10') !== false && strpos($main, "SABRI_SHELL_VERSION', '1.4.10") !== false, 'release identity 1.4.10');
+$assert(strpos($main, 'Version: 1.4.11') !== false && strpos($main, "SABRI_SHELL_VERSION', '1.4.11") !== false, 'release identity 1.4.11');
 $assert(strpos($main, 'FourPlanHarmonization::register') !== false, 'harmonization registered');
 $assert(strpos($main, 'FutureShellV5SeventhHardening::register') !== false, 'seventh conditional harmonization registered');
 $assert(strpos($main, 'FutureShellV5EighthHardening::register') !== false && strpos($eighth, "CONTRACT_VERSION = '1.0.8'") !== false, 'eighth corrective harmonization preserved');
@@ -33,7 +33,7 @@ foreach (array('CF-01','CF-02','CF-03','CF-04','CF-05','CF-06') as $cf) { $asser
 $assert(strpos($seventh, 'single-free-tier-voluntary-donation-no-donor-advantage') !== false, 'conditional finance preserves current free/donation law');
 $assert(strpos($seventh, 'file-17-cf-04-after-activation') !== false && strpos($seventh, '1073741824') !== false, 'conditional media transfer boundary and 1GB limit');
 $assert(strpos($seventh, 'file-20-shell-surface-cf-06-locale-provider-after-activation') !== false, 'conditional localization provider boundary');
-$assert(strpos($defaults, 'const SCHEMA_VERSION       = 4;') !== false, 'settings schema 4 remains current');
+$assert(strpos($defaults, 'const SCHEMA_VERSION       = 5;') !== false, 'settings schema 5 remains current');
 $assert(strpos($defaults, "'appearance'            => array(") === false, 'fresh File20 defaults create no File25 visual state');
 $assert(strpos($tenth, "'auto_insert' => false") !== false, 'legacy File20 Home feed state forced inert');
 $assert(strpos($defaults, "'bottom_nav'               => false") !== false, 'bottom nav default disabled');
@@ -51,6 +51,6 @@ $assert(strpos($js, 'rebalanceNavigation') !== false && strpos($js, 'data-sabri-
 $assert(strpos($renderer, 'get_search_query()') === false && strpos($renderer, 'name="s"') === false, 'dormant native WordPress search fallback removed from renderer');
 $assert(strpos($renderer, 'array_slice( $visible, 0, 6 )') !== false && strpos($renderer, 'array_slice( $visible, 6 )') !== false, 'conservative direct navigation set');
 $assert(!preg_match("/'bottom_nav'\s*=>\s*true/", $defaults), 'stale destination bottom-nav metadata removed');
-$assert(strpos($readme, 'Version: `1.4.10`') !== false && strpos($readmetxt, 'Stable tag: 1.4.10') !== false, 'release documentation identity 1.4.10');
+$assert(strpos($readme, 'Version: `1.4.11`') !== false && strpos($readmetxt, 'Stable tag: 1.4.11') !== false, 'release documentation identity 1.4.11');
 $assert(strpos($review, 'green continuity fallback') !== false && stripos($review, '#FF8A1F') === false, 'review register uses current visual-policy truth');
 echo 'Four-plan plus conditional/tenth harmonization assertions: ' . count($checks) . " passed\n";

@@ -5,7 +5,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 final class PlanV4Assurance {
     const OPTION = 'sabri_shell_plan_v4_assurance_queue';
+    const LOCK_OPTION = 'sabri_shell_plan_v4_assurance_lock';
     const MAX_EVENTS = 100;
+    const LOCK_TTL = 15;
 
     public static function register() {
         add_action( 'sabri_shell_emergency_disabled', array( __CLASS__, 'emergency_disabled' ), 10, 1 );
@@ -40,34 +42,72 @@ final class PlanV4Assurance {
             }
         }
         if ( ! $delivered ) {
-            $queue = (array) get_option( self::OPTION, array() );
-            $queue[] = $event;
-            update_option( self::OPTION, array_slice( $queue, -self::MAX_EVENTS ), false );
+            self::queue_event( $event );
         }
         return $delivered;
     }
 
+    /** Serialize assurance queue read-modify-write operations. */
+    private static function acquire_lock() {
+        $token = function_exists( 'wp_generate_uuid4' ) ? wp_generate_uuid4() : uniqid( 'f20-assurance-', true );
+        $record = array( 'token' => $token, 'expires' => time() + self::LOCK_TTL );
+        if ( add_option( self::LOCK_OPTION, $record, '', 'no' ) ) { return $token; }
+        $current = get_option( self::LOCK_OPTION, array() );
+        if ( is_array( $current ) && absint( $current['expires'] ?? 0 ) < time() ) {
+            delete_option( self::LOCK_OPTION );
+            if ( add_option( self::LOCK_OPTION, $record, '', 'no' ) ) { return $token; }
+        }
+        return '';
+    }
+
+    private static function release_lock( $token ) {
+        $current = get_option( self::LOCK_OPTION, array() );
+        if ( is_string( $token ) && '' !== $token && is_array( $current ) && isset( $current['token'] ) && hash_equals( (string) $current['token'], $token ) ) {
+            delete_option( self::LOCK_OPTION );
+        }
+    }
+
+    /** Queue one sanitized event without racing another request. */
+    private static function queue_event( array $event ) {
+        $token = self::acquire_lock();
+        if ( '' === $token ) {
+            PlanV4Audit::record( 'assurance_queue_lock_contended', array( 'event_type' => $event['type'] ?? 'unknown' ) );
+            return false;
+        }
+        try {
+            $queue = get_option( self::OPTION, array() );
+            $queue = is_array( $queue ) ? $queue : array();
+            $queue[] = $event;
+            update_option( self::OPTION, array_slice( $queue, -self::MAX_EVENTS ), false );
+            return true;
+        } finally {
+            self::release_lock( $token );
+        }
+    }
+
     public static function flush_queue() {
-        if ( ! function_exists( 'sabri_security_assurance_event' ) ) {
-            return 0;
-        }
-        $remaining = array();
-        $sent = 0;
-        foreach ( array_slice( (array) get_option( self::OPTION, array() ), 0, 25 ) as $event ) {
-            try {
-                if ( sabri_security_assurance_event( $event ) ) {
-                    ++$sent;
-                    continue;
+        if ( ! function_exists( 'sabri_security_assurance_event' ) ) { return 0; }
+        $token = self::acquire_lock();
+        if ( '' === $token ) { return 0; }
+        try {
+            $all = get_option( self::OPTION, array() );
+            $all = is_array( $all ) ? array_values( $all ) : array();
+            $remaining = array();
+            $sent = 0;
+            foreach ( array_slice( $all, 0, 25 ) as $event ) {
+                try {
+                    if ( sabri_security_assurance_event( $event ) ) { ++$sent; continue; }
+                } catch ( \Throwable $exception ) {
+                    // Native shell controls continue; evidence remains queued.
                 }
-            } catch ( \Throwable $exception ) {
-                // Native shell controls continue; evidence remains queued.
+                $remaining[] = $event;
             }
-            $remaining[] = $event;
+            $tail = array_slice( $all, 25 );
+            update_option( self::OPTION, array_slice( array_merge( $remaining, $tail ), -self::MAX_EVENTS ), false );
+            return $sent;
+        } finally {
+            self::release_lock( $token );
         }
-        $all = (array) get_option( self::OPTION, array() );
-        $tail = array_slice( $all, 25 );
-        update_option( self::OPTION, array_slice( array_merge( $remaining, $tail ), -self::MAX_EVENTS ), false );
-        return $sent;
     }
 
     private static function sanitize_context( array $context ) {

@@ -43,7 +43,7 @@ final class Renderer {
 	 * @return void
 	 */
 	public static function claim_notifications_output() {
-		if ( Layout::MINIMAL === Layout::current_mode() || ! is_user_logged_in() ) {
+		if ( ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) || ! is_user_logged_in() ) {
 			return;
 		}
 		if ( class_exists( 'SUN_Shortcodes' ) ) {
@@ -67,12 +67,11 @@ final class Renderer {
 		}
 
 		$settings = Settings::get();
-		$classes[] = 'sabri-shell-theme-' . sanitize_html_class( $settings['appearance']['color_mode'] );
-		$classes[] = 'sabri-shell-density-' . sanitize_html_class( $settings['appearance']['density'] );
-		$classes[] = ! empty( $settings['layout']['sticky_header'] ) ? 'sabri-shell-sticky-header' : 'sabri-shell-static-header';
-		$classes[] = ! empty( $settings['layout']['compact_desktop'] ) ? 'sabri-shell-compact-desktop' : 'sabri-shell-standard-desktop';
+		$layout   = isset( $settings['layout'] ) && is_array( $settings['layout'] ) ? $settings['layout'] : array();
+		$classes[] = ! empty( $layout['sticky_header'] ) ? 'sabri-shell-sticky-header' : 'sabri-shell-static-header';
+		$classes[] = ! empty( $layout['compact_desktop'] ) ? 'sabri-shell-compact-desktop' : 'sabri-shell-standard-desktop';
 
-		return $classes;
+		return array_values( array_unique( array_filter( array_map( 'strval', $classes ) ) ) );
 	}
 
 	/**
@@ -82,7 +81,7 @@ final class Renderer {
 	 */
 	public static function render_shell_start() {
 		$mode = Layout::current_mode();
-		if ( Layout::MINIMAL === $mode ) {
+		if ( ! in_array( $mode, array( Layout::TWO, Layout::THREE ), true ) ) {
 			return;
 		}
 
@@ -91,7 +90,6 @@ final class Renderer {
 		$has_right_sidebar = Layout::THREE === $mode && ! empty( $settings['right_sidebar']['enabled'] ) && self::right_sidebar_has_modules( $settings, $nav );
 
 		echo '<a class="sabri-shell-skip-link" href="#sabri-shell-main-content">' . esc_html__( 'Skip to main content', 'sabri-unified-application-shell' ) . '</a>';
-		echo '<span id="sabri-shell-main-content" class="sabri-shell-main-anchor" tabindex="-1"></span>';
 
 		if ( ! empty( $settings['header']['enabled'] ) ) {
 			self::render_header( $settings, $nav );
@@ -111,6 +109,9 @@ final class Renderer {
 			self::render_right_sidebar( $settings, $nav );
 		}
 
+		/* No-JavaScript skip target: this anchor is after every File 20 chrome
+		 * component and immediately before theme-owned page content. */
+		echo '<span id="sabri-shell-main-content" class="sabri-shell-main-anchor" tabindex="-1"></span>';
 	}
 
 	/**
@@ -120,7 +121,7 @@ final class Renderer {
 	 */
 	public static function render_shell_footer() {
 		$mode = Layout::current_mode();
-		if ( Layout::MINIMAL === $mode ) {
+		if ( ! in_array( $mode, array( Layout::TWO, Layout::THREE ), true ) ) {
 			return;
 		}
 
@@ -130,13 +131,13 @@ final class Renderer {
 
 		if ( ! empty( $settings['mobile']['drawers'] ) ) {
 			echo '<div class="sabri-shell-drawer-overlay" data-sabri-drawer-overlay hidden></div>';
-			echo '<aside id="sabri-shell-drawer-nav" class="sabri-shell-drawer" aria-label="' . esc_attr__( 'Navigation menu', 'sabri-unified-application-shell' ) . '" aria-hidden="true" inert>';
+			echo '<aside id="sabri-shell-drawer-nav" class="sabri-shell-drawer" role="dialog" aria-modal="true" aria-label="' . esc_attr__( 'Navigation menu', 'sabri-unified-application-shell' ) . '" aria-hidden="true" inert>';
 			echo '<button type="button" class="sabri-shell-drawer-close" data-sabri-drawer-close aria-label="' . esc_attr__( 'Close menu', 'sabri-unified-application-shell' ) . '"><span aria-hidden="true">&times;</span></button>';
 			self::render_left_sidebar( $settings, $nav, 'drawer' );
 			echo '</aside>';
 
 			if ( $has_right_sidebar ) {
-				echo '<aside id="sabri-shell-drawer-context" class="sabri-shell-drawer sabri-shell-drawer-context" aria-label="' . esc_attr__( 'Context panel', 'sabri-unified-application-shell' ) . '" aria-hidden="true" inert>';
+				echo '<aside id="sabri-shell-drawer-context" class="sabri-shell-drawer sabri-shell-drawer-context" role="dialog" aria-modal="true" aria-label="' . esc_attr__( 'Context panel', 'sabri-unified-application-shell' ) . '" aria-hidden="true" inert>';
 				echo '<button type="button" class="sabri-shell-drawer-close" data-sabri-drawer-close aria-label="' . esc_attr__( 'Close context panel', 'sabri-unified-application-shell' ) . '"><span aria-hidden="true">&times;</span></button>';
 				self::render_right_sidebar( $settings, $nav, true );
 				echo '</aside>';
@@ -167,7 +168,7 @@ final class Renderer {
 
 		echo '<nav class="sabri-shell-header-actions" aria-label="' . esc_attr__( 'Account and platform actions', 'sabri-unified-application-shell' ) . '">';
 
-		if ( self::can_show_create( $settings ) && ! empty( $settings['header']['create'] ) ) {
+		if ( CreateContract::visible_for_current_user() ) {
 			$create_url = Integrations::create_url();
 			echo '<a class="sabri-shell-action sabri-shell-create-action" href="' . esc_url( $create_url ) . '">' . esc_html__( 'Create', 'sabri-unified-application-shell' ) . '</a>';
 		}
@@ -242,7 +243,7 @@ final class Renderer {
 			echo '<span class="sabri-shell-notifications" data-sabri-notifications-output="header">' . do_shortcode( '[sabri_notification_bell]' ) . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- owned companion shortcode output.
 			return;
 		}
-		echo '<a class="sabri-shell-action sabri-shell-notifications" data-sabri-notifications-output="header" href="' . esc_url( $url ) . '" aria-label="' . esc_attr__( 'Notifications', 'sabri-unified-application-shell' ) . '"><span aria-hidden="true">&#9679;</span><span class="screen-reader-text">' . esc_html__( 'Notifications', 'sabri-unified-application-shell' ) . '</span></a>';
+		echo '<a class="sabri-shell-action sabri-shell-notifications" data-sabri-notifications-output="header" href="' . esc_url( $url ) . '" aria-label="' . esc_attr__( 'Notifications', 'sabri-unified-application-shell' ) . '"><span aria-hidden="true">&#128276;</span><span class="screen-reader-text">' . esc_html__( 'Notifications', 'sabri-unified-application-shell' ) . '</span></a>';
 	}
 
 	/**
@@ -266,6 +267,12 @@ final class Renderer {
 			$publishing_url = PublishingDashboardEntry::url();
 			if ( $publishing_url ) {
 				echo '<a href="' . esc_url( $publishing_url ) . '">' . esc_html( PublishingDashboardEntry::label() ) . '</a>';
+			}
+			$nav = Navigation::resolved();
+			foreach ( array( 'settings' => __( 'Settings', 'sabri-unified-application-shell' ), 'support' => __( 'Support', 'sabri-unified-application-shell' ) ) as $key => $label ) {
+				if ( ! empty( $nav[ $key ]['url'] ) && self::item_visible_to_user( $nav[ $key ] ) ) {
+					echo '<a href="' . esc_url( $nav[ $key ]['url'] ) . '">' . esc_html( $label ) . '</a>';
+				}
 			}
 			echo '<a href="' . esc_url( wp_logout_url( home_url( '/' ) ) ) . '">' . esc_html__( 'Log out', 'sabri-unified-application-shell' ) . '</a>';
 			echo '</details>';
@@ -352,6 +359,7 @@ final class Renderer {
 				}
 			);
 
+			$group_items = array_filter( $group_items, array( __CLASS__, 'item_visible_to_user' ) );
 			if ( empty( $group_items ) ) {
 				continue;
 			}
@@ -494,18 +502,6 @@ final class Renderer {
 		if ( ! empty( $modules['network'] ) && ! empty( $nav['network']['url'] ) && ! empty( Integrations::detect()['network'] ) ) {
 			return true;
 		}
-		if ( ! empty( $modules['latest_posts'] ) && self::has_posts_for_type( 'post' ) ) {
-			return true;
-		}
-		if ( ! empty( $modules['doctors'] ) && self::has_verified_doctors() ) {
-			return true;
-		}
-		if ( ! empty( $modules['marketplace'] ) && post_type_exists( 'product' ) && self::has_posts_for_type( 'product' ) ) {
-			return true;
-		}
-		if ( ! empty( $modules['research'] ) && post_type_exists( 'research' ) && self::has_posts_for_type( 'research' ) ) {
-			return true;
-		}
 		if ( ! empty( $modules['quick_access'] ) && self::has_quick_access( $nav ) ) {
 			return true;
 		}
@@ -522,16 +518,7 @@ final class Renderer {
 	private static function clinic_directory_sidebar_has_modules( array $settings ) {
 		$modules = $settings['right_sidebar']['clinic_modules'];
 
-		if ( ! empty( $modules['finder'] ) || ! empty( $modules['filters'] ) ) {
-			return true;
-		}
-		if ( ! empty( $modules['doctors'] ) && self::has_verified_doctors() ) {
-			return true;
-		}
 		if ( ! empty( $modules['appointments'] ) && ! empty( Integrations::detect()['appointments'] ) && self::destination_url( 'appointments', Navigation::resolved(), $settings ) ) {
-			return true;
-		}
-		if ( ! empty( $modules['emergency'] ) && ! empty( $settings['right_sidebar']['emergency_notice'] ) ) {
 			return true;
 		}
 		if ( ! empty( $modules['whatsapp'] ) && ! empty( $settings['integrations']['urls']['whatsapp'] ) ) {
@@ -553,7 +540,7 @@ final class Renderer {
 		$user_id  = self::current_doctor_user_id();
 
 		if ( ! $post_id && ! $user_id ) {
-			return ! empty( $modules['safety'] ) || self::has_missing_admin_modules( $settings, 'single' );
+			return self::has_missing_admin_modules( $settings, 'single' );
 		}
 
 		if ( ! empty( $modules['profile'] ) && self::has_single_profile_data( $post_id ) ) {
@@ -568,13 +555,6 @@ final class Renderer {
 		if ( ! empty( $modules['contact'] ) && self::has_public_contact_data( $post_id ) ) {
 			return true;
 		}
-		if ( ! empty( $modules['reviews'] ) && function_exists( 'get_comments_number' ) && get_comments_number( $post_id ) > 0 ) {
-			return true;
-		}
-		if ( ! empty( $modules['safety'] ) ) {
-			return true;
-		}
-
 		return self::has_missing_admin_modules( $settings, 'single' );
 	}
 
@@ -600,35 +580,6 @@ final class Renderer {
 	}
 
 	/**
-	 * Check for public posts of a type.
-	 *
-	 * @param string $post_type Post type.
-	 * @return bool
-	 */
-	private static function has_posts_for_type( $post_type ) {
-		$posts = get_posts(
-			array(
-				'post_type'      => $post_type,
-				'post_status'    => 'publish',
-				'posts_per_page' => 1,
-				'no_found_rows'  => true,
-				'fields'         => 'ids',
-			)
-		);
-
-		return ! empty( $posts );
-	}
-
-	/**
-	 * Check whether verified doctors exist.
-	 *
-	 * @return bool
-	 */
-	private static function has_verified_doctors() {
-		return ! empty( self::verified_doctor_users( 1 ) );
-	}
-
-	/**
 	 * Check quick access availability.
 	 *
 	 * @param array<string,mixed> $nav Resolved nav.
@@ -649,26 +600,10 @@ final class Renderer {
 	 * @return int
 	 */
 	private static function current_doctor_user_id() {
-		$user_id = 0;
-		if ( ! empty( $_GET['user'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- public profile routing only.
-			$identity = sanitize_text_field( wp_unslash( $_GET['user'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			if ( ctype_digit( $identity ) ) {
-				$user_id = absint( $identity );
-			} else {
-				$user = get_user_by( 'slug', $identity );
-				$user_id = $user ? absint( $user->ID ) : 0;
-			}
-		}
-		if ( ! $user_id && function_exists( 'get_queried_object' ) ) {
-			$object = get_queried_object();
-			if ( $object instanceof \WP_User ) {
-				$user_id = absint( $object->ID );
-			}
-		}
-		if ( ! $user_id && function_exists( 'get_the_ID' ) && get_the_ID() ) {
-			$user_id = absint( get_post_field( 'post_author', get_the_ID() ) );
-		}
-		return absint( apply_filters( 'sabri_shell_current_doctor_user_id', $user_id ) );
+		/* File 20 must not infer a doctor subject from query strings, post authors or role labels. */
+		$user_id = apply_filters( 'sabri_shell_current_doctor_user_id', 0 );
+		$user_id = absint( $user_id );
+		return $user_id && Integrations::is_verified_doctor( $user_id ) ? $user_id : 0;
 	}
 
 	/**
@@ -698,35 +633,6 @@ final class Renderer {
 		unset( $post_id );
 		$data = Integrations::doctor_public_data( self::current_doctor_user_id() );
 		return ! empty( $data['phone'] ) || ! empty( $data['whatsapp'] );
-	}
-
-	/**
-	 * Query doctors by broad candidate roles and enforce actual verification.
-	 *
-	 * @param int $limit Result limit.
-	 * @return array<int,\WP_User>
-	 */
-	private static function verified_doctor_users( $limit = 5 ) {
-		$roles = array_values( array_intersect( Integrations::doctor_role_candidates(), Integrations::roles() ) );
-		if ( empty( $roles ) ) {
-			return array();
-		}
-		$users = get_users(
-			array(
-				'role__in' => $roles,
-				'number'   => max( 10, absint( $limit ) * 4 ),
-				'fields'   => 'all',
-			)
-		);
-		$users = array_values(
-			array_filter(
-				$users,
-				static function ( $user ) {
-					return $user instanceof \WP_User && Integrations::is_verified_doctor( $user->ID );
-				}
-			)
-		);
-		return array_slice( $users, 0, max( 1, absint( $limit ) ) );
 	}
 
 	/**
@@ -783,22 +689,6 @@ final class Renderer {
 			self::render_panel( __( 'Network', 'sabri-unified-application-shell' ), '<p><a href="' . esc_url( $nav['network']['url'] ) . '">' . esc_html__( 'Open Network', 'sabri-unified-application-shell' ) . '</a></p>', 'home-network' );
 		}
 
-		if ( ! empty( $modules['latest_posts'] ) ) {
-			self::render_latest_posts_panel( 'home-latest-posts' );
-		}
-
-		if ( ! empty( $modules['doctors'] ) ) {
-			self::render_verified_doctors_panel();
-		}
-
-		if ( ! empty( $modules['marketplace'] ) && post_type_exists( 'product' ) ) {
-			self::render_post_type_panel( __( 'Marketplace', 'sabri-unified-application-shell' ), 'product', 'home-marketplace' );
-		}
-
-		if ( ! empty( $modules['research'] ) && post_type_exists( 'research' ) ) {
-			self::render_post_type_panel( __( 'Research', 'sabri-unified-application-shell' ), 'research', 'home-research' );
-		}
-
 		if ( ! empty( $modules['quick_access'] ) ) {
 			self::render_quick_access_panel( $nav );
 		}
@@ -839,9 +729,6 @@ final class Renderer {
 		$missing = array();
 		if ( 'clinic' === $context ) {
 			$modules = $settings['right_sidebar']['clinic_modules'];
-			if ( ! empty( $modules['doctors'] ) && ! self::has_verified_doctors() ) {
-				$missing[] = __( 'verified doctors', 'sabri-unified-application-shell' );
-			}
 			if ( ! empty( $modules['appointments'] ) && ( empty( Integrations::detect()['appointments'] ) || empty( self::destination_url( 'appointments', Navigation::resolved(), $settings ) ) ) ) {
 				$missing[] = __( 'appointments', 'sabri-unified-application-shell' );
 			}
@@ -863,20 +750,8 @@ final class Renderer {
 			if ( ! empty( $modules['contact'] ) && ! self::has_public_contact_data( $post_id ) ) {
 				$missing[] = __( 'public contact fields', 'sabri-unified-application-shell' );
 			}
-			if ( ! empty( $modules['reviews'] ) && ( ! $post_id || ! function_exists( 'get_comments_number' ) || get_comments_number( $post_id ) < 1 ) ) {
-				$missing[] = __( 'public reviews', 'sabri-unified-application-shell' );
-			}
 		} else {
 			$modules = $settings['right_sidebar']['home_modules'];
-			if ( ! empty( $modules['doctors'] ) && ! self::has_verified_doctors() ) {
-				$missing[] = __( 'verified doctors', 'sabri-unified-application-shell' );
-			}
-			if ( ! empty( $modules['marketplace'] ) && ( ! post_type_exists( 'product' ) || ! self::has_posts_for_type( 'product' ) ) ) {
-				$missing[] = __( 'marketplace items', 'sabri-unified-application-shell' );
-			}
-			if ( ! empty( $modules['research'] ) && ( ! post_type_exists( 'research' ) || ! self::has_posts_for_type( 'research' ) ) ) {
-				$missing[] = __( 'research items', 'sabri-unified-application-shell' );
-			}
 		}
 
 		return $missing;
@@ -890,37 +765,9 @@ final class Renderer {
 	 */
 	private static function render_clinic_directory_sidebar( array $settings ) {
 		$modules = $settings['right_sidebar']['clinic_modules'];
-
-		if ( ! empty( $modules['finder'] ) ) {
-			echo '<section class="sabri-shell-panel" data-sabri-right-module="clinic-finder"><h2>' . esc_html__( 'Doctor Finder', 'sabri-unified-application-shell' ) . '</h2>';
-			echo '<form method="get" action="' . esc_url( get_permalink() ) . '">';
-			echo '<label><span>' . esc_html__( 'Search doctors', 'sabri-unified-application-shell' ) . '</span><input type="search" name="doctor_search" value="' . esc_attr( isset( $_GET['doctor_search'] ) ? sanitize_text_field( wp_unslash( $_GET['doctor_search'] ) ) : '' ) . '"></label>';
-			echo '<button type="submit">' . esc_html__( 'Search', 'sabri-unified-application-shell' ) . '</button>';
-			echo '</form></section>';
-		}
-
-		if ( ! empty( $modules['filters'] ) ) {
-			echo '<section class="sabri-shell-panel" data-sabri-right-module="clinic-filters"><h2>' . esc_html__( 'Filters', 'sabri-unified-application-shell' ) . '</h2>';
-			echo '<form method="get" action="' . esc_url( get_permalink() ) . '">';
-			echo '<label><span>' . esc_html__( 'Country', 'sabri-unified-application-shell' ) . '</span><input type="text" name="doctor_country" value="' . esc_attr( isset( $_GET['doctor_country'] ) ? sanitize_text_field( wp_unslash( $_GET['doctor_country'] ) ) : '' ) . '"></label>';
-			echo '<label><span>' . esc_html__( 'Language', 'sabri-unified-application-shell' ) . '</span><input type="text" name="doctor_language" value="' . esc_attr( isset( $_GET['doctor_language'] ) ? sanitize_text_field( wp_unslash( $_GET['doctor_language'] ) ) : '' ) . '"></label>';
-			echo '<label><span>' . esc_html__( 'Qualification', 'sabri-unified-application-shell' ) . '</span><input type="text" name="doctor_qualification" value="' . esc_attr( isset( $_GET['doctor_qualification'] ) ? sanitize_text_field( wp_unslash( $_GET['doctor_qualification'] ) ) : '' ) . '"></label>';
-			echo '<button type="submit">' . esc_html__( 'Apply', 'sabri-unified-application-shell' ) . '</button>';
-			echo '</form></section>';
-		}
-
-		if ( ! empty( $modules['doctors'] ) ) {
-			self::render_verified_doctors_panel( 'clinic-doctors' );
-		}
-
 		if ( ! empty( $modules['appointments'] ) && ! empty( Integrations::detect()['appointments'] ) && self::destination_url( 'appointments', Navigation::resolved(), $settings ) ) {
 			self::render_panel( __( 'Appointment Help', 'sabri-unified-application-shell' ), '<p><a href="' . esc_url( self::destination_url( 'appointments', Navigation::resolved(), $settings ) ) . '">' . esc_html__( 'Open appointment support', 'sabri-unified-application-shell' ) . '</a></p>', 'clinic-appointments' );
 		}
-
-		if ( ! empty( $modules['emergency'] ) && ! empty( $settings['right_sidebar']['emergency_notice'] ) ) {
-			self::render_panel( __( 'Emergency Notice', 'sabri-unified-application-shell' ), '<p>' . esc_html( $settings['right_sidebar']['emergency_notice'] ) . '</p>', 'clinic-emergency' );
-		}
-
 		if ( ! empty( $modules['whatsapp'] ) && ! empty( $settings['integrations']['urls']['whatsapp'] ) ) {
 			self::render_panel( __( 'WhatsApp Help', 'sabri-unified-application-shell' ), '<p><a href="' . esc_url( $settings['integrations']['urls']['whatsapp'] ) . '">' . esc_html__( 'Open WhatsApp help', 'sabri-unified-application-shell' ) . '</a></p>', 'clinic-whatsapp' );
 		}
@@ -967,18 +814,20 @@ final class Renderer {
 
 		$appointment_url = self::destination_url( 'appointments', Navigation::resolved(), $settings );
 		if ( ! empty( $modules['appointment'] ) && is_user_logged_in() && $appointment_url ) {
-			if ( $user_id ) {
-				$appointment_url = add_query_arg( 'doctor_id', $user_id, $appointment_url );
+			$native_appointment = apply_filters( 'sabri_shell_doctor_appointment_url', $appointment_url, $user_id );
+			$native_appointment = Integrations::same_site_url( $native_appointment );
+			if ( $native_appointment ) {
+				self::render_panel( __( 'Appointment', 'sabri-unified-application-shell' ), '<p><a href="' . esc_url( $native_appointment ) . '">' . esc_html__( 'Request an appointment', 'sabri-unified-application-shell' ) . '</a></p>', 'single-appointment' );
 			}
-			self::render_panel( __( 'Appointment', 'sabri-unified-application-shell' ), '<p><a href="' . esc_url( $appointment_url ) . '">' . esc_html__( 'Request an appointment', 'sabri-unified-application-shell' ) . '</a></p>', 'single-appointment' );
 		}
 
 		$message_url = self::destination_url( 'messages', Navigation::resolved(), $settings );
 		if ( ! empty( $modules['message'] ) && is_user_logged_in() && $message_url ) {
-			if ( $user_id ) {
-				$message_url = add_query_arg( 'user', $user_id, $message_url );
+			$native_message = apply_filters( 'sabri_shell_doctor_message_url', $message_url, $user_id );
+			$native_message = Integrations::same_site_url( $native_message );
+			if ( $native_message ) {
+				self::render_panel( __( 'Message', 'sabri-unified-application-shell' ), '<p><a href="' . esc_url( $native_message ) . '">' . esc_html__( 'Open messages', 'sabri-unified-application-shell' ) . '</a></p>', 'single-message' );
 			}
-			self::render_panel( __( 'Message', 'sabri-unified-application-shell' ), '<p><a href="' . esc_url( $message_url ) . '">' . esc_html__( 'Open messages', 'sabri-unified-application-shell' ) . '</a></p>', 'single-message' );
 		}
 
 		if ( ! empty( $modules['contact'] ) && ( ! empty( $data['phone'] ) || ! empty( $data['whatsapp'] ) ) ) {
@@ -994,93 +843,6 @@ final class Renderer {
 			self::render_panel( __( 'Public Contact', 'sabri-unified-application-shell' ), $html, 'single-contact' );
 		}
 
-		if ( ! empty( $modules['reviews'] ) && $post_id && function_exists( 'get_comments_number' ) && get_comments_number( $post_id ) > 0 ) {
-			self::render_panel( __( 'Reviews', 'sabri-unified-application-shell' ), '<p><a href="' . esc_url( get_permalink( $post_id ) ) . '#comments">' . esc_html__( 'View public reviews', 'sabri-unified-application-shell' ) . '</a></p>', 'single-reviews' );
-		}
-		if ( ! empty( $modules['safety'] ) ) {
-			self::render_panel( __( 'Medical Safety', 'sabri-unified-application-shell' ), '<p>' . esc_html__( 'For emergencies, contact local emergency services. Do not share private patient data through public profiles.', 'sabri-unified-application-shell' ) . '</p>', 'single-safety' );
-		}
-	}
-
-	/**
-	 * Render latest posts panel.
-	 *
-	 * @return void
-	 */
-	private static function render_latest_posts_panel( $module = 'home-latest-posts' ) {
-		$posts = get_posts(
-			array(
-				'post_type'      => 'post',
-				'post_status'    => 'publish',
-				'posts_per_page' => 5,
-				'no_found_rows'  => true,
-			)
-		);
-
-		if ( empty( $posts ) ) {
-			return;
-		}
-
-		$html = '<ul>';
-		foreach ( $posts as $post ) {
-			$html .= '<li><a href="' . esc_url( get_permalink( $post ) ) . '">' . esc_html( get_the_title( $post ) ) . '</a></li>';
-		}
-		$html .= '</ul>';
-
-		self::render_panel( __( 'Latest Posts', 'sabri-unified-application-shell' ), $html, $module );
-	}
-
-	/**
-	 * Render verified doctors from real roles only.
-	 *
-	 * @return void
-	 */
-	private static function render_verified_doctors_panel( $module = 'home-doctors' ) {
-		$users = self::verified_doctor_users( 5 );
-		if ( empty( $users ) ) {
-			return;
-		}
-		$html = '<ul class="sabri-shell-doctor-list">';
-		foreach ( $users as $user ) {
-			$data  = Integrations::doctor_public_data( $user->ID );
-			$label = esc_html( $user->display_name );
-			if ( ! empty( $data['specialty'] ) ) {
-				$label .= ' <small>' . esc_html( $data['specialty'] ) . '</small>';
-			}
-			$html .= '<li><a href="' . esc_url( Integrations::profile_url( $user->ID ) ) . '">' . $label . '</a></li>';
-		}
-		$html .= '</ul>';
-		self::render_panel( __( 'Verified Doctors', 'sabri-unified-application-shell' ), $html, $module );
-	}
-
-	/**
-	 * Render real latest items for a post type.
-	 *
-	 * @param string $title Panel title.
-	 * @param string $post_type Post type.
-	 * @return void
-	 */
-	private static function render_post_type_panel( $title, $post_type, $module ) {
-		$items = get_posts(
-			array(
-				'post_type'      => $post_type,
-				'post_status'    => 'publish',
-				'posts_per_page' => 4,
-				'no_found_rows'  => true,
-			)
-		);
-
-		if ( empty( $items ) ) {
-			return;
-		}
-
-		$html = '<ul>';
-		foreach ( $items as $item ) {
-			$html .= '<li><a href="' . esc_url( get_permalink( $item ) ) . '">' . esc_html( get_the_title( $item ) ) . '</a></li>';
-		}
-		$html .= '</ul>';
-
-		self::render_panel( $title, $html, $module );
 	}
 
 	/**
@@ -1108,121 +870,6 @@ final class Renderer {
 	}
 
 	/**
-	 * Render mobile bottom nav.
-	 *
-	 * @param array<string,mixed> $settings Settings.
-	 * @param array<string,mixed> $nav Resolved nav.
-	 * @return void
-	 */
-	private static function render_mobile_bottom_nav( array $settings, array $nav ) {
-		$third_key = 'doctors';
-		if ( in_array( $settings['mobile']['create_or_doctors'], array( 'create', 'auto' ), true ) && self::can_show_create( $settings ) ) {
-			$third_key = 'create';
-		}
-
-		echo '<nav class="sabri-shell-bottom-nav" aria-label="' . esc_attr__( 'Mobile navigation', 'sabri-unified-application-shell' ) . '" data-sabri-shell-component="bottom-nav">';
-		self::render_bottom_link( 'home', __( 'Home', 'sabri-unified-application-shell' ), isset( $nav['home']['url'] ) ? $nav['home']['url'] : home_url( '/' ) );
-		self::render_bottom_link( 'encyclopedia', __( 'Encyclopedia', 'sabri-unified-application-shell' ), isset( $nav['encyclopedia']['url'] ) ? $nav['encyclopedia']['url'] : '' );
-		if ( 'create' === $third_key ) {
-			self::render_bottom_link( 'create', $settings['mobile']['create_label'], Integrations::create_url() );
-		} else {
-			self::render_bottom_link( 'doctors', __( 'Doctors', 'sabri-unified-application-shell' ), isset( $nav['doctors']['url'] ) ? $nav['doctors']['url'] : '' );
-		}
-		if ( is_user_logged_in() ) {
-			self::render_bottom_link( 'messages', __( 'Messages', 'sabri-unified-application-shell' ), self::destination_url( 'messages', $nav, $settings ) );
-		} else {
-			self::render_bottom_link( 'login', __( 'Log In', 'sabri-unified-application-shell' ), Integrations::auth_url( 'login', self::safe_login_redirect() ) );
-		}
-		echo '<button type="button" class="sabri-shell-bottom-item" data-sabri-drawer-trigger="sabri-shell-drawer-nav" data-sabri-open-label="' . esc_attr__( 'Open menu', 'sabri-unified-application-shell' ) . '" data-sabri-close-label="' . esc_attr__( 'Close menu', 'sabri-unified-application-shell' ) . '" aria-controls="sabri-shell-drawer-nav" aria-expanded="false" aria-label="' . esc_attr__( 'Open menu', 'sabri-unified-application-shell' ) . '"><span aria-hidden="true">&#9776;</span><span>' . esc_html( $settings['mobile']['menu_label'] ) . '</span></button>';
-		echo '</nav>';
-	}
-
-	/**
-	 * Render one bottom nav link.
-	 *
-	 * @param string $key Key.
-	 * @param string $label Label.
-	 * @param string $url URL.
-	 * @return void
-	 */
-	private static function render_bottom_link( $key, $label, $url ) {
-		if ( ! $url ) {
-			echo '<span class="sabri-shell-bottom-item sabri-shell-bottom-item-disabled"><span>' . esc_html( $label ) . '</span></span>';
-			return;
-		}
-
-		$active = Navigation::is_active_url( $url );
-		echo '<a class="sabri-shell-bottom-item" href="' . esc_url( $url ) . '"' . ( $active ? ' aria-current="page"' : '' ) . '><span aria-hidden="true">' . esc_html( strtoupper( substr( $key, 0, 1 ) ) ) . '</span><span>' . esc_html( $label ) . '</span></a>';
-	}
-
-	/**
-	 * Render a reusable panel.
-	 *
-	 * @param string $title Title.
-	 * @param string $html Escaped HTML body.
-	 * @return void
-	 */
-	private static function render_panel( $title, $html, $module = '' ) {
-		echo '<section class="sabri-shell-panel"' . ( $module ? ' data-sabri-right-module="' . esc_attr( $module ) . '"' : '' ) . '>';
-		echo '<h2>' . esc_html( $title ) . '</h2>';
-		echo wp_kses_post( $html );
-		echo '</section>';
-	}
-
-	/**
-	 * Resolve destination URL with integration URL fallback.
-	 *
-	 * @param string              $key Key.
-	 * @param array<string,mixed> $nav Nav.
-	 * @param array<string,mixed> $settings Settings.
-	 * @return string
-	 */
-	private static function destination_url( $key, array $nav, array $settings ) {
-		if ( ! empty( $nav[ $key ] ) && ! self::item_visible_to_user( $nav[ $key ] ) ) {
-			return '';
-		}
-		$url = Integrations::destination_url( $key );
-		if ( $url ) {
-			return $url;
-		}
-		if ( ! empty( $nav[ $key ]['url'] ) ) {
-			return $nav[ $key ]['url'];
-		}
-		if ( ! empty( $settings['integrations']['urls'][ $key ] ) ) {
-			return Settings::sanitize_url( $settings['integrations']['urls'][ $key ] );
-		}
-		return '';
-	}
-
-	/**
-	 * Whether an item is visible to the current user.
-	 *
-	 * @param array<string,mixed> $item Item.
-	 * @return bool
-	 */
-	private static function item_visible_to_user( array $item ) {
-		$visibility = isset( $item['visibility'] ) ? $item['visibility'] : 'public';
-
-		if ( 'logged_in' === $visibility && ! is_user_logged_in() ) {
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
-	 * Whether Create can render.
-	 *
-	 * @param array<string,mixed> $settings Settings.
-	 * @return bool
-	 */
-	private static function can_show_create( array $settings ) {
-		unset( $settings );
-		return function_exists( 'sabri_shell_create_visible_for_current_user' )
-			&& sabri_shell_create_visible_for_current_user();
-	}
-
-	/**
 	 * Safe login redirect using validated referrer/request URI/home fallback.
 	 *
 	 * @return string
@@ -1231,12 +878,18 @@ final class Renderer {
 		$home     = home_url( '/' );
 		$referrer = wp_get_referer();
 		if ( $referrer ) {
-			return wp_validate_redirect( $referrer, $home );
+			$validated = Integrations::same_site_url( $referrer );
+			if ( $validated ) {
+				return $validated;
+			}
 		}
 
 		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
 		if ( is_string( $request_uri ) && 0 === strpos( $request_uri, '/' ) && 0 !== strpos( $request_uri, '//' ) ) {
-			return wp_validate_redirect( home_url( $request_uri ), $home );
+			$validated = Integrations::same_site_url( home_url( $request_uri ) );
+			if ( $validated ) {
+				return $validated;
+			}
 		}
 
 		return $home;

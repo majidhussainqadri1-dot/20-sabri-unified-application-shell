@@ -350,7 +350,7 @@ final class FutureShellV5Hardening {
 	 * @return void
 	 */
 	public static function render() {
-		if ( is_admin() || Layout::MINIMAL === Layout::current_mode() ) {
+		if ( is_admin() || ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) ) {
 			return;
 		}
 		$command = FutureShellV5::feature_enabled( 'command_palette' );

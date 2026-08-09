@@ -42,14 +42,18 @@ final class PlanV4Jobs {
             PlanV4ContractHealth::invalidate();
             $health = PlanV4ContractHealth::health( array(), true );
             $state['steps']['contract_health'] = count( $health );
-            PlanV4Audit::prune();
+            $prune = PlanV4Audit::prune();
+            $state['steps']['audit_prune'] = is_wp_error( $prune ) ? 'deferred-lock' : ( $prune ? 'complete' : 'failed' );
             $state['steps']['audit_chain'] = PlanV4Audit::verify_chain() ? 'valid' : 'invalid';
             if ( 'invalid' === $state['steps']['audit_chain'] ) {
                 PlanV4Assurance::emit( 'audit_chain_invalid', 'high', array() );
             }
+            if ( 'failed' === $state['steps']['audit_prune'] ) {
+                PlanV4Assurance::emit( 'audit_prune_failed', 'medium', array() );
+            }
             $state['steps']['assurance_sent'] = PlanV4Assurance::flush_queue();
             do_action( 'sabri_shell_bounded_reconciliation', 100 );
-            $state['status'] = 'success';
+            $state['status'] = 'invalid' === $state['steps']['audit_chain'] || 'failed' === $state['steps']['audit_prune'] ? 'degraded' : 'success';
         } catch ( \Throwable $exception ) {
             $state['status'] = 'failed';
             $state['error_code'] = 'maintenance_exception';

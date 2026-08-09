@@ -14,7 +14,7 @@ $snapshot  = (string) file_get_contents( $root . '/includes/class-snapshot.php' 
 $fail      = array();
 $assert = static function ( $ok, $label ) use ( &$fail ): void { if ( ! $ok ) { $fail[] = $label; } };
 
-$assert( false !== strpos( $main, '* Version: 1.4.10' ) && false !== strpos( $main, "SABRI_SHELL_VERSION', '1.4.10" ), 'current release identity 1.4.10 preserves eighth hardening' );
+$assert( false !== strpos( $main, '* Version: 1.4.11' ) && false !== strpos( $main, "SABRI_SHELL_VERSION', '1.4.11" ), 'current release identity 1.4.11 preserves eighth hardening' );
 $assert( false !== strpos( $main, 'class-future-shell-v5-eighth-hardening.php' ) && false !== strpos( $main, 'FutureShellV5EighthHardening::register();' ), 'eighth hardening loaded/registered' );
 $assert( false !== strpos( $eighth, "CONTRACT_VERSION = '1.0.8'" ), 'eighth contract 1.0.8' );
 $assert( false !== strpos( $eighth, "'appearance' !== \$tab" ) && false !== strpos( $eighth, 'appearance-owned-by-file25' ), 'File25 appearance editor retirement' );
@@ -40,4 +40,4 @@ $assert( false === strpos( $snapshot, "update_option( 'page_on_front'" ) && fals
 $combined = $eighth . $system . $audit . $assurance . $recovery . $safe . $snapshot;
 $assert( false === strpos( $combined, 'CREATE TABLE' ) && false === strpos( $combined, 'dbDelta(' ) && false === strpos( $combined, 'INSERT INTO' ), 'no companion-domain database ownership introduced' );
 if ( $fail ) { fwrite( STDERR, "Future Shell v5 eighth hardening FAIL: " . implode( '; ', $fail ) . "\n" ); exit( 1 ); }
-echo "Future Shell v5 eighth hardening preserved under 1.4.10: File25 ownership, subdirectory privacy/layout, structured System Check/export, audit retention integrity, safe repair/rollback, emergency lifecycle and activation snapshot PASS\n";
+echo "Future Shell v5 eighth hardening preserved under 1.4.11: File25 ownership, subdirectory privacy/layout, structured System Check/export, audit retention integrity, safe repair/rollback, emergency lifecycle and activation snapshot PASS\n";

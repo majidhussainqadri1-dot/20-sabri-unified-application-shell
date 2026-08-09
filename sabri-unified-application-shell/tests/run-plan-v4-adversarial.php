@@ -29,7 +29,7 @@ foreach (array('current_user_can', 'expected_settings_version', "'status' => 409
 foreach (array('[redacted]', 'LOCK_TTL', 'hash_equals', 'finally', 'array_slice', 'ANCHOR_OPTION', 'verify_events', 'rehash_events') as $needle) {
     $assert(strpos($audit, $needle) !== false, "Audit negative/integrity path missing {$needle}");
 }
-foreach (array('Throwable', 'unavailable', 'incompatible', 'collision', 'bounded_fallback') as $needle) {
+foreach (array('Throwable', 'unavailable', 'incompatible', 'collision', 'unknown') as $needle) {
     $assert(strpos($contracts, $needle) !== false, "Contract failure path missing {$needle}");
 }
 foreach (array('private, no-store', 'X-Robots-Tag', 'noindex', 'Vary: Cookie') as $needle) {
@@ -52,7 +52,8 @@ $assert(strpos($assurance, "do_action( 'sabri_shell_assurance_event', \$event )"
 
 $assert(strpos($all, "\$_GET['sabri_shell_mode']") === false, 'A generic query parameter may force shell mode.');
 $assert(!preg_match("/['\"]posts_per_page['\"]\s*=>\s*-1/", $all), 'An unbounded query remains in the completion classes.');
-$assert(strpos($recovery, "0 !== strpos( \$option, 'sabri_shell_' )") !== false, 'Rollback scope can escape File 20-owned options.');
+$owned = substr($recovery, strpos($recovery, 'private static function owned_options()'), 1200);
+$assert(strpos($owned, 'Defaults::OPTION_NAME') !== false && strpos($owned, 'FutureShellV5::OPTION') !== false && strpos($owned, "'sabri_shell_four_plan_migration'") !== false && strpos($owned, "0 !== strpos( \$option, 'sabri_shell_' )") === false, 'Rollback uses an exact File20-owned option allowlist rather than a prefix wildcard.');
 
 if ($failures) {
     foreach ($failures as $failure) { fwrite(STDERR, "FAIL: {$failure}\n"); }

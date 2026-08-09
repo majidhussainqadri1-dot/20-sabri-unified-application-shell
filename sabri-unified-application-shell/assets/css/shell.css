@@ -26,33 +26,6 @@ body.sabri-shell-enabled {
 	overflow-x: clip;
 }
 
-body.sabri-shell-theme-dark,
-body.sabri-shell-theme-system {
-	color-scheme: light dark;
-}
-
-@media (prefers-color-scheme: dark) {
-	body.sabri-shell-theme-system {
-		--sabri-shell-bg: #111315;
-		--sabri-shell-surface: #181b1f;
-		--sabri-shell-surface-strong: #22262b;
-		--sabri-shell-text: #f3f4f6;
-		--sabri-shell-muted: #b7bec7;
-		--sabri-shell-border: #30363d;
-		--sabri-shell-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
-	}
-}
-
-body.sabri-shell-theme-dark {
-	--sabri-shell-bg: #111315;
-	--sabri-shell-surface: #181b1f;
-	--sabri-shell-surface-strong: #22262b;
-	--sabri-shell-text: #f3f4f6;
-	--sabri-shell-muted: #b7bec7;
-	--sabri-shell-border: #30363d;
-	--sabri-shell-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
-}
-
 .sabri-shell-enabled *,
 .sabri-shell-enabled *::before,
 .sabri-shell-enabled *::after {

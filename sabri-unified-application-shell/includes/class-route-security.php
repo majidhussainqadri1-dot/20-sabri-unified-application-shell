@@ -24,6 +24,10 @@ final class RouteSecurity {
             if ( 0 === strpos( $url, '//' ) || false !== strpos( $url, '\\' ) ) { return ''; }
             $path = wp_parse_url( $url, PHP_URL_PATH );
             if ( ! is_string( $path ) || '' === $path || 0 !== strpos( $path, '/' ) ) { return ''; }
+            foreach ( explode( '/', $path ) as $segment ) {
+                $decoded = rawurldecode( $segment );
+                if ( in_array( $decoded, array( '.', '..' ), true ) || false !== strpos( $decoded, '/' ) || false !== strpos( $decoded, '\\' ) || preg_match( '/[\x00-\x1F\x7F]/', $decoded ) ) { return ''; }
+            }
             $path = preg_replace( '#/+#', '/', $path );
             return is_string( $path ) && '' !== $path ? $path : '';
         }
@@ -37,16 +41,23 @@ final class RouteSecurity {
         $host = strtolower( (string) $parts['host'] );
         $home = wp_parse_url( home_url( '/' ) );
         $home_host = is_array( $home ) && ! empty( $home['host'] ) ? strtolower( (string) $home['host'] ) : '';
-        $home_port = is_array( $home ) && isset( $home['port'] ) ? absint( $home['port'] ) : 0;
-        $port = isset( $parts['port'] ) ? absint( $parts['port'] ) : 0;
-        $same_site = '' !== $home_host && hash_equals( $home_host, $host ) && $home_port === $port;
+        $home_scheme = is_array( $home ) && ! empty( $home['scheme'] ) ? strtolower( (string) $home['scheme'] ) : '';
+        $home_port = self::normalized_port( is_array( $home ) ? $home : array() );
+        $port = self::normalized_port( $parts );
+        $same_site = 'https' === $home_scheme && '' !== $home_host && hash_equals( $home_host, $host ) && $home_port === $port;
 
         $allowed = apply_filters( 'sabri_shell_route_override_allowed_hosts', array() );
         $allowed = is_array( $allowed ) ? array_values( array_unique( array_filter( array_map( 'strtolower', array_map( 'strval', $allowed ) ) ) ) ) : array();
-        if ( ! $same_site && ! in_array( $host, $allowed, true ) ) { return ''; }
+        $authority = $host . ( 443 === $port ? '' : ':' . $port );
+        if ( ! $same_site && ! in_array( $authority, $allowed, true ) && ! ( 443 === $port && in_array( $host, $allowed, true ) ) ) { return ''; }
 
         if ( $same_site && '' === wp_validate_redirect( $clean, '' ) ) { return ''; }
         return $clean;
+    }
+
+    private static function normalized_port( array $parts ) {
+        if ( isset( $parts['port'] ) ) { return absint( $parts['port'] ); }
+        return isset( $parts['scheme'] ) && 'https' === strtolower( (string) $parts['scheme'] ) ? 443 : 80;
     }
 
     /** Quarantine invalid overrides before they can be persisted. */

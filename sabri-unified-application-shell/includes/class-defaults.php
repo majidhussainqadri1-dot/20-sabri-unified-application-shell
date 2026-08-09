@@ -18,7 +18,7 @@ final class Defaults {
 	const OPTION_NAME          = 'sabri_shell_settings';
 	const SNAPSHOT_OPTION_NAME = 'sabri_shell_activation_snapshot';
 	const NAV_CACHE_KEY        = 'sabri_shell_navigation_cache_v1';
-	const SCHEMA_VERSION       = 4;
+	const SCHEMA_VERSION       = 5;
 
 	/**
 	 * Return all default navigation destinations.
@@ -31,7 +31,7 @@ final class Defaults {
 				'label'       => __( 'Home', 'sabri-unified-application-shell' ),
 				'group'       => 'main',
 				'slugs'       => array( 'home', 'front-page' ),
-				'shortcodes'  => array( 'sabri_shell_home_feed', 'sabri_platform_home', 'sabri_news_home' ),
+				'shortcodes'  => array( 'sabri_complete_home_feed', 'sabri_platform_home', 'sabri_news_home' ),
 				'post_type'   => '',
 				'order'       => 10,
 				'visibility'  => 'public',
@@ -245,8 +245,9 @@ final class Defaults {
 			'emergency_disabled'   => false,
 			'delete_on_uninstall'  => false,
 			'home_feed'            => array(
-				'auto_insert' => true,
-				'posts_count' => 10,
+				'retired'     => true,
+				'auto_insert' => false,
+				'posts_count' => 0,
 			),
 			'layout'               => array(
 				'max_width'                 => 1600,
@@ -274,7 +275,6 @@ final class Defaults {
 				'help'          => true,
 				'language'      => true,
 				'profile'       => true,
-				'allowed_roles' => array( 'administrator', 'sabri_verified_doctor', 'sabri_doctor_verified' ),
 			),
 			'navigation'           => $navigation,
 			'left_sidebar'         => array(
@@ -304,18 +304,10 @@ final class Defaults {
 					'founder'      => true,
 					'announcement' => true,
 					'network'      => true,
-					'doctors'      => true,
-					'latest_posts' => true,
-					'research'     => true,
-					'marketplace'  => true,
 					'quick_access' => true,
 				),
 				'clinic_modules'   => array(
-					'finder'       => true,
-					'filters'      => true,
-					'doctors'      => true,
 					'appointments' => true,
-					'emergency'    => true,
 					'whatsapp'     => true,
 				),
 				'single_modules'   => array(
@@ -323,11 +315,8 @@ final class Defaults {
 					'appointment'  => true,
 					'message'      => true,
 					'contact'      => true,
-					'reviews'      => true,
-					'safety'       => true,
 				),
 				'announcement'     => '',
-				'emergency_notice' => __( 'For medical emergencies, contact local emergency services immediately.', 'sabri-unified-application-shell' ),
 			),
 			'mobile'               => array(
 				'bottom_nav'               => false,
@@ -337,12 +326,6 @@ final class Defaults {
 				'create_label'             => __( 'Create', 'sabri-unified-application-shell' ),
 			),
 			'integrations'         => array(
-				'functions' => array(
-					'notifications' => '',
-					'network'       => '',
-					'messages'      => '',
-					'appointments'  => '',
-				),
 				'urls'      => array(
 					'messages'      => '',
 					'notifications' => '',
