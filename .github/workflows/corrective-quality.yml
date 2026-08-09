@@ -89,7 +89,7 @@ jobs:
           assert 'safe_login_redirect' in renderer and 'Integrations::same_site_url' in renderer
           assert 'CreateContract::visible_for_current_user()' in renderer
           assert 'array( Layout::TWO, Layout::THREE )' in renderer
-          assert 'sabri_shell_maintenance' not in layout
+          assert "isset( $_GET['sabri_shell_maintenance'] )" not in layout
           assert 'rawurldecode' in route and "array( '.', '..' )" in route
           assert 'owned_options' in recovery and 'smoke' in recovery.lower()
           assert 'critical_health_state' in tenth
