@@ -2,35 +2,22 @@
 
 ## Scope
 
-The current review baseline is merged File 20 **1.4.9** at `3e9c65373d88332e050628f27f0801092d417da2`; PR #25 advances the candidate to **1.4.10 / FutureShellV5TenthHardening 1.0.10**.
+The current eighty-round review baseline is merged File20 **1.4.10** at `7b4019091d1f83ef4cd9dc3f559abb2b3a95955d`; the audit branch advances the candidate to **1.4.11 / settings schema 5**.
 
-The tenth audit is a fresh ten-round review against File20 v5.0, the central QA/ownership law, File21 native-slot requirements, the latest reviewed File00 audit evidence and current source. Previous green runs are historical evidence only.
+This is a fresh review against File20 v5.0, the governing ownership/routing/recovery/QA laws, Future Shell v5 exact 18-feature scope and current cross-file evidence. Earlier green runs are historical evidence only.
 
-## Current verification evidence
+## Exact final-head verification gates
 
-Initial closure head `4c255f8af45fd308e6085f6965948e97a4763bc4` passed syntax but exposed six stale preservation-suite assertions that still identified `1.4.9` as the current release. Those test-contract defects were corrected without weakening the historical contract assertions.
+Before merge, the final PR head must pass PHP 7.4/8.3 syntax and every `run*.php` regression/adversarial suite; exact 18 Future Shell features; File21-only Home/News ownership plus five exact native slots; complete File20 HomeFeed retirement; File25 visual ownership; File26 Search ownership; no File20 role/clinical/feed/review backend leakage; owner/access/visibility-aware route precedence and duplicate-shortcode collision handling; bounded discovery-cache cleanup; strict same-origin/encoded-route security; provider semver and critical File20/File00 fail-closed health; anchored Minimal/Immersive/context behavior; schema-5 invariant enforcement; pre-schema-upgrade snapshot; exact recovery allowlist, Emergency/concurrency preservation and stronger smoke checks; activation-snapshot integrity; truthful System Check state; guarded LKG and release-ring input; circuit/assurance concurrency locks; truthful maintenance failure evidence; JavaScript/JSON/CSS validation; and deterministic production-only package path/root/file-set/SHA/manifest/CRC parity.
 
-Corrected head `4773cb2cd9b4cd9757193e11f1f3b06b431c95a7` passed quality run `31274972535`:
+The permanent workflow must generate `20-sabri-unified-application-shell-1.4.11-EIGHTY-ROUND-HARDENED.zip`, its SHA-256, source manifest and exact-head eighty-round test report from the final head.
 
-- PHP 7.4 syntax and every `tests/run*.php` regression/adversarial suite;
-- PHP 8.3 syntax and every `tests/run*.php` regression/adversarial suite;
-- JavaScript/JSON/CSS and tenth-pass ownership/native-slot/health/privacy checks;
-- exact eighteen Future Shell feature IDs and conditional/native-owner boundaries;
-- File21-only Home/News feed ownership, five native slots and native-over-legacy single-render behavior;
-- File25 visual and File26 search ownership;
-- reviewed File00 1.2.18 evidence without production-safe implication;
-- native semantic-version provider health plus critical File20/File00 no-false-green semantics;
-- Emergency re-enable critical-health gate;
-- inherited recovery/route/privacy/PWA/release-ring/uninstall protections;
-- deterministic production-only `1.4.10` package, canonical ZIP root/path/duplicate safety, source/stage/extracted SHA-256 parity, embedded/external manifest equality and ZIP CRC;
-- exact-head tenth-audit report and artifact upload.
+## Round-80 closure law
 
-Baseline Archive Integrity run `31274972551` also passed on that same corrected head.
-
-## Final merge gate
-
-This evidence record itself creates a later documentation head. Therefore PR #25 is **not merge-eligible until the final exact head again passes both the 1.4.10 quality workflow and Baseline Archive Integrity**. The final PASS claim and merge must cite that later exact head, not `4773cb2c…`.
+Round 80 is the exact-head release-evidence pass. If the final CI reveals a source, regression, static, documentation identity, package or Baseline Archive Integrity defect, that is a Round-80 defect and must be corrected and rerun on a new exact head. No earlier successful commit is accepted as proof for a later head.
 
 ## Truthful lifecycle boundary
 
-Repository success establishes repository/code/package/automated-QA evidence only. It does **not** establish Hostinger staging acceptance, real companion/provider behavior, browser/device/accessibility acceptance, backup restoration, rollback rehearsal, Founder acceptance, live deployment or operational monitoring.
+A successful exact-head repository workflow establishes repository/code/package/automated-QA evidence only. It does **not** establish Hostinger staging acceptance, real companion/provider behavior, browser/device/accessibility acceptance, backup restoration, rollback rehearsal, Founder acceptance, live deployment or operational monitoring.
+
+**Current result:** `1.4.11` corrections are awaiting exact final PR-head verification. Final PASS requires green quality + Baseline Archive Integrity on the same PR head and then green reruns on merged `main`.
