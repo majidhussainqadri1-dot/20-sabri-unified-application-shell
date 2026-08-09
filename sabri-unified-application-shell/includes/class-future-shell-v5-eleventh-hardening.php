@@ -15,6 +15,10 @@ final class FutureShellV5EleventhHardening {
 
     public static function register() {
         add_filter( 'sabri_shell_route_result_allowed', array( __CLASS__, 'reject_page_id_collisions' ), PHP_INT_MAX, 5 );
+        add_filter( 'sabri_shell_navigation_destinations', array( __CLASS__, 'correct_messages_destination' ), PHP_INT_MAX );
+        add_filter( 'pre_update_option_' . Defaults::OPTION_NAME, array( __CLASS__, 'normalize_messages_setting_write' ), PHP_INT_MAX - 3, 3 );
+        add_filter( 'option_' . Defaults::OPTION_NAME, array( __CLASS__, 'normalize_messages_setting_read' ), PHP_INT_MAX );
+        add_filter( 'default_option_' . Defaults::OPTION_NAME, array( __CLASS__, 'normalize_messages_default' ), PHP_INT_MAX, 3 );
         add_filter( 'sabri_shell_system_check_sections', array( __CLASS__, 'system_check' ), 110 );
     }
 
@@ -68,12 +72,51 @@ final class FutureShellV5EleventhHardening {
         return (bool) apply_filters( 'sabri_shell_route_page_id_single_owner', true, $key, $page_id, $source );
     }
 
+    /** File 17 publishes distinct Network and Messages shortcodes. */
+    public static function correct_messages_destination( $destinations ) {
+        if ( ! is_array( $destinations ) ) { return $destinations; }
+        if ( isset( $destinations['messages'] ) && is_array( $destinations['messages'] ) ) {
+            $destinations['messages']['shortcodes'] = array( 'sabri_messages', 'sabri_communication' );
+        }
+        return $destinations;
+    }
+
+    /** Normalize the historic Messages=Network shortcode on every write. */
+    public static function normalize_messages_setting_write( $value, $old_value, $option ) {
+        unset( $old_value, $option );
+        return self::normalize_messages_setting( $value );
+    }
+
+    /** Make legacy stored state inert without silently persisting from a read. */
+    public static function normalize_messages_setting_read( $value ) {
+        return self::normalize_messages_setting( $value );
+    }
+
+    /** Correct fresh-install default state as well as persisted rows. */
+    public static function normalize_messages_default( $value, $option = '', $passed_default = false ) {
+        unset( $option, $passed_default );
+        return self::normalize_messages_setting( $value );
+    }
+
+    private static function normalize_messages_setting( $value ) {
+        if ( ! is_array( $value ) ) { return $value; }
+        if ( ! isset( $value['navigation'] ) || ! is_array( $value['navigation'] ) ) { return $value; }
+        if ( ! isset( $value['navigation']['messages'] ) || ! is_array( $value['navigation']['messages'] ) ) { return $value; }
+        $shortcode = isset( $value['navigation']['messages']['shortcode'] ) ? sanitize_key( (string) $value['navigation']['messages']['shortcode'] ) : '';
+        if ( '' === $shortcode || 'sabri_network' === $shortcode ) {
+            $value['navigation']['messages']['shortcode'] = 'sabri_messages';
+        }
+        return $value;
+    }
+
     public static function system_check( $sections ) {
         $sections = is_array( $sections ) ? $sections : array();
         $sections['future_shell_v5_eleventh_hardening'] = array(
             'label' => __( 'Future Shell v5 eleventh corrective hardening', 'sabri-unified-application-shell' ),
             'contract_version' => self::CONTRACT_VERSION,
             'page_id_collision_policy' => 'all-page-id-sources-single-canonical-owner-fail-closed',
+            'file17_messages_shortcode' => 'sabri_messages',
+            'file17_network_shortcode' => 'sabri_network',
             'approved_feature_count' => 18,
             'staging_accepted' => false,
             'live_deployed' => false,
