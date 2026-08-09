@@ -209,7 +209,6 @@ final class Navigation {
 		return $item;
 	}
 
-
 	/** Reject a configured Page ID already claimed by another canonical destination. */
 	public static function page_owner_compatible( $key, $page_id ) {
 		$page_id = absint( $page_id );
@@ -240,8 +239,6 @@ final class Navigation {
 		if ( ! $page_id || 'publish' !== get_post_status( $page_id ) ) {
 			return '';
 		}
-		/* WordPress production exposes get_post_type(); isolated contract harnesses
-		 * may not. When present, it is a mandatory owner/type check. */
 		if ( function_exists( 'get_post_type' ) && 'page' !== get_post_type( $page_id ) ) {
 			return '';
 		}
@@ -263,11 +260,18 @@ final class Navigation {
 		return '';
 	}
 
+	/** Compare active state against the canonical site origin and path. */
 	public static function is_active_url( $url ) {
 		$target = wp_parse_url( (string) $url );
 		$home   = wp_parse_url( home_url( '/' ) );
-		if ( ! is_array( $target ) || ! is_array( $home ) ) { return false; }
-		if ( ! empty( $target['host'] ) && ( empty( $home['host'] ) || strtolower( (string) $target['host'] ) !== strtolower( (string) $home['host'] ) ) ) {
+		if ( ! is_array( $target ) || ! is_array( $home ) || empty( $home['host'] ) ) { return false; }
+		$target_scheme = ! empty( $target['scheme'] ) ? strtolower( (string) $target['scheme'] ) : strtolower( isset( $home['scheme'] ) ? (string) $home['scheme'] : '' );
+		$target_host   = ! empty( $target['host'] ) ? strtolower( (string) $target['host'] ) : strtolower( (string) $home['host'] );
+		$home_scheme   = strtolower( isset( $home['scheme'] ) ? (string) $home['scheme'] : '' );
+		$home_host     = strtolower( (string) $home['host'] );
+		$target_port   = isset( $target['port'] ) ? absint( $target['port'] ) : ( 'https' === $target_scheme ? 443 : 80 );
+		$home_port     = isset( $home['port'] ) ? absint( $home['port'] ) : ( 'https' === $home_scheme ? 443 : 80 );
+		if ( '' === $home_scheme || $target_scheme !== $home_scheme || ! hash_equals( $home_host, $target_host ) || $target_port !== $home_port ) {
 			return false;
 		}
 		$current = self::current_url_path();
