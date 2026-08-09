@@ -43,6 +43,20 @@ final class FutureShellV5EleventhHardening {
         }
         $page_id = absint( url_to_postid( $url ) );
         if ( ! $page_id ) { return false; }
+
+        /* The historic standalone sn_network_page_id is Network authority only.
+         * A dedicated sn_page_map['messages'] may own Messages; otherwise the
+         * Network page can be a lower-level compatibility link, never Priority-1
+         * canonical Messages Page-ID evidence. */
+        if ( 'messages' === $key && 'registered_page_map' === $source ) {
+            $map = get_option( 'sn_page_map', array() );
+            $dedicated = is_array( $map ) && ! empty( $map['messages'] ) ? absint( $map['messages'] ) : 0;
+            $network_fallback = absint( get_option( 'sn_network_page_id', 0 ) );
+            if ( ! $dedicated && $network_fallback && $network_fallback === $page_id ) {
+                return false;
+            }
+        }
+
         return self::page_id_has_single_canonical_claim( sanitize_key( $key ), $page_id, $source );
     }
 
@@ -117,6 +131,7 @@ final class FutureShellV5EleventhHardening {
             'page_id_collision_policy' => 'all-page-id-sources-single-canonical-owner-fail-closed',
             'file17_messages_shortcode' => 'sabri_messages',
             'file17_network_shortcode' => 'sabri_network',
+            'file17_messages_network_page_id_fallback' => 'not-canonical-page-id-evidence',
             'approved_feature_count' => 18,
             'staging_accepted' => false,
             'live_deployed' => false,
