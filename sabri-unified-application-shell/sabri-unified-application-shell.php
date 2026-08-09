@@ -44,6 +44,7 @@ require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-sixth-hardening.
 require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-seventh-hardening.php';
 require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-eighth-hardening.php';
 require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-eleventh-hardening.php';
+require_once SABRI_SHELL_PATH . 'includes/class-second-eighty-rest-hardening.php';
 require_once SABRI_SHELL_PATH . 'includes/class-system-check-duplicate-hardening.php';
 
 spl_autoload_register(
@@ -135,6 +136,7 @@ add_action( 'plugins_loaded', static function () use ( $sabri_shell_corrective_c
     Sabri\UnifiedShell\FutureShellV5NinthHardening::register();
     Sabri\UnifiedShell\FutureShellV5TenthHardening::register();
     Sabri\UnifiedShell\FutureShellV5EleventhHardening::register();
+    Sabri\UnifiedShell\SecondEightyRestHardening::register();
     Sabri\UnifiedShell\SystemCheckDuplicateHardening::register();
 
     add_action( 'init', static function () {
