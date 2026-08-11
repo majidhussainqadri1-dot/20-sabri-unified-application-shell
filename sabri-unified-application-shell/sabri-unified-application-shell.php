@@ -117,6 +117,7 @@ add_action( 'plugins_loaded', static function () use ( $sabri_shell_corrective_c
     if ( $sabri_shell_corrective_classes_are_owned ) { Sabri\UnifiedShell\CreateContract::register(); Sabri\UnifiedShell\LayoutCorrection::register(); }
     if ( $sabri_shell_central_plan_contract_is_owned ) { Sabri\UnifiedShell\CentralPlanContract::register(); }
     Sabri\UnifiedShell\FourPlanHarmonization::register();
+    Sabri\UnifiedShell\File01ReconciliationAdapter::register();
     Sabri\UnifiedShell\PublishingDashboardEntry::register();
     Sabri\UnifiedShell\FutureShellV5::register();
     Sabri\UnifiedShell\FutureShellV5Hardening::register();
