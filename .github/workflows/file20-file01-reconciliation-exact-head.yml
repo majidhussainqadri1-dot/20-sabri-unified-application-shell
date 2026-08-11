@@ -1,0 +1,91 @@
+name: File 20 File01 Reconciliation Exact-Head Gate
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exact-head-php:
+    name: Exact HEAD PHP ${{ matrix.php }} full regression
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.3']
+    steps:
+      - name: Checkout immutable PR head
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+      - name: Prove exact source HEAD
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          echo "Exact File 20 source HEAD: $EXPECTED_SHA"
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+      - name: Lint every PHP source and test
+        shell: bash
+        run: |
+          set -euo pipefail
+          find sabri-unified-application-shell -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Run complete File 20 regression and adversarial suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          for test in sabri-unified-application-shell/tests/run*.php; do
+            echo "==> ${test}"
+            php "${test}"
+          done
+
+  exact-head-reconciliation-contract:
+    name: Exact HEAD File01 owner-contract and static boundaries
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout immutable PR head
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+      - name: Prove exact source HEAD
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          echo "Exact File 20 source HEAD: $EXPECTED_SHA"
+      - name: Verify File01 reconciliation ownership contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          adapter='sabri-unified-application-shell/includes/class-file01-reconciliation-adapter.php'
+          main='sabri-unified-application-shell/sabri-unified-application-shell.php'
+          test -f "$adapter"
+          grep -Fq "owner_module'    => 'file-20'" "$adapter"
+          grep -Fq "command_version' => self::CONTRACT_VERSION" "$adapter"
+          grep -Fq "shell_route_navigation_handoff" "$adapter"
+          grep -Fq "rollback_file01_shell_route_ack" "$adapter"
+          grep -Fq "sabri_shell_file01_reconciliation_receipts" "$adapter"
+          grep -Fq "File01ReconciliationAdapter::register();" "$main"
+          grep -Fq "'founder', 'learn', 'encyclopedia', 'doctors', 'clinic', 'video_wall', 'reels', 'pdf_library', 'radar', 'ai', 'network', 'marketplace'" "$adapter"
+          ! grep -Eq "array\([^\n]*(^|[[:space:]'\"])(home|news)([[:space:]'\"]|$)" "$adapter"
+          ! grep -Eq "(delete_option|wp_delete_post|wp_update_post|update_post_meta|delete_post_meta)[[:space:]]*\(" "$adapter"
+      - name: JavaScript syntax and repository whitespace
+        shell: bash
+        run: |
+          set -euo pipefail
+          for js in sabri-unified-application-shell/assets/js/*.js; do node --check "$js"; done
+          git diff --check "${{ github.event.pull_request.base.sha }}"...HEAD
