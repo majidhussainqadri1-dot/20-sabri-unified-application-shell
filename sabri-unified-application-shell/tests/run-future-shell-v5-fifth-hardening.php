@@ -1,6 +1,6 @@
 <?php
 $root=dirname(__DIR__);$fifth=file_get_contents($root.'/includes/class-future-shell-v5-fifth-hardening.php');$main=file_get_contents($root.'/sabri-unified-application-shell.php');$future=file_get_contents($root.'/includes/class-future-shell-v5.php');$fail=[];$checks=[
-'release 1.4.12 preserves fifth hardening'=>strpos($main,'* Version: 1.4.12')!==false&&strpos($main,"define( 'SABRI_SHELL_VERSION', '1.4.12' );")!==false,
+'release 1.4.13 preserves fifth hardening'=>strpos($main,'* Version: 1.4.13')!==false&&strpos($main,"define( 'SABRI_SHELL_VERSION', '1.4.13' );")!==false,
 'fifth hardening loaded'=>strpos($main,'FutureShellV5FifthHardening::register();')!==false,
 'contract 1.0.5'=>strpos($fifth,"CONTRACT_VERSION = '1.0.5'")!==false,
 'old final evaluator retired'=>strpos($fifth,"remove_filter( 'sabri_shell_future_feature_enabled', array( FutureShellV5Hardening::class, 'narrow_feature_enablement' ), 999999 )")!==false,
@@ -9,4 +9,4 @@ $root=dirname(__DIR__);$fifth=file_get_contents($root.'/includes/class-future-sh
 'internal principal contract'=>strpos($fifth,'sabri_shell_future_internal_principal_allowed')!==false,
 'manager config'=>strpos($future,"current_user_can( 'manage_options' )")!==false&&strpos($future,"'/future/features'")!==false,
 'invalid fails closed'=>strpos($fifth,'default:')!==false&&strpos($fifth,'return false;')!==false,
-'no foreign backend'=>strpos($fifth,'CREATE TABLE')===false&&strpos($fifth,'dbDelta(')===false&&strpos($fifth,'INSERT INTO')===false];foreach($checks as$n=>$ok)if(!$ok)$fail[]=$n;if($fail){fwrite(STDERR,'Future Shell v5 fifth hardening FAIL: '.implode('; ',$fail)."\n");exit(1);}echo"Future Shell v5 fifth hardening preserved under 1.4.12 PASS\n";
+'no foreign backend'=>strpos($fifth,'CREATE TABLE')===false&&strpos($fifth,'dbDelta(')===false&&strpos($fifth,'INSERT INTO')===false];foreach($checks as$n=>$ok)if(!$ok)$fail[]=$n;if($fail){fwrite(STDERR,'Future Shell v5 fifth hardening FAIL: '.implode('; ',$fail)."\n");exit(1);}echo"Future Shell v5 fifth hardening preserved under 1.4.13 PASS\n";
