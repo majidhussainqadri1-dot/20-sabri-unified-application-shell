@@ -1,5 +1,34 @@
 # Changelog
 
+## 1.4.14 — 2026-08-17 — Review-1 Release/Operator Truth Correction
+
+- Completed one fresh review over the merged 1.4.13 live-Renderer repair.
+- Found no new defect in the restored Renderer helper logic; preserved the 1.4.13 runtime correction unchanged.
+- Corrected `MIGRATION.md` and `STAGING-ACCEPTANCE.md`, which still named obsolete 1.4.11 artifacts.
+- Restored missing 1.4.12 and 1.4.13 release history in this changelog.
+- Corrected `ROLLBACK.md` to the current File-20-only automatic rollback allowlist and removed the false claim that shared WordPress front-page options are automatically restorable.
+- Corrected Safe Mode operator guidance: raw `?sabri_shell_safe=1` alone is not sufficient; current query Safe Mode is authenticated, administrator-only and nonce-bound.
+- Added permanent release-documentation truth regression coverage and advanced the deterministic release identity to 1.4.14 rather than replacing the already checksummed 1.4.13 artifact in place.
+- Repository/CI completion does not imply live deployment, live resolution or operational acceptance.
+
+## 1.4.13 — 2026-08-17 — Live Renderer Helper Repair
+
+- Bounded production-incident correction over 1.4.12 after live `/google-account-security/` returned HTTP 500 with `Call to undefined method Sabri\UnifiedShell\Renderer::item_visible_to_user()` at deployed `class-renderer.php:215`.
+- Proven faulting-file parity: deployed Renderer Git blob `7351fb82cc9a8a301130181a7f2691ac236ca7db` matched repository `main` exactly.
+- Restored the proven-deleted contiguous Renderer helper block: `render_panel()`, `destination_url()`, and `item_visible_to_user()`.
+- Added a permanent regression that rejects unresolved owned `self::method()` calls and protects the visibility callback.
+- Preserved 1.4.12 ownership/routing/privacy/recovery/Future Shell behavior; no new feature, backend, schema or ownership domain was introduced.
+- Exact-head and post-merge PHP 7.4/8.3, regression, baseline-integrity and deterministic-package gates passed, but live deployment/re-test remained a separate gate.
+
+## 1.4.12 — 2026-08-09 — Second Fresh Eighty-Round Hardening
+
+- Completed a second fresh eighty-round review over merged 1.4.11 while preserving exactly eighteen approved Future Shell enhancements.
+- Added `FutureShellV5EleventhHardening` contract `1.0.11` without adding a nineteenth feature.
+- Unified decoded route validation for relative and absolute HTTPS overrides and strengthened Page-ID single-owner collision validation.
+- Separated File17 Network and Messages shortcode/Page-ID/diagnostic truth and blocked generic WordPress open-registration fallback under High-Trust Verified Entry.
+- Hardened configured internal URLs, File01 no-Search ownership truth, File21 responsive provider-only right-slot behavior, System Check critical File20/File00 evidence, sensitive REST no-store responses, Safe Mode same-site nonce URLs, Settings API serialization and LKG restore locking.
+- Preserved repository/staging/live/operational evidence boundaries.
+
 ## 1.4.11 — 2026-08-09 — Eighty-Round Corrective Consolidation
 
 - Reopened merged `1.4.10` for eighty independent review passes; previous green CI was historical evidence only.
@@ -47,7 +76,7 @@
 
 - Added CF-01 through CF-06 as declared conditional/native-owner contract targets, not runtime or activation claims.
 - Added privacy-aware conditional route handling while preserving CF-04 media token/range/cache authority, File17 + activated CF-04 1 GB transfer, CF-06 localization truth and current one-free-tier/voluntary-donation/zero-commission/donor-neutral law.
-- Replaced an ineffective assurance placeholder with real redaction/bounded/provider-exception checks and advanced deterministic package gates.
+- Replaced an ineffective assurance placeholder with real redaction/bounded/provider-exception checks and advanced deterministic release gates.
 
 ## 1.4.6 — 2026-08-08 — Sixth Independent Ten-Round Corrective Hardening
 
