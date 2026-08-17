@@ -52,7 +52,8 @@ if ( $missing ) {
 	exit( 1 );
 }
 
-if ( false === strpos( $renderer, "array_filter( $group_items, array( __CLASS__, 'item_visible_to_user' ) )" ) ) {
+$visibility_callback = "array_filter( \$group_items, array( __CLASS__, 'item_visible_to_user' ) )";
+if ( false === strpos( $renderer, $visibility_callback ) ) {
 	fwrite( STDERR, "Renderer visibility callback regression guard is missing.\n" );
 	exit( 1 );
 }
