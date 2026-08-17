@@ -2,14 +2,14 @@
 
 Sabri Unified Application Shell is the canonical responsive WordPress application shell for the **Sabri Social Homeopathy Platform**.
 
-- Version: `1.4.12`
+- Version: `1.4.13`
 - File 22 Create contract: `1.0.1`
 - Central-plan contract: `1.0.0`
 - Four-plan harmonization contract: `1.0.0`
 - Future Shell v5 contract: `1.0.0`; corrective layers `1.0.1` through `1.0.11`
 - Approved Future Shell scope: exactly **18 enhancements**
 - Conditional companion set: **CF-01 through CF-06**, declared only; activation/runtime/staging/live status is not implied
-- Status: repository/code/package/automated-QA candidate only after exact-head CI; Hostinger staging acceptance remains separate
+- Status: repository/code/package/automated-QA candidate only after exact-head CI; production resolution requires separate deployment and live re-test
 - Plugin slug/text domain: `sabri-unified-application-shell`
 
 ## Canonical scope
@@ -22,9 +22,15 @@ The approved set remains: Command Palette; installable privacy-bounded PWA shell
 
 No corrective release may add a nineteenth feature without a new Founder-approved amendment.
 
-## Version 1.4.12 — second fresh eighty-round hardening
+## Version 1.4.13 — live Renderer helper repair
 
-Version 1.4.12 reopens merged 1.4.11 instead of treating its green CI as proof. The second eighty-round cycle preserves the exact 18-feature Future Shell scope while correcting newly discovered File-20-owned gaps: decoded route validation now applies identically to relative and absolute HTTPS overrides; Page-ID route sources require single canonical ownership; File17 Network and Messages shortcode/Page-ID/diagnostic truth are separated; generic WordPress open registration is not advertised as platform signup under High-Trust Verified Entry; configured internal mappings are relative/same-site HTTPS only; File01 foundation metadata cannot imply Search truth; provider-only File21 Home right-slot output remains accessible below desktop width; System Check no longer reads removed WordPress-role doctor diagnostics and requires explicit healthy File20/File00 evidence; recovery/System Check REST evidence is no-store; nonce-bearing Safe Mode URLs stay same-site; Settings API writes and LKG restore transactions are serialized with owner-token locks.
+Version 1.4.13 is a bounded production-incident correction over 1.4.12. Live evidence proved that deployed File 20 1.4.12 repeatedly failed with `Call to undefined method Sabri\UnifiedShell\Renderer::item_visible_to_user()` at deployed `class-renderer.php:215`. The deployed faulting file Git blob `7351fb82cc9a8a301130181a7f2691ac236ca7db` matched GitHub `main` exactly, so faulting-file deployment parity was proven rather than assumed.
+
+Repository history/source comparison proved that one contiguous Renderer helper block had been deleted while its call sites remained. Version 1.4.13 restores only the three proven-deleted helpers: `render_panel()`, `destination_url()`, and `item_visible_to_user()`. It also adds a permanent static regression that rejects unresolved `self::method()` calls in `Renderer`. No new feature, backend, ownership expansion, database schema, or foreign-domain authority is introduced.
+
+## Version 1.4.12 hardening preserved
+
+The second eighty-round 1.4.12 cycle remains preserved: decoded route validation applies identically to relative and absolute HTTPS overrides; Page-ID route sources require single canonical ownership; File17 Network and Messages shortcode/Page-ID/diagnostic truth are separated; generic WordPress open registration is not advertised as platform signup under High-Trust Verified Entry; configured internal mappings are relative/same-site HTTPS only; File01 foundation metadata cannot imply Search truth; provider-only File21 Home right-slot output remains accessible below desktop width; System Check no longer reads removed WordPress-role doctor diagnostics and requires explicit healthy File20/File00 evidence; recovery/System Check REST evidence is no-store; nonce-bearing Safe Mode URLs stay same-site; Settings API writes and LKG restore transactions are serialized with owner-token locks.
 
 ## Earlier hardening preserved
 
@@ -36,6 +42,6 @@ CF-01 clinical records, CF-02 support/appeals, CF-03 financial operations, CF-04
 
 `/media/d/{grant}` remains CF-04-owned for token/range/cache semantics. Verified user transfer remains File17 + activated CF-04 with the approved **1 GB** per-file limit. Current platform financial law remains one free tier, voluntary donation, zero commission and no donor advantage; paid collection remains dormant absent new Founder change control and native CF-03 activation evidence. Locale/translation truth remains with CF-06/approved provider.
 
-## Staging acceptance
+## Deployment acceptance
 
-Repository completion is not production acceptance. Hostinger staging must verify the exact `1.4.12` package/head/checksum, real File00–26 and any activated CF contracts, File17 Network/Messages separation, canonical High-Trust signup, File21 native mount/no-duplication and provider-only right-slot responsiveness, File25 visual truth, File26 unavailable/no-fallback behavior, File00 critical-health behavior, Emergency gate, strict route precedence/overrides, sensitive REST no-store behavior, concurrent Settings/LKG contention, repair/rollback, root/subdirectory privacy/layout, System Check, PWA, browsers/devices, accessibility, RTL/LTR, low-data/offline behavior, backup/restore and Founder acceptance before production promotion.
+Repository completion is not production acceptance. The exact `1.4.13` package/head/checksum must be deployed and verified separately. The original live incident URL `/google-account-security/` must be re-tested and must no longer return HTTP 500 or the missing-Renderer-helper fatal. Real File00–26 and any activated CF contracts, File17 Network/Messages separation, canonical High-Trust signup, File21 native mount/no-duplication and provider-only right-slot responsiveness, File25 visual truth, File26 unavailable/no-fallback behavior, File00 critical-health behavior, Emergency gate, strict route precedence/overrides, sensitive REST no-store behavior, concurrent Settings/LKG contention, repair/rollback, root/subdirectory privacy/layout, System Check, PWA, browsers/devices, accessibility, RTL/LTR, low-data/offline behavior, backup/restore and Founder acceptance remain separate operational evidence before production resolution may be claimed.
