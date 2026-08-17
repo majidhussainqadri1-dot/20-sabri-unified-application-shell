@@ -20,7 +20,10 @@ jobs:
       matrix:
         php: ['7.4', '8.3']
     steps:
-      - uses: actions/checkout@v5
+      - name: Check out exact candidate source head
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
@@ -51,7 +54,10 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v5
+      - name: Check out exact candidate source head
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: JavaScript JSON CSS and live-renderer-repair static checks
         run: |
           set -euo pipefail
@@ -160,7 +166,7 @@ jobs:
         run: |
           cat > release/FILE-20-1.4.13-LIVE-RENDERER-HELPER-REPAIR-TEST-REPORT.md <<REPORT
           # File 20 Version 1.4.13 Live Renderer Helper Repair Evidence
-          - Exact workflow SHA: ${{ github.sha }}
+          - Exact candidate source SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           - Live incident source: deployed File 20 1.4.12 class-renderer.php matched GitHub main blob 7351fb82cc9a8a301130181a7f2691ac236ca7db exactly.
           - Live symptom: /google-account-security/ returned HTTP 500.
           - Proven fatal: undefined Sabri\\UnifiedShell\\Renderer::item_visible_to_user() at deployed class-renderer.php:215.
@@ -177,7 +183,7 @@ jobs:
           REPORT
       - uses: actions/upload-artifact@v4
         with:
-          name: file20-1.4.13-live-renderer-helper-repair-${{ github.sha }}
+          name: file20-1.4.13-live-renderer-helper-repair-${{ github.event.pull_request.head.sha || github.sha }}
           retention-days: 60
           if-no-files-found: error
           path: |
