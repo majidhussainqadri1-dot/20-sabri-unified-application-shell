@@ -1,4 +1,4 @@
-name: File 20 Version 1.4.12 Second-Eighty-Round Hardened Quality
+name: File 20 Version 1.4.13 Live Renderer Helper Repair Quality
 
 on:
   pull_request:
@@ -20,7 +20,10 @@ jobs:
       matrix:
         php: ['7.4', '8.3']
     steps:
-      - uses: actions/checkout@v5
+      - name: Check out exact candidate source head
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
@@ -46,13 +49,16 @@ jobs:
           done
 
   static-package:
-    name: Static ownership routing recovery privacy and deterministic production-package parity
+    name: Static ownership renderer recovery privacy and deterministic production-package parity
     needs: php-quality
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v5
-      - name: JavaScript JSON CSS and second-eighty-round static checks
+      - name: Check out exact candidate source head
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: JavaScript JSON CSS and live-renderer-repair static checks
         run: |
           set -euo pipefail
           for js in sabri-unified-application-shell/assets/js/*.js; do node --check "$js"; done
@@ -62,6 +68,7 @@ jobs:
           root=Path('sabri-unified-application-shell')
           def read(p): return (root/p).read_text(encoding='utf-8')
           main=read('sabri-unified-application-shell.php')
+          renderer=read('includes/class-renderer.php')
           defaults=read('includes/class-defaults.php')
           route=read('includes/class-route-security.php')
           eleventh=read('includes/class-future-shell-v5-eleventh-hardening.php')
@@ -73,9 +80,14 @@ jobs:
           future=read('includes/class-future-shell-v5.php')
           uninstall=read('uninstall.php')
           readmetxt=read('readme.txt')
-          assert '* Version: 1.4.12' in main
-          assert "define( 'SABRI_SHELL_VERSION', '1.4.12' );" in main
-          assert 'Stable tag: 1.4.12' in readmetxt
+          assert '* Version: 1.4.13' in main
+          assert "define( 'SABRI_SHELL_VERSION', '1.4.13' );" in main
+          assert 'Stable tag: 1.4.13' in readmetxt
+          for helper in ['render_panel','destination_url','item_visible_to_user']:
+              assert renderer.count('private static function '+helper+'(') == 1, helper
+          assert 'self::item_visible_to_user(' in renderer
+          assert 'self::destination_url(' in renderer
+          assert 'self::render_panel(' in renderer
           assert 'FutureShellV5EleventhHardening::register();' in main
           assert 'SecondEightyRestHardening::register();' in main
           assert "CONTRACT_VERSION = '1.0.11'" in eleventh
@@ -99,7 +111,7 @@ jobs:
           assert 'CREATE TABLE' not in '\n'.join([route,eleventh,resth,system,safe,concurrency,control,future])
           for p in sorted((root/'assets/css').glob('*.css')):
               css=p.read_text(encoding='utf-8'); assert css.count('{')==css.count('}'),p.name
-          print('Static File 20 v1.4.12 second-eighty-round checks PASS')
+          print('Static File 20 v1.4.13 live Renderer helper repair checks PASS')
           PY
 
       - name: Build deterministic production-only package and prove parity
@@ -125,8 +137,8 @@ jobs:
               lines.append(f"{hashlib.sha256(src.read_bytes()).hexdigest()}  {rel.as_posix()}")
           manifest='\n'.join(lines)+'\n'; (stage/'MANIFEST.sha256').write_text(manifest,encoding='utf-8')
           assert sorted(p.relative_to(stage).as_posix() for p in stage.rglob('*') if p.is_file() and p.name!='MANIFEST.sha256')==sorted(p.relative_to(root).as_posix() for p in source)
-          base='20-sabri-unified-application-shell-1.4.12-SECOND-EIGHTY-ROUND-HARDENED'; archive=release/f'{base}.zip'
-          fixed=(2026,8,9,5,0,0)
+          base='20-sabri-unified-application-shell-1.4.13-LIVE-RENDERER-HELPER-REPAIR'; archive=release/f'{base}.zip'
+          fixed=(2026,8,17,6,0,0)
           with ZipFile(archive,'w') as zf:
               for p in sorted(stage.rglob('*')):
                   if not p.is_file(): continue
@@ -144,33 +156,38 @@ jobs:
           actual=sorted(p.relative_to(er).as_posix() for p in er.rglob('*') if p.is_file() and p.name!='MANIFEST.sha256'); assert actual==sorted(expected)
           for rel,sha in expected.items(): assert hashlib.sha256((er/rel).read_bytes()).hexdigest()==sha
           assert not (er/'tests').exists() and not (er/'includes/class-home-feed.php').exists()
-          print('Deterministic File20 1.4.12 second-eighty-round package PASS')
+          print('Deterministic File20 1.4.13 live Renderer helper repair package PASS')
           PY
-          base='20-sabri-unified-application-shell-1.4.12-SECOND-EIGHTY-ROUND-HARDENED'
+          base='20-sabri-unified-application-shell-1.4.13-LIVE-RENDERER-HELPER-REPAIR'
           (cd release && sha256sum -c "${base}.sha256")
           unzip -t "release/${base}.zip"
 
-      - name: Write exact-head second-eighty-round report
+      - name: Write exact-head live-renderer-repair report
         run: |
-          cat > release/FILE-20-1.4.12-SECOND-EIGHTY-ROUND-TEST-REPORT.md <<REPORT
-          # File 20 Version 1.4.12 Second Fresh Eighty-Round Evidence
-          - Exact workflow SHA: ${{ github.sha }}
+          cat > release/FILE-20-1.4.13-LIVE-RENDERER-HELPER-REPAIR-TEST-REPORT.md <<REPORT
+          # File 20 Version 1.4.13 Live Renderer Helper Repair Evidence
+          - Exact candidate source SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          - Live incident source: deployed File 20 1.4.12 class-renderer.php matched GitHub main blob 7351fb82cc9a8a301130181a7f2691ac236ca7db exactly.
+          - Live symptom: /google-account-security/ returned HTTP 500.
+          - Proven fatal: undefined Sabri\\UnifiedShell\\Renderer::item_visible_to_user() at deployed class-renderer.php:215.
+          - Source audit proved one deleted helper block while call sites remained: render_panel(), destination_url(), item_visible_to_user().
+          - Bounded correction restores those helpers and adds permanent unresolved self:: method-call regression coverage.
           - PHP 7.4/8.3 syntax and every repository regression/adversarial suite: PASS
           - Future Shell approved feature count remains 18/18
-          - Route/Page-ID/File17 signup/configured-URL/System Check/recovery REST/concurrency/LKG corrections: PASS
+          - Route/Page-ID/File17/signup/configured-URL/System Check/recovery REST/concurrency/LKG corrections remain preserved: PASS
           - Production ZIP excludes tests/development-only material: PASS
           - ZIP path/root/duplicate safety, source/stage/extracted SHA-256 parity, manifest equality and CRC: PASS
-          - Hostinger staging accepted: NO
-          - Live deployed: NO
-          - Operationally accepted: NO
+          - Live deployed 1.4.13: NO
+          - Live re-test passed: NO
+          - Operationally resolved: NO
           REPORT
       - uses: actions/upload-artifact@v4
         with:
-          name: file20-1.4.12-second-eighty-${{ github.sha }}
+          name: file20-1.4.13-live-renderer-helper-repair-${{ github.event.pull_request.head.sha || github.sha }}
           retention-days: 60
           if-no-files-found: error
           path: |
-            release/20-sabri-unified-application-shell-1.4.12-SECOND-EIGHTY-ROUND-HARDENED.zip
-            release/20-sabri-unified-application-shell-1.4.12-SECOND-EIGHTY-ROUND-HARDENED.sha256
-            release/20-sabri-unified-application-shell-1.4.12-SECOND-EIGHTY-ROUND-HARDENED-SOURCE-MANIFEST.sha256
-            release/FILE-20-1.4.12-SECOND-EIGHTY-ROUND-TEST-REPORT.md
+            release/20-sabri-unified-application-shell-1.4.13-LIVE-RENDERER-HELPER-REPAIR.zip
+            release/20-sabri-unified-application-shell-1.4.13-LIVE-RENDERER-HELPER-REPAIR.sha256
+            release/20-sabri-unified-application-shell-1.4.13-LIVE-RENDERER-HELPER-REPAIR-SOURCE-MANIFEST.sha256
+            release/FILE-20-1.4.13-LIVE-RENDERER-HELPER-REPAIR-TEST-REPORT.md

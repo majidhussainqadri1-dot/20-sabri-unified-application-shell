@@ -4,7 +4,7 @@ Tags: application shell, navigation, layout, accessibility, pwa, offline
 Requires at least: 6.0
 Tested up to: 7.0.1
 Requires PHP: 7.4
-Stable tag: 1.4.12
+Stable tag: 1.4.13
 License: GPLv2 or later
 Text Domain: sabri-unified-application-shell
 
@@ -12,28 +12,33 @@ Responsive canonical application shell and integration layer for the Sabri Socia
 
 == Description ==
 
-Version 1.4.12 is the second fresh eighty-round corrective release over merged 1.4.11. It preserves exactly eighteen Future Shell enhancements and closes newly discovered File-20-owned route, File17 Messages, High-Trust signup, configured-URL, System Check, responsive File21 provider-slot, sensitive REST cache, settings-concurrency and LKG-restore gaps.
+Version 1.4.13 is a bounded live-incident correction over 1.4.12. Live evidence proved that the deployed 1.4.12 `class-renderer.php` was byte-for-byte identical to GitHub `main` and repeatedly failed because a Renderer helper block had been deleted while its call sites remained. This release restores only the three proven-deleted helpers—`render_panel()`, `destination_url()`, and `item_visible_to_user()`—and adds a permanent regression that rejects unresolved `self::` method calls. The exact eighteen approved Future Shell enhancements and File 20 ownership boundaries remain unchanged.
 
 File 20 owns only the global structural shell, canonical navigation/layout resolution, integration slots, diagnostics and File-20 recovery continuity. Native membership/authentication, Home/News, messaging, notifications, appointments, marketplace, security enforcement, visual truth, Search/Discovery/Ranking and conditional clinical/support/finance/media/analytics/localization backends remain with their canonical companion owners.
 
-Current corrections include one canonical path validator for relative and HTTPS route overrides; single-owner collision validation across all Page-ID route sources; distinct File17 Network/Messages shortcode truth; rejection of `sn_network_page_id` as canonical Messages Page-ID evidence; removal of generic WordPress open-registration fallback under High-Trust Verified Entry; dedicated File17 Messages diagnostics; strict internal configured URL policy; corrected File01 foundation metadata with no Search truth; responsive preservation of provider-only File21 Home right-slot content; removal of stale WordPress-role doctor diagnostics; explicit critical File20/File00 health presence; private/no-store recovery REST evidence; same-site nonce-bearing Safe Mode links; serialized Settings API mutation and LKG restore transactions.
-
-Repository/CI evidence does not imply Hostinger staging, Founder acceptance, live deployment or operational acceptance.
+The 1.4.12 route, File17 Messages, High-Trust signup, configured-URL, System Check, responsive File21 provider-slot, sensitive REST cache, settings-concurrency and LKG-restore corrections remain preserved. Repository/CI correction does not by itself claim Hostinger staging acceptance, live deployment, live resolution, Founder acceptance or operational acceptance.
 
 == Installation ==
 
 1. Back up files and database and prove restore.
-2. Install or upgrade the exact 1.4.12 candidate on staging only.
+2. Install or upgrade the exact 1.4.13 candidate on the approved deployment target.
 3. Verify one canonical ZIP root, no tests/development material and exact source/stage/extracted SHA-256 parity.
-4. Run System Check and confirm critical File20/File00 health is never PASS when evidence is absent/unknown/incompatible.
-5. Verify File17 Network and Messages resolve separately; generic Network evidence must not mark Messages healthy.
-6. Verify canonical File00/File02 signup only; generic WordPress open registration must not surface as platform signup.
-7. Test File21 provider-only Home right slot at desktop/tablet/mobile widths.
-8. Exercise repair/rollback/health/System Check REST endpoints and verify private/no-store response headers.
-9. Test Settings API concurrent writes and LKG recovery contention; stale/concurrent transactions must fail closed.
-10. Complete Hostinger staging, real companion integration, browser/accessibility, backup/restore/rollback rehearsal and Founder acceptance before production.
+4. Confirm the deployed File 20 runtime reports 1.4.13 and, where possible, confirm deployed-artifact parity with the approved candidate.
+5. Re-test the exact live incident URL `/google-account-security/`; HTTP 500 and the `Renderer::item_visible_to_user()` fatal must be absent.
+6. Run System Check and confirm critical File20/File00 health is never PASS when evidence is absent/unknown/incompatible.
+7. Verify File17 Network and Messages resolve separately; generic Network evidence must not mark Messages healthy.
+8. Verify canonical File00/File02 signup only; generic WordPress open registration must not surface as platform signup.
+9. Test File21 provider-only Home right slot at desktop/tablet/mobile widths and exercise recovery/System Check controls.
+10. Complete live smoke tests, backup/restore/rollback readiness and Founder acceptance before declaring operational resolution.
 
 == Changelog ==
+
+= 1.4.13 =
+* Restored the File 20 Renderer helper block accidentally deleted while its call sites remained.
+* Restored `render_panel()`, `destination_url()`, and `item_visible_to_user()` without expanding File 20 ownership or adding features.
+* Added a permanent Renderer helper-integrity regression that fails when an owned `self::method()` call has no same-class method definition.
+* Live incident basis: deployed File 20 1.4.12 repeatedly fatally called missing `item_visible_to_user()` at `class-renderer.php:215`, and the deployed renderer Git blob matched GitHub `main` exactly.
+* Repository/CI correction does not claim live resolution; deployment, live re-test and parity confirmation remain mandatory.
 
 = 1.4.12 =
 * Completed a second fresh eighty-round File 20 review over merged 1.4.11.

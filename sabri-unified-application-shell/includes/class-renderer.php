@@ -870,6 +870,62 @@ final class Renderer {
 	}
 
 	/**
+	 * Render a reusable panel.
+	 *
+	 * @param string $title Title.
+	 * @param string $html Escaped HTML body.
+	 * @param string $module Stable right-sidebar module key.
+	 * @return void
+	 */
+	private static function render_panel( $title, $html, $module = '' ) {
+		echo '<section class="sabri-shell-panel"' . ( $module ? ' data-sabri-right-module="' . esc_attr( $module ) . '"' : '' ) . '>';
+		echo '<h2>' . esc_html( $title ) . '</h2>';
+		echo wp_kses_post( $html );
+		echo '</section>';
+	}
+
+	/**
+	 * Resolve destination URL with integration URL fallback.
+	 *
+	 * @param string              $key Key.
+	 * @param array<string,mixed> $nav Nav.
+	 * @param array<string,mixed> $settings Settings.
+	 * @return string
+	 */
+	private static function destination_url( $key, array $nav, array $settings ) {
+		if ( ! empty( $nav[ $key ] ) && ! self::item_visible_to_user( $nav[ $key ] ) ) {
+			return '';
+		}
+		$url = Integrations::destination_url( $key );
+		if ( $url ) {
+			return $url;
+		}
+		if ( ! empty( $nav[ $key ]['url'] ) ) {
+			return $nav[ $key ]['url'];
+		}
+		if ( ! empty( $settings['integrations']['urls'][ $key ] ) ) {
+			return Settings::sanitize_url( $settings['integrations']['urls'][ $key ] );
+		}
+		return '';
+	}
+
+	/**
+	 * Whether an item is visible to the current user.
+	 *
+	 * @param array<string,mixed> $item Item.
+	 * @return bool
+	 */
+	private static function item_visible_to_user( array $item ) {
+		$visibility = isset( $item['visibility'] ) ? $item['visibility'] : 'public';
+
+		if ( 'logged_in' === $visibility && ! is_user_logged_in() ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
 	 * Safe login redirect using validated referrer/request URI/home fallback.
 	 *
 	 * @return string
