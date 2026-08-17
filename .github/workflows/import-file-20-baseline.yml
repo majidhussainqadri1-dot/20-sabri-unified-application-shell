@@ -18,8 +18,10 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - name: Check out exact source
+      - name: Check out exact source head
         uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Verify immutable baseline boundaries
         shell: bash
