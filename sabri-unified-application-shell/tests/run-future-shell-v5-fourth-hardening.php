@@ -7,7 +7,7 @@ $third = file_get_contents( $root . '/includes/class-future-shell-v5-third-harde
 $fourth = file_get_contents( $root . '/includes/class-future-shell-v5-fourth-hardening.php' );
 $fail = array();
 $assert = static function ( $condition, $label ) use ( &$fail ): void { if ( ! $condition ) { $fail[] = $label; } };
-$assert( false !== strpos( $main, '* Version: 1.4.12' ) && false !== strpos( $main, "SABRI_SHELL_VERSION', '1.4.12" ), 'current release identity 1.4.12 preserves fourth hardening' );
+$assert( false !== strpos( $main, '* Version: 1.4.13' ) && false !== strpos( $main, "SABRI_SHELL_VERSION', '1.4.13" ), 'current release identity 1.4.13 preserves fourth hardening' );
 $assert( false !== strpos( $main, 'class-future-shell-v5-fourth-hardening.php' ) && false !== strpos( $main, 'FutureShellV5FourthHardening::register();' ), 'fourth hardening loaded and registered' );
 $assert( false !== strpos( $fourth, "CONTRACT_VERSION = '1.0.4'" ), 'fourth contract 1.0.4' );
 $assert( false !== strpos( $fourth, 'membership-core-1.2.13' ), 'File 00 historical fourth-pass compatibility preserved' );
@@ -21,4 +21,4 @@ foreach ( array( 'normal','elevated-monitoring','restricted-high-risk-actions','
 $assert( false !== strpos( $fourth, 'native-modules-enforce' ), 'File24 native enforcement boundary' );
 $assert( false === strpos( $fourth, 'CREATE TABLE' ) && false === strpos( $fourth, 'dbDelta(' ) && false === strpos( $fourth, 'INSERT INTO' ), 'no foreign backend' );
 if ( $fail ) { fwrite( STDERR, "Future Shell v5 fourth hardening FAIL: " . implode( '; ', $fail ) . "\n" ); exit(1); }
-echo "Future Shell v5 fourth hardening preserved under 1.4.12 PASS\n";
+echo "Future Shell v5 fourth hardening preserved under 1.4.13 PASS\n";
