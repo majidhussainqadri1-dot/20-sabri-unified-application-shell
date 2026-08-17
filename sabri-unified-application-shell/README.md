@@ -2,7 +2,7 @@
 
 Sabri Unified Application Shell is the canonical responsive WordPress application shell for the **Sabri Social Homeopathy Platform**.
 
-- Version: `1.4.13`
+- Version: `1.4.14`
 - File 22 Create contract: `1.0.1`
 - Central-plan contract: `1.0.0`
 - Four-plan harmonization contract: `1.0.0`
@@ -22,11 +22,17 @@ The approved set remains: Command Palette; installable privacy-bounded PWA shell
 
 No corrective release may add a nineteenth feature without a new Founder-approved amendment.
 
+## Version 1.4.14 — Review 1 release-truth correction
+
+A fresh review of the completed 1.4.13 live-Renderer repair found no new defect in the restored Renderer helper logic, but it found four shipped release/operator-documentation defects: `MIGRATION.md` and `STAGING-ACCEPTANCE.md` still named obsolete 1.4.11 artifacts; `CHANGELOG.md` omitted 1.4.12 and 1.4.13; and `ROLLBACK.md` contradicted current rollback/Safe Mode runtime behavior. Because the approved 1.4.13 ZIP already had an immutable checksum, those corrections are issued as a new 1.4.14 artifact rather than silently replacing 1.4.13 under the same version.
+
+Version 1.4.14 preserves the 1.4.13 runtime helper correction unchanged, aligns release/operator documentation with current code, and adds a permanent release-documentation truth regression. No new feature, backend, ownership expansion, database schema or foreign-domain authority is introduced.
+
 ## Version 1.4.13 — live Renderer helper repair
 
 Version 1.4.13 is a bounded production-incident correction over 1.4.12. Live evidence proved that deployed File 20 1.4.12 repeatedly failed with `Call to undefined method Sabri\UnifiedShell\Renderer::item_visible_to_user()` at deployed `class-renderer.php:215`. The deployed faulting file Git blob `7351fb82cc9a8a301130181a7f2691ac236ca7db` matched GitHub `main` exactly, so faulting-file deployment parity was proven rather than assumed.
 
-Repository history/source comparison proved that one contiguous Renderer helper block had been deleted while its call sites remained. Version 1.4.13 restores only the three proven-deleted helpers: `render_panel()`, `destination_url()`, and `item_visible_to_user()`. It also adds a permanent static regression that rejects unresolved `self::method()` calls in `Renderer`. No new feature, backend, ownership expansion, database schema, or foreign-domain authority is introduced.
+Repository history/source comparison proved that one contiguous Renderer helper block had been deleted while its call sites remained. Version 1.4.13 restored only the three proven-deleted helpers: `render_panel()`, `destination_url()`, and `item_visible_to_user()`. It also added a permanent static regression that rejects unresolved `self::method()` calls in `Renderer`.
 
 ## Version 1.4.12 hardening preserved
 
@@ -44,4 +50,4 @@ CF-01 clinical records, CF-02 support/appeals, CF-03 financial operations, CF-04
 
 ## Deployment acceptance
 
-Repository completion is not production acceptance. The exact `1.4.13` package/head/checksum must be deployed and verified separately. The original live incident URL `/google-account-security/` must be re-tested and must no longer return HTTP 500 or the missing-Renderer-helper fatal. Real File00–26 and any activated CF contracts, File17 Network/Messages separation, canonical High-Trust signup, File21 native mount/no-duplication and provider-only right-slot responsiveness, File25 visual truth, File26 unavailable/no-fallback behavior, File00 critical-health behavior, Emergency gate, strict route precedence/overrides, sensitive REST no-store behavior, concurrent Settings/LKG contention, repair/rollback, root/subdirectory privacy/layout, System Check, PWA, browsers/devices, accessibility, RTL/LTR, low-data/offline behavior, backup/restore and Founder acceptance remain separate operational evidence before production resolution may be claimed.
+Repository completion is not production acceptance. The exact `1.4.14` package/head/checksum must be deployed and verified separately. The original live incident URL `/google-account-security/` must be re-tested and must no longer return HTTP 500 or the missing-Renderer-helper fatal. Real File00–26 and any activated CF contracts, File17 Network/Messages separation, canonical High-Trust signup, File21 native mount/no-duplication and provider-only right-slot responsiveness, File25 visual truth, File26 unavailable/no-fallback behavior, File00 critical-health behavior, Emergency gate, strict route precedence/overrides, sensitive REST no-store behavior, concurrent Settings/LKG contention, repair/rollback, root/subdirectory privacy/layout, System Check, PWA, browsers/devices, accessibility, RTL/LTR, low-data/offline behavior, backup/restore and Founder acceptance remain separate operational evidence before production resolution may be claimed.

@@ -4,7 +4,7 @@ Tags: application shell, navigation, layout, accessibility, pwa, offline
 Requires at least: 6.0
 Tested up to: 7.0.1
 Requires PHP: 7.4
-Stable tag: 1.4.13
+Stable tag: 1.4.14
 License: GPLv2 or later
 Text Domain: sabri-unified-application-shell
 
@@ -12,19 +12,21 @@ Responsive canonical application shell and integration layer for the Sabri Socia
 
 == Description ==
 
-Version 1.4.13 is a bounded live-incident correction over 1.4.12. Live evidence proved that the deployed 1.4.12 `class-renderer.php` was byte-for-byte identical to GitHub `main` and repeatedly failed because a Renderer helper block had been deleted while its call sites remained. This release restores only the three proven-deleted helpers—`render_panel()`, `destination_url()`, and `item_visible_to_user()`—and adds a permanent regression that rejects unresolved `self::` method calls. The exact eighteen approved Future Shell enhancements and File 20 ownership boundaries remain unchanged.
+Version 1.4.14 is the first fresh review correction over the 1.4.13 live-Renderer repair. The 1.4.13 runtime correction is preserved unchanged; 1.4.14 corrects release/operator truth that still referenced obsolete 1.4.11 artifacts or obsolete rollback/Safe Mode behavior. It adds permanent release-documentation regression coverage so current runtime, package identity, migration guidance, staging evidence and rollback boundaries cannot silently diverge again.
+
+Version 1.4.13 restored only the three proven-deleted Renderer helpers—`render_panel()`, `destination_url()`, and `item_visible_to_user()`—after live evidence proved the deployed 1.4.12 Renderer was byte-for-byte identical to the faulting repository file and retained call sites for a deleted helper block. The exact eighteen approved Future Shell enhancements and File 20 ownership boundaries remain unchanged.
 
 File 20 owns only the global structural shell, canonical navigation/layout resolution, integration slots, diagnostics and File-20 recovery continuity. Native membership/authentication, Home/News, messaging, notifications, appointments, marketplace, security enforcement, visual truth, Search/Discovery/Ranking and conditional clinical/support/finance/media/analytics/localization backends remain with their canonical companion owners.
 
-The 1.4.12 route, File17 Messages, High-Trust signup, configured-URL, System Check, responsive File21 provider-slot, sensitive REST cache, settings-concurrency and LKG-restore corrections remain preserved. Repository/CI correction does not by itself claim Hostinger staging acceptance, live deployment, live resolution, Founder acceptance or operational acceptance.
+Repository/CI correction does not by itself claim Hostinger staging acceptance, live deployment, live resolution, Founder acceptance or operational acceptance.
 
 == Installation ==
 
 1. Back up files and database and prove restore.
-2. Install or upgrade the exact 1.4.13 candidate on the approved deployment target.
+2. Install or upgrade the exact `20-sabri-unified-application-shell-1.4.14-REVIEW1-RELEASE-TRUTH-CORRECTION.zip` artifact on the approved deployment target.
 3. Verify one canonical ZIP root, no tests/development material and exact source/stage/extracted SHA-256 parity.
-4. Confirm the deployed File 20 runtime reports 1.4.13 and, where possible, confirm deployed-artifact parity with the approved candidate.
-5. Re-test the exact live incident URL `/google-account-security/`; HTTP 500 and the `Renderer::item_visible_to_user()` fatal must be absent.
+4. Confirm the deployed File 20 runtime reports 1.4.14 and, where possible, confirm deployed-artifact parity with the approved candidate.
+5. Re-test the original live incident URL `/google-account-security/`; HTTP 500 and the `Renderer::item_visible_to_user()` fatal must be absent.
 6. Run System Check and confirm critical File20/File00 health is never PASS when evidence is absent/unknown/incompatible.
 7. Verify File17 Network and Messages resolve separately; generic Network evidence must not mark Messages healthy.
 8. Verify canonical File00/File02 signup only; generic WordPress open registration must not surface as platform signup.
@@ -33,12 +35,21 @@ The 1.4.12 route, File17 Messages, High-Trust signup, configured-URL, System Che
 
 == Changelog ==
 
+= 1.4.14 =
+* Completed one fresh review over the 1.4.13 live-Renderer repair.
+* Preserved the proven 1.4.13 runtime helper correction unchanged.
+* Corrected stale `MIGRATION.md`, `STAGING-ACCEPTANCE.md`, `CHANGELOG.md`, and `ROLLBACK.md` release/operator truth.
+* Aligned automatic rollback documentation with the current File-20-only option allowlist; shared WordPress front-page options are not automatic rollback scope.
+* Removed unsafe obsolete advice that raw `?sabri_shell_safe=1` alone enables query Safe Mode; current query Safe Mode is authenticated, administrator-only and nonce-bound.
+* Added permanent release-documentation truth regression coverage and advanced the deterministic artifact identity to 1.4.14.
+* Repository/CI status remains separate from live deployment, live re-test and operational resolution.
+
 = 1.4.13 =
 * Restored the File 20 Renderer helper block accidentally deleted while its call sites remained.
 * Restored `render_panel()`, `destination_url()`, and `item_visible_to_user()` without expanding File 20 ownership or adding features.
 * Added a permanent Renderer helper-integrity regression that fails when an owned `self::method()` call has no same-class method definition.
 * Live incident basis: deployed File 20 1.4.12 repeatedly fatally called missing `item_visible_to_user()` at `class-renderer.php:215`, and the deployed renderer Git blob matched GitHub `main` exactly.
-* Repository/CI correction does not claim live resolution; deployment, live re-test and parity confirmation remain mandatory.
+* Repository/CI correction did not claim live resolution; deployment, live re-test and parity confirmation remained mandatory.
 
 = 1.4.12 =
 * Completed a second fresh eighty-round File 20 review over merged 1.4.11.
@@ -52,7 +63,7 @@ The 1.4.12 route, File17 Messages, High-Trust signup, configured-URL, System Che
 * Replaced stale doctor-role System Check logic with File00/File09 authority evidence and explicit File20/File00 health presence requirements.
 * Added no-store headers for sensitive File20 recovery/System Check REST evidence.
 * Serialized Settings API concurrency and LKG restore transactions; explicit uninstall purge includes their locks.
-* Repository/CI status remains separate from Hostinger staging/live/operational acceptance.
+* Repository/CI status remained separate from Hostinger staging/live/operational acceptance.
 
 = 1.4.11 =
 * Completed the first eighty-round consolidation over 1.4.10 and advanced settings schema to 5.
