@@ -4,15 +4,29 @@ Hostinger staging acceptance is the normal production-promotion gate. Automated 
 
 ## Exact Candidate and Backup
 
-- Record File 20 `1.4.14`, exact GitHub head, deterministic `20-sabri-unified-application-shell-1.4.14-REVIEW1-RELEASE-TRUTH-CORRECTION.zip` package, SHA-256 and source manifest.
+- Record File 20 `1.4.15`, exact GitHub head, deterministic `20-sabri-unified-application-shell-1.4.15-FILE01-RECONCILIATION-REPAIR.zip` package, SHA-256 and source manifest.
 - Confirm one canonical plugin ZIP root, no development tests, safe paths/no duplicates, embedded/external manifest equality and source/stage/extracted SHA-256 parity.
 - Prove a restorable files/database backup; test fresh install and real upgrade from the actually deployed File20 version where staging is the selected deployment path.
+- Preserve the live root-cause evidence: File01-B 2.0.1 deployed parity, schema 1.2.0 PASS, 15 reconciliation actions/12 blockers, File21 Home/News acceptance, File20 1.4.14 exact deployed parity and no File01 reconciliation hooks in that deployed File20 build.
 - Confirm the 1.4.13 Renderer correction remains unchanged: `render_panel()`, `destination_url()`, and `item_visible_to_user()` each exist exactly once and all owned `self::method()` calls resolve.
+
+## File01 Reconciliation Repair Gate
+
+- Before any File01 write, deploy the exact 1.4.15 candidate and prove deployed File20 runtime/package parity.
+- Run File01 reconciliation dry-run only. `home` and `news` must remain accepted by `file-21`.
+- The twelve formerly blocked keys—`founder`, `learn`, `encyclopedia`, `doctors`, `clinic`, `videos`, `reels`, `pdf`, `radar`, `ai`, `network`, `marketplace`—must each return an accepted `file-20` owner plan with command version `1.0.0`.
+- File01 blocker count must be exactly zero before Apply Reconciliation is permitted.
+- Each File20 plan must state `shell_navigation_reference_only`; File20 must not claim native content/domain ownership from Files 03/05/06/07/08/10/11/12/15/16/17/18.
+- Record the reviewed File01 plan hash. If the plan hash changes before apply, stop and regenerate/review the dry-run.
+- Apply only through File01's controlled reconciliation action. Verify File20 returns bounded reversible receipts and File01 persists snapshot/receipt evidence before deleting legacy options.
+- After apply, verify File01 state is `applied`, receipt count is complete, `spf_page_map` and `spf_founder_user_id` are retired by File01, and no compensation/incomplete state exists.
+- Verify all twelve routes still resolve from File20-owned configured Page IDs after `spf_page_map` removal. Verify Home/News remain File21-owned and no companion page/content/table is copied, rewritten or re-owned by File20.
+- Rehearse rollback where permitted: exact prior File20 navigation rows must restore; plan-hash/receipt/state drift must fail closed; replay must be idempotent.
 
 ## Original Live-Incident Regression Gate
 
 - If closing the production incident that triggered 1.4.13, freeze and record the exact deployed File20 version and critical deployed-file/artifact parity before replacement.
-- After deploying the exact approved 1.4.14 artifact, confirm the live runtime reports `1.4.14`.
+- After deploying the exact approved 1.4.15 artifact, confirm live runtime reports `1.4.15`.
 - Re-test `/google-account-security/`. It must not return HTTP 500 and the historical `Sabri\UnifiedShell\Renderer::item_visible_to_user()` undefined-method fatal must be absent from current logs.
 - A green staging result or green GitHub Actions result does not by itself prove live resolution.
 
@@ -39,7 +53,7 @@ Hostinger staging acceptance is the normal production-promotion gate. Automated 
 - Verify automatic rollback scope is File20-owned options only. Shared WordPress front-page options such as `show_on_front`, `page_on_front`, and `page_for_posts` must not be automatically restored by current File20 recovery.
 - Verify absent File20-owned options restore as absent; every restored option is post-write verified; current Emergency state is preserved; Emergency metadata and settings-row version are not restored; settings-row version remains monotonic after real settings restoration; caches purge and smoke test passes.
 - Adversarially test strict route overrides and canonical route order: configured/registered published Page ID → shortcode page → archive → approved slug → validated override → honest unavailable.
-- In a disposable staging copy only, verify default uninstall is non-destructive. With explicit `delete_on_uninstall=true`, File20-owned operational state/schedules may purge, but companion pages/content/tables/options must remain untouched.
+- In a disposable staging copy only, verify default uninstall is non-destructive. With explicit `delete_on_uninstall=true`, File20-owned operational state including bounded File01 reconciliation receipts may purge, but companion pages/content/tables/options must remain untouched.
 - Verify query Safe Mode is administrator-authenticated and nonce-bound. Raw `?sabri_shell_safe=1` without the product-generated nonce must not enable it. The `SABRI_SHELL_DISABLE` constant remains the emergency configuration fallback.
 
 ## Existing Security, Integration and Future Shell Gates
@@ -50,6 +64,6 @@ Hostinger staging acceptance is the normal production-promotion gate. Automated 
 
 ## Acceptance Record
 
-Record tester, date/time, environment, exact package/head/checksum, actual companion versions/contracts, screenshots/logs, defects and retests, backup restore proof, rollback evidence and Founder decision.
+Record tester, date/time, environment, exact package/head/checksum, actual companion versions/contracts, screenshots/logs, File01 dry-run plan hash/action/blocker counts, reconciliation receipts/state, defects and retests, backup restore proof, rollback evidence and Founder decision.
 
-**Pass condition:** zero known unresolved release-blocking defects, or an explicitly permitted and documented Founder risk acceptance. Staging acceptance still does not equal Live-Deployed or Operational status.
+**Pass condition:** zero known unresolved release-blocking defects, including zero File01 reconciliation blockers before apply, or an explicitly permitted and documented Founder risk acceptance. Staging acceptance still does not equal Live-Deployed or Operational status.
