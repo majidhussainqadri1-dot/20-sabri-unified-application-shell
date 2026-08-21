@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.4.15 — 2026-08-21 — File01 Reconciliation Root-Cause Repair
+
+- Live-first evidence proved deployed File01-B `2.0.1` exact runtime parity, schema `1.2.0` physical health and a correctly fail-closed reconciliation dry-run with 15 actions and 12 owner-plan blockers.
+- Live callback evidence proved File21 already supplied File01 owner-plan/execute/rollback callbacks for Home/News, while exact deployed File20 `1.4.14` matched repository runtime and contained none of the three File01 reconciliation hook strings.
+- Added `File01ReconciliationAdapter` for exactly twelve shell-route handoffs: Founder, Learn, Encyclopedia, Doctors, Clinic, Video Wall, Reels, PDF Library, Radar, AI, Network and Marketplace.
+- Preserved File21 Home/News precedence and native content/domain ownership for Files 03/05/06/07/08/10/11/12/15/16/17/18; File20 persists only its own navigation Page-ID reference before File01 retires `spf_page_map`.
+- Added bounded integrity-bound reversible receipts, deterministic idempotent replay, exact pre-state restoration and fail-closed plan/receipt/state-drift checks.
+- Added dedicated reconciliation regression coverage and explicit uninstall cleanup for the File20-owned receipt store.
+- Advanced plugin/package identity to `1.4.15`; repository/CI success does not claim deployment, File01 zero-blocker re-test, controlled reconciliation, live route verification or operational resolution.
+
 ## 1.4.14 — 2026-08-17 — Review-1 Release/Operator Truth Correction
 
 - Completed one fresh review over the merged 1.4.13 live-Renderer repair.
