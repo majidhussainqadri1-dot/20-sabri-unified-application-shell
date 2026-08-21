@@ -30,9 +30,7 @@ final class File01ReconciliationAdapter {
 
 	/**
 	 * Map legacy File 01 keys to File 20 shell destinations and native owners.
-	 *
-	 * File 20 does not claim the native domain; it only persists the route Page ID
-	 * in its own navigation settings before File 01 removes spf_page_map.
+	 * File 20 never claims the native domain; it persists only a route Page ID.
 	 */
 	public static function route_map() {
 		return array(
@@ -72,9 +70,10 @@ final class File01ReconciliationAdapter {
 			return null;
 		}
 
-		$page_id     = absint( isset( $context['page_id'] ) ? $context['page_id'] : 0 );
-		$destination = $map[ $legacy_key ]['destination'];
-		if ( ! self::valid_published_page( $page_id ) || ! isset( Defaults::destinations()[ $destination ] ) || ! Navigation::page_owner_compatible( $destination, $page_id ) ) {
+		$page_id      = absint( isset( $context['page_id'] ) ? $context['page_id'] : 0 );
+		$destination  = $map[ $legacy_key ]['destination'];
+		$destinations = Defaults::destinations();
+		if ( ! self::valid_published_page( $page_id ) || ! isset( $destinations[ $destination ] ) || ! Navigation::page_owner_compatible( $destination, $page_id ) ) {
 			return array(
 				'accepted'        => false,
 				'owner_module'    => 'file-20',
@@ -119,70 +118,80 @@ final class File01ReconciliationAdapter {
 			return array( 'success' => false, 'code' => 'file20_reconciliation_action_invalid' );
 		}
 
-		$receipt_id = self::receipt_id( $plan_hash, $legacy_key, $page_id );
-		$store      = self::receipt_store();
-		if ( isset( $store[ $receipt_id ] ) && is_array( $store[ $receipt_id ] ) ) {
-			$existing = $store[ $receipt_id ];
-			if ( 'applied' === ( isset( $existing['status'] ) ? $existing['status'] : '' ) && self::current_page_id( $route_key ) === $page_id ) {
-				return self::public_receipt( $existing );
+		$lock = self::acquire_settings_lock();
+		if ( '' === $lock ) {
+			return array( 'success' => false, 'code' => 'file20_reconciliation_settings_locked' );
+		}
+
+		try {
+			$receipt_id = self::receipt_id( $plan_hash, $legacy_key, $page_id );
+			$store      = self::receipt_store();
+			if ( isset( $store[ $receipt_id ] ) && is_array( $store[ $receipt_id ] ) && self::valid_record( $store[ $receipt_id ] ) ) {
+				$existing = $store[ $receipt_id ];
+				if ( 'applied' === $existing['status'] && self::current_page_id( $route_key ) === $page_id ) {
+					return self::public_receipt( $existing );
+				}
 			}
+
+			$raw_before = get_option( Defaults::OPTION_NAME, array() );
+			$raw_before = is_array( $raw_before ) ? $raw_before : array();
+			$raw        = $raw_before;
+			$navigation_container_exists = isset( $raw['navigation'] ) && is_array( $raw['navigation'] );
+			if ( ! $navigation_container_exists ) {
+				$raw['navigation'] = array();
+			}
+			$row_exists  = array_key_exists( $route_key, $raw['navigation'] );
+			$before_row  = $row_exists && is_array( $raw['navigation'][ $route_key ] ) ? $raw['navigation'][ $route_key ] : null;
+			$current_row = $row_exists && is_array( $raw['navigation'][ $route_key ] ) ? $raw['navigation'][ $route_key ] : array();
+			$current_row['page_id']       = $page_id;
+			$raw['navigation'][ $route_key ] = $current_row;
+
+			update_option( Defaults::OPTION_NAME, $raw, false );
+			Navigation::invalidate_cache();
+			if ( self::current_page_id( $route_key ) !== $page_id ) {
+				self::restore_navigation_row( $route_key, $navigation_container_exists, $row_exists, $before_row, 'file01-reconciliation-compensation' );
+				return array( 'success' => false, 'code' => 'file20_reconciliation_route_persist_failed' );
+			}
+			self::record_settings_change( $raw_before, get_option( Defaults::OPTION_NAME, array() ), 'file01-reconciliation-apply' );
+
+			$state_hash = hash( 'sha256', self::json( array(
+				'plan_hash'       => $plan_hash,
+				'legacy_key'      => $legacy_key,
+				'route_key'       => $route_key,
+				'page_id'         => $page_id,
+				'command_version' => self::COMMAND_VERSION,
+			) ) );
+			$record = array(
+				'receipt_id'                   => $receipt_id,
+				'owner_module'                 => 'file-20',
+				'command_version'              => self::COMMAND_VERSION,
+				'rollback_command'             => 'file20_restore_navigation_route',
+				'state_hash'                   => $state_hash,
+				'plan_hash'                    => $plan_hash,
+				'legacy_key'                   => $legacy_key,
+				'route_key'                    => $route_key,
+				'content_owner'                => $map[ $legacy_key ]['content_owner'],
+				'page_id'                      => $page_id,
+				'navigation_container_existed' => $navigation_container_exists,
+				'row_existed'                  => $row_exists,
+				'before_row'                   => $before_row,
+				'status'                       => 'applied',
+				'applied_at'                   => current_time( 'mysql', true ),
+			);
+			$record['record_hash'] = self::record_hash( $record );
+			$store[ $receipt_id ]  = $record;
+			update_option( self::RECEIPTS_OPTION, self::bounded_store( $store ), false );
+
+			$persisted = self::receipt_store();
+			if ( empty( $persisted[ $receipt_id ] ) || ! self::valid_record( $persisted[ $receipt_id ] ) ) {
+				self::restore_navigation_row( $route_key, $navigation_container_exists, $row_exists, $before_row, 'file01-reconciliation-compensation' );
+				return array( 'success' => false, 'code' => 'file20_reconciliation_receipt_persist_failed' );
+			}
+
+			return self::public_receipt( $persisted[ $receipt_id ] );
+		} finally {
+			self::release_settings_lock( $lock );
 		}
-
-		$raw = get_option( Defaults::OPTION_NAME, array() );
-		$raw = is_array( $raw ) ? $raw : array();
-		$navigation_container_exists = isset( $raw['navigation'] ) && is_array( $raw['navigation'] );
-		if ( ! $navigation_container_exists ) {
-			$raw['navigation'] = array();
-		}
-		$row_exists = array_key_exists( $route_key, $raw['navigation'] );
-		$before_row = $row_exists && is_array( $raw['navigation'][ $route_key ] ) ? $raw['navigation'][ $route_key ] : null;
-		$current_row = $row_exists && is_array( $raw['navigation'][ $route_key ] ) ? $raw['navigation'][ $route_key ] : array();
-		$current_row['page_id'] = $page_id;
-		$raw['navigation'][ $route_key ] = $current_row;
-
-		update_option( Defaults::OPTION_NAME, $raw, false );
-		Navigation::invalidate_cache();
-		if ( self::current_page_id( $route_key ) !== $page_id ) {
-			self::restore_navigation_row( $route_key, $navigation_container_exists, $row_exists, $before_row );
-			return array( 'success' => false, 'code' => 'file20_reconciliation_route_persist_failed' );
-		}
-
-		$state_hash = hash( 'sha256', self::json( array(
-			'plan_hash'       => $plan_hash,
-			'legacy_key'      => $legacy_key,
-			'route_key'       => $route_key,
-			'page_id'         => $page_id,
-			'command_version' => self::COMMAND_VERSION,
-		) ) );
-		$record = array(
-			'receipt_id'                  => $receipt_id,
-			'owner_module'                => 'file-20',
-			'command_version'             => self::COMMAND_VERSION,
-			'rollback_command'            => 'file20_restore_navigation_route',
-			'state_hash'                  => $state_hash,
-			'plan_hash'                   => $plan_hash,
-			'legacy_key'                  => $legacy_key,
-			'route_key'                   => $route_key,
-			'content_owner'               => $map[ $legacy_key ]['content_owner'],
-			'page_id'                     => $page_id,
-			'navigation_container_existed'=> $navigation_container_exists,
-			'row_existed'                 => $row_exists,
-			'before_row'                  => $before_row,
-			'status'                      => 'applied',
-			'applied_at'                  => current_time( 'mysql', true ),
-		);
-		$record['record_hash'] = self::record_hash( $record );
-		$store[ $receipt_id ]  = $record;
-		$store = self::bounded_store( $store );
-		update_option( self::RECEIPTS_OPTION, $store, false );
-
-		$persisted = self::receipt_store();
-		if ( empty( $persisted[ $receipt_id ] ) || ! self::valid_record( $persisted[ $receipt_id ] ) ) {
-			self::restore_navigation_row( $route_key, $navigation_container_exists, $row_exists, $before_row );
-			return array( 'success' => false, 'code' => 'file20_reconciliation_receipt_persist_failed' );
-		}
-
-		return self::public_receipt( $persisted[ $receipt_id ] );
 	}
 
 	/** Restore the exact pre-reconciliation File 20 navigation row. */
@@ -201,31 +210,38 @@ final class File01ReconciliationAdapter {
 		}
 
 		$record = $store[ $receipt_id ];
-		if ( ! self::valid_hash( $plan_hash ) || ! hash_equals( $record['plan_hash'], strtolower( (string) $plan_hash ) ) || self::COMMAND_VERSION !== sanitize_text_field( isset( $receipt['command_version'] ) ? $receipt['command_version'] : '' ) || ! hash_equals( $record['state_hash'], strtolower( (string) ( isset( $receipt['state_hash'] ) ? $receipt['state_hash'] : '' ) ) ) ) {
+		if ( ! self::valid_hash( $plan_hash ) || ! hash_equals( $record['plan_hash'], strtolower( (string) $plan_hash ) ) || self::COMMAND_VERSION !== sanitize_text_field( isset( $receipt['command_version'] ) ? $receipt['command_version'] : '' ) || ! self::valid_hash( isset( $receipt['state_hash'] ) ? $receipt['state_hash'] : '' ) || ! hash_equals( $record['state_hash'], strtolower( (string) $receipt['state_hash'] ) ) ) {
 			return array( 'success' => false, 'code' => 'file20_reconciliation_receipt_binding_invalid' );
 		}
 		if ( 'rolled_back' === $record['status'] ) {
 			return array( 'success' => true, 'receipt_id' => $receipt_id, 'status' => 'rolled_back', 'idempotent_replay' => true );
 		}
-		if ( 'applied' !== $record['status'] || self::current_page_id( $record['route_key'] ) !== absint( $record['page_id'] ) ) {
-			return array( 'success' => false, 'code' => 'file20_reconciliation_state_changed' );
-		}
 
-		if ( ! self::restore_navigation_row( $record['route_key'], ! empty( $record['navigation_container_existed'] ), ! empty( $record['row_existed'] ), $record['before_row'] ) ) {
-			return array( 'success' => false, 'code' => 'file20_reconciliation_restore_failed' );
+		$lock = self::acquire_settings_lock();
+		if ( '' === $lock ) {
+			return array( 'success' => false, 'code' => 'file20_reconciliation_settings_locked' );
 		}
+		try {
+			if ( 'applied' !== $record['status'] || self::current_page_id( $record['route_key'] ) !== absint( $record['page_id'] ) ) {
+				return array( 'success' => false, 'code' => 'file20_reconciliation_state_changed' );
+			}
+			if ( ! self::restore_navigation_row( $record['route_key'], ! empty( $record['navigation_container_existed'] ), ! empty( $record['row_existed'] ), $record['before_row'], 'file01-reconciliation-rollback' ) ) {
+				return array( 'success' => false, 'code' => 'file20_reconciliation_restore_failed' );
+			}
 
-		$record['status']         = 'rolled_back';
-		$record['rolled_back_at'] = current_time( 'mysql', true );
-		$record['record_hash']    = self::record_hash( $record );
-		$store[ $receipt_id ]     = $record;
-		update_option( self::RECEIPTS_OPTION, self::bounded_store( $store ), false );
-		$persisted = self::receipt_store();
-		if ( empty( $persisted[ $receipt_id ] ) || ! self::valid_record( $persisted[ $receipt_id ] ) || 'rolled_back' !== $persisted[ $receipt_id ]['status'] ) {
-			return array( 'success' => false, 'code' => 'file20_reconciliation_rollback_receipt_persist_failed' );
+			$record['status']         = 'rolled_back';
+			$record['rolled_back_at'] = current_time( 'mysql', true );
+			$record['record_hash']    = self::record_hash( $record );
+			$store[ $receipt_id ]     = $record;
+			update_option( self::RECEIPTS_OPTION, self::bounded_store( $store ), false );
+			$persisted = self::receipt_store();
+			if ( empty( $persisted[ $receipt_id ] ) || ! self::valid_record( $persisted[ $receipt_id ] ) || 'rolled_back' !== $persisted[ $receipt_id ]['status'] ) {
+				return array( 'success' => false, 'code' => 'file20_reconciliation_rollback_receipt_persist_failed' );
+			}
+			return array( 'success' => true, 'receipt_id' => $receipt_id, 'status' => 'rolled_back' );
+		} finally {
+			self::release_settings_lock( $lock );
 		}
-
-		return array( 'success' => true, 'receipt_id' => $receipt_id, 'status' => 'rolled_back' );
 	}
 
 	private static function valid_published_page( $page_id ) {
@@ -241,9 +257,10 @@ final class File01ReconciliationAdapter {
 		return absint( isset( $settings['navigation'][ $route_key ]['page_id'] ) ? $settings['navigation'][ $route_key ]['page_id'] : 0 );
 	}
 
-	private static function restore_navigation_row( $route_key, $container_existed, $row_existed, $before_row ) {
-		$raw = get_option( Defaults::OPTION_NAME, array() );
-		$raw = is_array( $raw ) ? $raw : array();
+	private static function restore_navigation_row( $route_key, $container_existed, $row_existed, $before_row, $reason ) {
+		$raw_before = get_option( Defaults::OPTION_NAME, array() );
+		$raw_before = is_array( $raw_before ) ? $raw_before : array();
+		$raw        = $raw_before;
 		if ( ! isset( $raw['navigation'] ) || ! is_array( $raw['navigation'] ) ) {
 			$raw['navigation'] = array();
 		}
@@ -260,9 +277,46 @@ final class File01ReconciliationAdapter {
 		$verify = get_option( Defaults::OPTION_NAME, array() );
 		$verify = is_array( $verify ) ? $verify : array();
 		if ( $row_existed ) {
-			return isset( $verify['navigation'][ $route_key ] ) && self::json( $verify['navigation'][ $route_key ] ) === self::json( is_array( $before_row ) ? $before_row : array() );
+			$ok = isset( $verify['navigation'][ $route_key ] ) && self::json( $verify['navigation'][ $route_key ] ) === self::json( is_array( $before_row ) ? $before_row : array() );
+		} else {
+			$ok = empty( $verify['navigation'] ) || ! array_key_exists( $route_key, $verify['navigation'] );
 		}
-		return empty( $verify['navigation'] ) || ! array_key_exists( $route_key, $verify['navigation'] );
+		if ( $ok ) {
+			self::record_settings_change( $raw_before, $verify, $reason );
+		}
+		return $ok;
+	}
+
+	private static function record_settings_change( $old_value, $new_value, $reason ) {
+		if ( class_exists( __NAMESPACE__ . '\\PlanV4SettingsConcurrency', false ) && is_callable( array( __NAMESPACE__ . '\\PlanV4SettingsConcurrency', 'record_programmatic_change' ) ) ) {
+			PlanV4SettingsConcurrency::record_programmatic_change( is_array( $old_value ) ? $old_value : array(), is_array( $new_value ) ? $new_value : array(), sanitize_key( $reason ) );
+		}
+	}
+
+	private static function acquire_settings_lock() {
+		$lock_option = class_exists( __NAMESPACE__ . '\\PlanV4SettingsConcurrency', false ) ? PlanV4SettingsConcurrency::LOCK_OPTION : 'sabri_shell_settings_update_lock';
+		$ttl         = class_exists( __NAMESPACE__ . '\\PlanV4SettingsConcurrency', false ) ? PlanV4SettingsConcurrency::LOCK_TTL : 30;
+		$token       = function_exists( 'wp_generate_uuid4' ) ? wp_generate_uuid4() : uniqid( 'f20-file01-', true );
+		$record      = array( 'token' => $token, 'expires' => time() + absint( $ttl ) );
+		if ( add_option( $lock_option, $record, '', 'no' ) ) {
+			return $token;
+		}
+		$current = get_option( $lock_option, array() );
+		if ( is_array( $current ) && absint( isset( $current['expires'] ) ? $current['expires'] : 0 ) < time() ) {
+			delete_option( $lock_option );
+			if ( add_option( $lock_option, $record, '', 'no' ) ) {
+				return $token;
+			}
+		}
+		return '';
+	}
+
+	private static function release_settings_lock( $token ) {
+		$lock_option = class_exists( __NAMESPACE__ . '\\PlanV4SettingsConcurrency', false ) ? PlanV4SettingsConcurrency::LOCK_OPTION : 'sabri_shell_settings_update_lock';
+		$current     = get_option( $lock_option, array() );
+		if ( is_array( $current ) && isset( $current['token'] ) && hash_equals( (string) $current['token'], (string) $token ) ) {
+			delete_option( $lock_option );
+		}
 	}
 
 	private static function receipt_id( $plan_hash, $legacy_key, $page_id ) {
@@ -293,7 +347,7 @@ final class File01ReconciliationAdapter {
 	}
 
 	private static function valid_record( array $record ) {
-		if ( empty( $record['receipt_id'] ) || empty( $record['route_key'] ) || empty( $record['legacy_key'] ) || empty( $record['plan_hash'] ) || empty( $record['state_hash'] ) || empty( $record['record_hash'] ) || ! self::valid_hash( $record['plan_hash'] ) || ! self::valid_hash( $record['state_hash'] ) ) {
+		if ( empty( $record['receipt_id'] ) || empty( $record['route_key'] ) || empty( $record['legacy_key'] ) || empty( $record['plan_hash'] ) || empty( $record['state_hash'] ) || empty( $record['record_hash'] ) || ! in_array( isset( $record['status'] ) ? $record['status'] : '', array( 'applied', 'rolled_back' ), true ) || ! self::valid_hash( $record['plan_hash'] ) || ! self::valid_hash( $record['state_hash'] ) ) {
 			return false;
 		}
 		return hash_equals( $record['record_hash'], self::record_hash( $record ) );
