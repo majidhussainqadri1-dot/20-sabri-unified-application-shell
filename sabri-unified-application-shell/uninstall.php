@@ -18,7 +18,7 @@ $file20_options = array(
     'sabri_shell_plan_v4_job_state','sabri_shell_plan_v4_job_lock','sabri_shell_plan_v4_snapshots','sabri_shell_plan_v4_recovery_lock',
     'sabri_shell_plan_v4_contract_health','sabri_shell_future_v5','sabri_shell_future_lkg','sabri_shell_future_lkg_restore_lock',
     'sabri_shell_future_circuits','sabri_shell_future_circuit_lock','sabri_shell_future_critical_failures','sabri_shell_emergency_state',
-    'sabri_shell_shortcode_cache_keys','sabri_shell_four_plan_migration',
+    'sabri_shell_shortcode_cache_keys','sabri_shell_four_plan_migration','sabri_shell_file01_reconciliation_receipts',
 );
 foreach ( $file20_options as $option_name ) { delete_option( $option_name ); }
 foreach ( array( 'sabri_shell_navigation_cache_v1','sabri_shell_integration_cache','sabri_shell_plan_v4_contract_health' ) as $transient_name ) { delete_transient( $transient_name ); }

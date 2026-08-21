@@ -4,7 +4,7 @@ Tags: application shell, navigation, layout, accessibility, pwa, offline
 Requires at least: 6.0
 Tested up to: 7.0.1
 Requires PHP: 7.4
-Stable tag: 1.4.14
+Stable tag: 1.4.15
 License: GPLv2 or later
 Text Domain: sabri-unified-application-shell
 
@@ -12,28 +12,40 @@ Responsive canonical application shell and integration layer for the Sabri Socia
 
 == Description ==
 
-Version 1.4.14 is the first fresh review correction over the 1.4.13 live-Renderer repair. The 1.4.13 runtime correction is preserved unchanged; 1.4.14 corrects release/operator truth that still referenced obsolete 1.4.11 artifacts or obsolete rollback/Safe Mode behavior. It adds permanent release-documentation regression coverage so current runtime, package identity, migration guidance, staging evidence and rollback boundaries cannot silently diverge again.
+Version 1.4.15 is a bounded File 01-B reconciliation correction based on frozen live evidence. Deployed File01 2.0.1 was checksum-parity verified, schema 1.2.0 passed physical verification, and its dry-run correctly blocked 12 legacy routes because exact deployed File20 1.4.14 provided no File01 owner-reconciliation hooks. File21 already handled Home/News.
+
+Version 1.4.15 adds a reversible File20 owner-plan/execute/rollback adapter for exactly twelve shell-route handoffs: Founder, Learn, Encyclopedia, Doctors, Clinic, Video Wall, Reels, PDF Library, Radar, AI, Network and Marketplace. It stores only File20-owned navigation Page-ID references plus bounded rollback receipts, does not mutate companion content/tables, preserves native domain ownership, and preserves File21 Home/News precedence.
+
+Version 1.4.14 was the first fresh review correction over the 1.4.13 live-Renderer repair. The 1.4.13 runtime correction is preserved unchanged; 1.4.14 corrected release/operator truth that still referenced obsolete 1.4.11 artifacts or obsolete rollback/Safe Mode behavior and added permanent release-documentation regression coverage.
 
 Version 1.4.13 restored only the three proven-deleted Renderer helpers—`render_panel()`, `destination_url()`, and `item_visible_to_user()`—after live evidence proved the deployed 1.4.12 Renderer was byte-for-byte identical to the faulting repository file and retained call sites for a deleted helper block. The exact eighteen approved Future Shell enhancements and File 20 ownership boundaries remain unchanged.
 
 File 20 owns only the global structural shell, canonical navigation/layout resolution, integration slots, diagnostics and File-20 recovery continuity. Native membership/authentication, Home/News, messaging, notifications, appointments, marketplace, security enforcement, visual truth, Search/Discovery/Ranking and conditional clinical/support/finance/media/analytics/localization backends remain with their canonical companion owners.
 
-Repository/CI correction does not by itself claim Hostinger staging acceptance, live deployment, live resolution, Founder acceptance or operational acceptance.
+Repository/CI correction does not by itself claim Hostinger staging acceptance, live deployment, File01 reconciliation completion, Founder acceptance or operational acceptance.
 
 == Installation ==
 
 1. Back up files and database and prove restore.
-2. Install or upgrade the exact `20-sabri-unified-application-shell-1.4.14-REVIEW1-RELEASE-TRUTH-CORRECTION.zip` artifact on the approved deployment target.
+2. Install or upgrade the exact `20-sabri-unified-application-shell-1.4.15-FILE01-RECONCILIATION-REPAIR.zip` artifact on the approved deployment target.
 3. Verify one canonical ZIP root, no tests/development material and exact source/stage/extracted SHA-256 parity.
-4. Confirm the deployed File 20 runtime reports 1.4.14 and, where possible, confirm deployed-artifact parity with the approved candidate.
-5. Re-test the original live incident URL `/google-account-security/`; HTTP 500 and the `Renderer::item_visible_to_user()` fatal must be absent.
-6. Run System Check and confirm critical File20/File00 health is never PASS when evidence is absent/unknown/incompatible.
-7. Verify File17 Network and Messages resolve separately; generic Network evidence must not mark Messages healthy.
-8. Verify canonical File00/File02 signup only; generic WordPress open registration must not surface as platform signup.
-9. Test File21 provider-only Home right slot at desktop/tablet/mobile widths and exercise recovery/System Check controls.
-10. Complete live smoke tests, backup/restore/rollback readiness and Founder acceptance before declaring operational resolution.
+4. Confirm deployed File20 runtime reports 1.4.15 and prove deployed-artifact/runtime parity with the approved candidate.
+5. Re-run File01 reconciliation dry-run. `home` and `news` must remain File21-owned; the twelve formerly blocked mappings must receive accepted `file-20` owner plans; blockers must be zero before apply.
+6. Verify each File20 plan is `shell_navigation_reference_only`, native content ownership is unchanged, and no foreign table/content mutation is introduced.
+7. Before controlled apply, confirm File01 plan hash is current, rollback snapshot/receipts are available and backup/restore evidence is current.
+8. After controlled File01 reconciliation, verify all twelve shell routes still resolve from File20-owned configured Page IDs after `spf_page_map` removal; verify rollback restores exact previous File20 navigation rows.
+9. Re-test the historical live incident URL `/google-account-security/`; HTTP 500 and the `Renderer::item_visible_to_user()` fatal must remain absent.
+10. Run System Check and all existing ownership, File17 separation, File21 provider-only, recovery, privacy, accessibility and Founder-acceptance gates before declaring operational resolution.
 
 == Changelog ==
+
+= 1.4.15 =
+* Added File01 owner-plan, execute and rollback reconciliation hooks for exactly twelve shell-route handoffs discovered by live File01 dry-run evidence.
+* Preserved File21 Home/News precedence and native content ownership for Files 03/05/06/07/08/10/11/12/15/16/17/18.
+* Persisted only File20-owned navigation Page-ID references before File01 removes its legacy page map.
+* Added deterministic, bounded, integrity-bound rollback receipts with idempotent execute/rollback behavior and state-drift fail-closed checks.
+* Added permanent reconciliation regression coverage and explicit uninstall cleanup for the bounded receipt store.
+* Advanced deterministic production package identity to 1.4.15; deployment, File01 zero-blocker re-test, controlled reconciliation and live verification remain separate gates.
 
 = 1.4.14 =
 * Completed one fresh review over the 1.4.13 live-Renderer repair.
