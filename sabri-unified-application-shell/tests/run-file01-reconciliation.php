@@ -11,6 +11,16 @@ if ( ! function_exists( 'get_post_type' ) ) {
 		return ! empty( $GLOBALS['test_post_status'][ absint( $id ) ] ) ? 'page' : false;
 	}
 }
+if ( ! function_exists( 'add_option' ) ) {
+	function add_option( $key, $value, $deprecated = '', $autoload = 'yes' ) {
+		unset( $deprecated, $autoload );
+		if ( array_key_exists( $key, $GLOBALS['test_options'] ) ) {
+			return false;
+		}
+		$GLOBALS['test_options'][ $key ] = $value;
+		return true;
+	}
+}
 
 require_once dirname( __DIR__ ) . '/includes/class-file01-reconciliation-adapter.php';
 
@@ -76,13 +86,22 @@ $action = array(
 	'owner_plan' => $plan,
 	'local_apply' => 'mark_quarantined_after_owner_ack',
 );
+
+$GLOBALS['test_options']['sabri_shell_settings_update_lock'] = array( 'token' => 'other-writer', 'expires' => time() + 30 );
+$locked = File01ReconciliationAdapter::execute( null, $action, $plan_hash );
+$assert( is_array( $locked ) && empty( $locked['success'] ) && 'file20_reconciliation_settings_locked' === $locked['code'], 'Execute fails closed while the canonical File20 settings lock is held by another writer.' );
+$assert( 0 === absint( Settings::get()['navigation']['founder']['page_id'] ), 'Lock contention causes no File20 navigation mutation.' );
+delete_option( 'sabri_shell_settings_update_lock' );
+
 $receipt = File01ReconciliationAdapter::execute( null, $action, $plan_hash );
 $assert( is_array( $receipt ) && ! empty( $receipt['success'] ) && 'file-20' === $receipt['owner_module'], 'Execute returns a bounded File20 reconciliation receipt.' );
 $assert( 164 === absint( Settings::get()['navigation']['founder']['page_id'] ), 'Execute persists the legacy Page ID into File20-owned navigation state before File01 can remove spf_page_map.' );
 $assert( 64 === strlen( $receipt['state_hash'] ) && 'file20_restore_navigation_route' === $receipt['rollback_command'], 'Receipt is integrity-bound and advertises the reversible File20 rollback command.' );
+$assert( ! array_key_exists( 'sabri_shell_settings_update_lock', $GLOBALS['test_options'] ), 'Execute releases the shared File20 settings lock.' );
 
 $replay = File01ReconciliationAdapter::execute( null, $action, $plan_hash );
 $assert( $receipt['receipt_id'] === $replay['receipt_id'] && ! empty( $replay['success'] ), 'Execute is idempotent for the same File01 plan/key/Page-ID binding.' );
+$assert( ! array_key_exists( 'sabri_shell_settings_update_lock', $GLOBALS['test_options'] ), 'Idempotent replay also releases the shared File20 settings lock.' );
 
 unset( $GLOBALS['test_options']['spf_page_map'] );
 Navigation::invalidate_cache();
@@ -92,9 +111,16 @@ $assert( 'configured_page_id' === $founder_item['reason'] && 'https://example.te
 $tampered = File01ReconciliationAdapter::rollback( null, $receipt, str_repeat( 'b', 64 ) );
 $assert( is_array( $tampered ) && empty( $tampered['success'] ), 'Rollback refuses a receipt bound to a different File01 plan hash.' );
 
+$GLOBALS['test_options']['sabri_shell_settings_update_lock'] = array( 'token' => 'other-writer', 'expires' => time() + 30 );
+$locked_rollback = File01ReconciliationAdapter::rollback( null, $receipt, $plan_hash );
+$assert( is_array( $locked_rollback ) && empty( $locked_rollback['success'] ) && 'file20_reconciliation_settings_locked' === $locked_rollback['code'], 'Rollback fails closed while the canonical File20 settings lock is held by another writer.' );
+$assert( 164 === absint( Settings::get()['navigation']['founder']['page_id'] ), 'Rollback lock contention leaves applied route state unchanged.' );
+delete_option( 'sabri_shell_settings_update_lock' );
+
 $rolled_back = File01ReconciliationAdapter::rollback( null, $receipt, $plan_hash );
 $assert( is_array( $rolled_back ) && ! empty( $rolled_back['success'] ) && 'rolled_back' === $rolled_back['status'], 'Rollback restores the exact pre-reconciliation File20 navigation row.' );
 $assert( 0 === absint( Settings::get()['navigation']['founder']['page_id'] ), 'Rollback removes the injected Founder Page ID when no File20 row existed before reconciliation.' );
+$assert( ! array_key_exists( 'sabri_shell_settings_update_lock', $GLOBALS['test_options'] ), 'Rollback releases the shared File20 settings lock.' );
 
 $rolled_back_replay = File01ReconciliationAdapter::rollback( null, $receipt, $plan_hash );
 $assert( is_array( $rolled_back_replay ) && ! empty( $rolled_back_replay['success'] ) && ! empty( $rolled_back_replay['idempotent_replay'] ), 'Rollback is idempotent after the receipt is already rolled back.' );
