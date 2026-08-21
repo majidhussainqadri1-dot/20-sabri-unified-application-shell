@@ -1,6 +1,6 @@
 <?php
 /**
- * Review-1 permanent regression for current release/operator documentation truth.
+ * Permanent regression for current release/operator documentation truth.
  * Development-only CI test; tests/ is excluded from the production ZIP.
  */
 declare(strict_types=1);
@@ -33,8 +33,8 @@ $assert = static function ( bool $condition, string $label ) use ( &$fail ): voi
 	}
 };
 
-$current = '1.4.14';
-$artifact = '20-sabri-unified-application-shell-1.4.14-REVIEW1-RELEASE-TRUTH-CORRECTION.zip';
+$current = '1.4.15';
+$artifact = '20-sabri-unified-application-shell-1.4.15-FILE01-RECONCILIATION-REPAIR.zip';
 
 $assert( false !== strpos( $main, '* Version: ' . $current ), 'plugin header current version' );
 $assert( false !== strpos( $main, "define( 'SABRI_SHELL_VERSION', '" . $current . "' );" ), 'runtime constant current version' );
@@ -44,7 +44,8 @@ $assert( false !== strpos( $migration, '## Upgrade to ' . $current ), 'migration
 $assert( false !== strpos( $migration, $artifact ), 'migration exact current artifact' );
 $assert( false !== strpos( $staging, 'Record File 20 `' . $current . '`' ), 'staging current candidate version' );
 $assert( false !== strpos( $staging, $artifact ), 'staging exact current artifact' );
-$assert( false !== strpos( $changelog, '## 1.4.14 ' ), 'changelog current release' );
+$assert( false !== strpos( $changelog, '## 1.4.15 ' ), 'changelog current release' );
+$assert( false !== strpos( $changelog, '## 1.4.14 ' ), 'changelog prior release-truth correction' );
 $assert( false !== strpos( $changelog, '## 1.4.13 ' ), 'changelog Renderer repair release' );
 $assert( false !== strpos( $changelog, '## 1.4.12 ' ), 'changelog second-eighty release' );
 
@@ -74,9 +75,14 @@ $assert( false !== strpos( $migration, '/google-account-security/' ), 'migration
 $assert( false !== strpos( $staging, '/google-account-security/' ), 'acceptance retains original live incident retest' );
 $assert( false !== strpos( $readme, 'does not by itself claim' ), 'readme preserves repository/live evidence boundary' );
 
+/* File01 reconciliation closure remains deployment/live evidence, not repository truth. */
+$assert( false !== strpos( $migration, '12 blocked owner plans' ), 'migration preserves File01 live root-cause evidence' );
+$assert( false !== strpos( $staging, 'blocker count must be exactly zero' ), 'staging requires zero File01 blockers before apply' );
+$assert( false !== strpos( $readme, 'File01 reconciliation completion' ), 'readme does not claim File01 reconciliation completed' );
+
 if ( $fail ) {
 	fwrite( STDERR, 'File 20 release documentation truth FAIL: ' . implode( '; ', $fail ) . "\n" );
 	exit( 1 );
 }
 
-echo "File 20 1.4.14 release/operator documentation truth PASS\n";
+echo "File 20 1.4.15 release/operator documentation truth PASS\n";
