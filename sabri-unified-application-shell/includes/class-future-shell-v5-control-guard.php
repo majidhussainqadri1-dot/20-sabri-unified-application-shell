@@ -62,7 +62,7 @@ final class FutureShellV5ControlGuard {
 			$before = is_array( $before ) ? $before : array();
 			$current = array();
 			try {
-				update_option( Defaults::OPTION_NAME, $snapshot['settings'], false );
+				Settings::update_programmatically( $snapshot['settings'] );
 				$current = get_option( Defaults::OPTION_NAME, array() );
 				$current = is_array( $current ) ? Settings::enforce_owned_invariants( $current ) : array();
 				$expected = Settings::enforce_owned_invariants( $snapshot['settings'] );

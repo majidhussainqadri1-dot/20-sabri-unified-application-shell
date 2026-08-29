@@ -83,7 +83,9 @@ $assert( false !== strpos( $migration, 'controlled apply failed' ) && false !== 
 $assert( false !== strpos( $staging, 'blocker count must be exactly zero' ), 'staging requires zero File01 blockers before apply' );
 $assert( false !== strpos( $staging, 'command version `1.0.1`' ), 'staging requires corrected File20 reconciliation command contract' );
 $assert( false !== strpos( $adapter, "const COMMAND_VERSION = '1.0.1';" ), 'runtime adapter command contract is 1.0.1' );
-$assert( false !== strpos( $adapter, 'persist_settings_option' ) && false !== strpos( $adapter, 'Settings::enforce_owned_invariants' ) && false !== strpos( $adapter, 'remove_filter' ) && false !== strpos( $adapter, 'add_filter' ), 'runtime adapter contains bounded trusted sanitizer persistence path' );
+$settings = $read( 'includes/class-settings.php' );
+$assert( false !== strpos( $adapter, 'Settings::update_programmatically' ) && false === strpos( $adapter, 'persist_settings_option' ), 'runtime adapter delegates trusted persistence to canonical Settings owner' );
+$assert( false !== strpos( $settings, 'public static function update_programmatically' ) && false !== strpos( $settings, 'remove_filter' ) && false !== strpos( $settings, 'add_filter' ), 'canonical Settings owner contains bounded trusted sanitizer persistence path' );
 $assert( false !== strpos( $readme, 'File01 reconciliation completion' ), 'readme does not claim File01 reconciliation completed' );
 
 if ( $fail ) {
