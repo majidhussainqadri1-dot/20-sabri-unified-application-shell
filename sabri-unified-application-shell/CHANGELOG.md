@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.4.16 — 2026-08-29 — File01 Settings API Sanitizer Persistence Repair
+
+- Live controlled File01 apply on exact deployed File20 `1.4.15` failed after the dry-run had reached zero blockers; verified automatic compensation restored all 14 legacy mappings, the unsafe Founder option, non-quarantined page state and empty owner receipt stores.
+- Live forensic traces proved Founder page `164` was published and owner-compatible, every File20 pre-update/read filter preserved proposed `navigation.founder.page_id=164`, raw database and `get_option()` both remained `0`, and persistent object-cache truth matched the database.
+- Root cause: WordPress invoked the registered tab-oriented `Settings::sanitize()` callback on the adapter's programmatic `sabri_shell_settings` update. With no `_active_tab`, the sanitizer normalized the proposed navigation write back to existing settings before File20's pre-update filters.
+- Advanced the File01 reconciliation command contract from `1.0.0` to `1.0.1`.
+- Added a bounded trusted File20 settings persistence path that explicitly enforces File20 invariants, suspends only the registered `Settings::sanitize` callback for the exact adapter-owned programmatic mutation, preserves every other WordPress/core/security/concurrency/pre-update filter and restores the sanitizer in `finally`.
+- Applied the same corrected persistence path to execute compensation and rollback restoration.
+- Added a permanent regression that first reproduces the live sanitizer-swallow failure and then proves corrected execute/rollback persistence plus sanitizer callback restoration.
+- Advanced plugin/package identity to `1.4.16`; repository/CI success does not claim live deployment, deployed parity, zero-blocker re-test, successful controlled reconciliation, live route verification or operational resolution.
+
 ## 1.4.15 — 2026-08-21 — File01 Reconciliation Root-Cause Repair
 
 - Live-first evidence proved deployed File01-B `2.0.1` exact runtime parity, schema `1.2.0` physical health and a correctly fail-closed reconciliation dry-run with 15 actions and 12 owner-plan blockers.
