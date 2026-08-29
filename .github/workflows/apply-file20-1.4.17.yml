@@ -1,0 +1,42 @@
+name: Apply File20 1.4.17 Canonical Settings Writer
+
+on:
+  push:
+    branches:
+      - fix/file20-canonical-programmatic-settings-writer-1.4.17
+
+permissions:
+  contents: write
+
+jobs:
+  transform:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+      - name: Apply exact source transformation
+        run: python .github/apply-file20-1.4.17.py
+      - name: Syntax-check transformed PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - name: Run PHP syntax checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do php -l "$file" >/dev/null; done < <(find sabri-unified-application-shell -type f -name '*.php' -print0)
+      - name: Commit transformed source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --quiet && { echo 'No changes produced'; exit 1; }
+          git commit -m 'File 20 1.4.17: centralize trusted programmatic settings writes'
+          git push origin HEAD:${GITHUB_REF_NAME}
