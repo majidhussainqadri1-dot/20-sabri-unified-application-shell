@@ -19,7 +19,7 @@ jobs:
           ref: ${{ github.ref }}
           fetch-depth: 0
       - name: Apply exact source transformation
-        run: python .github/apply-file20-1.4.17.py
+        run: python .github/apply-file20-1.4.17-v2.py
       - name: Syntax-check transformed PHP
         uses: shivammathur/setup-php@v2
         with:
