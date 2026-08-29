@@ -1,0 +1,32 @@
+name: Apply File20 1.4.17 CI Fixes
+on:
+  push:
+    branches: [fix/file20-canonical-programmatic-settings-writer-1.4.17]
+permissions:
+  contents: write
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+      - run: python .github/apply-file20-1.4.17-ci-fixes.py
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do php -l "$file" >/dev/null; done < <(find sabri-unified-application-shell -type f -name '*.php' -print0)
+      - run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --quiet && { echo 'No changes produced'; exit 1; }
+          git commit -m 'File 20 1.4.17: close canonical writer CI findings'
+          git push origin HEAD:${GITHUB_REF_NAME}
