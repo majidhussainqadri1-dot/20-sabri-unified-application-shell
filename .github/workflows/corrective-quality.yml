@@ -1,4 +1,4 @@
-name: File 20 Version 1.4.15 File01 Reconciliation Repair Quality
+name: File 20 Version 1.4.16 File01 Sanitizer Persistence Repair Quality
 
 on:
   pull_request:
@@ -49,7 +49,7 @@ jobs:
           done
 
   static-package:
-    name: Static ownership reconciliation renderer documentation recovery privacy and deterministic production-package parity
+    name: Static ownership reconciliation sanitizer renderer documentation recovery privacy and deterministic production-package parity
     needs: php-quality
     runs-on: ubuntu-24.04
     timeout-minutes: 25
@@ -58,7 +58,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - name: JavaScript JSON CSS renderer reconciliation and release-truth static checks
+      - name: JavaScript JSON CSS renderer reconciliation sanitizer and release-truth static checks
         run: |
           set -euo pipefail
           for js in sabri-unified-application-shell/assets/js/*.js; do node --check "$js"; done
@@ -72,6 +72,7 @@ jobs:
           defaults=read('includes/class-defaults.php')
           route=read('includes/class-route-security.php')
           adapter=read('includes/class-file01-reconciliation-adapter.php')
+          sanitizer_test=read('tests/run-file01-reconciliation-sanitizer-regression.php')
           eleventh=read('includes/class-future-shell-v5-eleventh-hardening.php')
           resth=read('includes/class-second-eighty-rest-hardening.php')
           system=read('includes/class-system-check.php')
@@ -85,13 +86,13 @@ jobs:
           staging=read('STAGING-ACCEPTANCE.md')
           rollback=read('ROLLBACK.md')
           changelog=read('CHANGELOG.md')
-          assert '* Version: 1.4.15' in main
-          assert "define( 'SABRI_SHELL_VERSION', '1.4.15' );" in main
-          assert 'Stable tag: 1.4.15' in readmetxt
-          assert '## Upgrade to 1.4.15' in migration
-          assert '20-sabri-unified-application-shell-1.4.15-FILE01-RECONCILIATION-REPAIR.zip' in migration
-          assert 'Record File 20 `1.4.15`' in staging
-          assert '## 1.4.15 ' in changelog and '## 1.4.14 ' in changelog and '## 1.4.13 ' in changelog and '## 1.4.12 ' in changelog
+          assert '* Version: 1.4.16' in main
+          assert "define( 'SABRI_SHELL_VERSION', '1.4.16' );" in main
+          assert 'Stable tag: 1.4.16' in readmetxt
+          assert '## Upgrade to 1.4.16' in migration
+          assert '20-sabri-unified-application-shell-1.4.16-FILE01-SANITIZER-PERSISTENCE-REPAIR.zip' in migration
+          assert 'Record File 20 `1.4.16`' in staging
+          assert '## 1.4.16 ' in changelog and '## 1.4.15 ' in changelog and '## 1.4.14 ' in changelog
           assert 'Automatic rollback **does not restore shared WordPress front-page options**' in rollback
           assert 'Do **not** rely on a raw URL containing only:' in rollback
           assert '`SafeMode::query_safe_mode_url()`' in rollback
@@ -107,6 +108,13 @@ jobs:
           for legacy in ['founder','learn','encyclopedia','doctors','clinic','videos','reels','pdf','radar','ai','network','marketplace']:
               assert "'"+legacy+"'" in adapter
           assert "'home'" not in adapter.split('public static function route_map()',1)[1].split(');',1)[0]
+          assert "const COMMAND_VERSION = '1.0.1';" in adapter
+          assert 'persist_settings_option' in adapter
+          assert "remove_filter( $hook, $callback, 10 )" in adapter
+          assert "Settings::enforce_owned_invariants( $value )" in adapter
+          assert "add_filter( $hook, $callback, 10, 1 )" in adapter
+          assert 'Control reproduces live defect' in sanitizer_test
+          assert 'Settings::sanitize callback is restored' in sanitizer_test
           assert 'shell_navigation_reference_only' in adapter
           assert 'sabri_shell_file01_reconciliation_receipts' in adapter
           assert 'sabri_shell_file01_reconciliation_receipts' in uninstall
@@ -133,7 +141,7 @@ jobs:
           assert 'CREATE TABLE' not in '\n'.join([route,adapter,eleventh,resth,system,safe,concurrency,control,future])
           for p in sorted((root/'assets/css').glob('*.css')):
               css=p.read_text(encoding='utf-8'); assert css.count('{')==css.count('}'),p.name
-          print('Static File 20 v1.4.15 File01 reconciliation and preserved release-truth checks PASS')
+          print('Static File 20 v1.4.16 File01 sanitizer persistence and preserved release-truth checks PASS')
           PY
 
       - name: Build deterministic production-only package and prove parity
@@ -159,8 +167,8 @@ jobs:
               lines.append(f"{hashlib.sha256(src.read_bytes()).hexdigest()}  {rel.as_posix()}")
           manifest='\n'.join(lines)+'\n'; (stage/'MANIFEST.sha256').write_text(manifest,encoding='utf-8')
           assert sorted(p.relative_to(stage).as_posix() for p in stage.rglob('*') if p.is_file() and p.name!='MANIFEST.sha256')==sorted(p.relative_to(root).as_posix() for p in source)
-          base='20-sabri-unified-application-shell-1.4.15-FILE01-RECONCILIATION-REPAIR'; archive=release/f'{base}.zip'
-          fixed=(2026,8,21,10,30,0)
+          base='20-sabri-unified-application-shell-1.4.16-FILE01-SANITIZER-PERSISTENCE-REPAIR'; archive=release/f'{base}.zip'
+          fixed=(2026,8,29,4,30,0)
           with ZipFile(archive,'w') as zf:
               for p in sorted(stage.rglob('*')):
                   if not p.is_file(): continue
@@ -179,36 +187,36 @@ jobs:
           for rel,sha in expected.items(): assert hashlib.sha256((er/rel).read_bytes()).hexdigest()==sha
           assert not (er/'tests').exists() and not (er/'includes/class-home-feed.php').exists()
           assert (er/'includes/class-file01-reconciliation-adapter.php').exists()
-          print('Deterministic File20 1.4.15 File01 reconciliation package PASS')
+          print('Deterministic File20 1.4.16 File01 sanitizer persistence package PASS')
           PY
-          base='20-sabri-unified-application-shell-1.4.15-FILE01-RECONCILIATION-REPAIR'
+          base='20-sabri-unified-application-shell-1.4.16-FILE01-SANITIZER-PERSISTENCE-REPAIR'
           (cd release && sha256sum -c "${base}.sha256")
           unzip -t "release/${base}.zip"
 
-      - name: Write exact-head File01 reconciliation repair report
+      - name: Write exact-head File01 sanitizer persistence repair report
         run: |
-          cat > release/FILE-20-1.4.15-FILE01-RECONCILIATION-TEST-REPORT.md <<REPORT
-          # File 20 Version 1.4.15 File01 Reconciliation Repair Evidence
+          cat > release/FILE-20-1.4.16-FILE01-SANITIZER-PERSISTENCE-TEST-REPORT.md <<REPORT
+          # File 20 Version 1.4.16 File01 Sanitizer Persistence Repair Evidence
           - Exact candidate source SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-          - Live root-cause basis: deployed File01 2.0.1 was checksum-parity verified; schema 1.2.0 was healthy; File01 dry-run had 15 actions and 12 blockers; Home/News were accepted by File21 while all remaining legacy route owner plans were missing.
-          - File20 deployed runtime parity against repository 1.4.14 was verified before modification; deployed File20 contained none of the three File01 reconciliation hook strings.
-          - Correction: reversible File20 owner-plan/execute/rollback adapter for the twelve shell-route handoffs, preserving native content ownership.
-          - File20 stores only its own navigation Page-ID references plus bounded rollback receipts; it does not mutate companion tables/content or claim native domain ownership.
-          - File21 Home/News owner plans remain untouched and take precedence.
+          - Live root-cause basis: deployed File20 1.4.15 exact runtime parity was verified; File01 dry-run reached zero blockers; controlled reconciliation failed and verified compensation restored the pre-apply state.
+          - Live filter trace proved the File20 proposed Founder Page ID 164 survived every pre-update/read filter, while raw DB/get_option both remained 0 and object-cache truth matched DB.
+          - Root cause: the registered tab-oriented Settings::sanitize callback swallowed trusted programmatic sabri_shell_settings navigation writes before pre-update filters.
+          - Correction: File20 command contract 1.0.1 uses a bounded trusted persistence path that suspends only Settings::sanitize, explicitly enforces File20 invariants, preserves all other filters, and restores the sanitizer in finally for execute/compensation/rollback.
+          - Dedicated regression first reproduces the sanitizer-swallow failure and then proves execute/rollback persistence and sanitizer restoration.
           - PHP 7.4/8.3 syntax and every repository regression/adversarial suite: PASS
           - Deterministic production package parity and manifest checks: PASS
-          - Live deployed 1.4.15: NO
-          - File01 blockers re-tested as zero after deployment: NO
-          - Controlled File01 reconciliation applied: NO
+          - Live deployed 1.4.16: NO
+          - File01 zero-blocker dry-run re-tested after 1.4.16 deployment: NO
+          - Controlled File01 reconciliation re-applied successfully: NO
           - Operationally resolved: NO
           REPORT
       - uses: actions/upload-artifact@v4
         with:
-          name: file20-1.4.15-file01-reconciliation-${{ github.event.pull_request.head.sha || github.sha }}
+          name: file20-1.4.16-file01-sanitizer-persistence-${{ github.event.pull_request.head.sha || github.sha }}
           retention-days: 60
           if-no-files-found: error
           path: |
-            release/20-sabri-unified-application-shell-1.4.15-FILE01-RECONCILIATION-REPAIR.zip
-            release/20-sabri-unified-application-shell-1.4.15-FILE01-RECONCILIATION-REPAIR.sha256
-            release/20-sabri-unified-application-shell-1.4.15-FILE01-RECONCILIATION-REPAIR-SOURCE-MANIFEST.sha256
-            release/FILE-20-1.4.15-FILE01-RECONCILIATION-TEST-REPORT.md
+            release/20-sabri-unified-application-shell-1.4.16-FILE01-SANITIZER-PERSISTENCE-REPAIR.zip
+            release/20-sabri-unified-application-shell-1.4.16-FILE01-SANITIZER-PERSISTENCE-REPAIR.sha256
+            release/20-sabri-unified-application-shell-1.4.16-FILE01-SANITIZER-PERSISTENCE-REPAIR-SOURCE-MANIFEST.sha256
+            release/FILE-20-1.4.16-FILE01-SANITIZER-PERSISTENCE-TEST-REPORT.md
