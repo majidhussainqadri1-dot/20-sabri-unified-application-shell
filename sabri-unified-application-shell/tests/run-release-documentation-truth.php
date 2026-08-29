@@ -34,8 +34,8 @@ $assert = static function ( bool $condition, string $label ) use ( &$fail ): voi
 	}
 };
 
-$current = '1.4.16';
-$artifact = '20-sabri-unified-application-shell-1.4.16-FILE01-SANITIZER-PERSISTENCE-REPAIR.zip';
+$current = '1.4.17';
+$artifact = '20-sabri-unified-application-shell-1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER.zip';
 
 $assert( false !== strpos( $main, '* Version: ' . $current ), 'plugin header current version' );
 $assert( false !== strpos( $main, "define( 'SABRI_SHELL_VERSION', '" . $current . "' );" ), 'runtime constant current version' );
@@ -45,7 +45,8 @@ $assert( false !== strpos( $migration, '## Upgrade to ' . $current ), 'migration
 $assert( false !== strpos( $migration, $artifact ), 'migration exact current artifact' );
 $assert( false !== strpos( $staging, 'Record File 20 `' . $current . '`' ), 'staging current candidate version' );
 $assert( false !== strpos( $staging, $artifact ), 'staging exact current artifact' );
-$assert( false !== strpos( $changelog, '## 1.4.16 ' ), 'changelog current release' );
+$assert( false !== strpos( $changelog, '## 1.4.17 ' ), 'changelog current release' );
+$assert( false !== strpos( $changelog, '## 1.4.16 ' ), 'changelog prior sanitizer persistence release' );
 $assert( false !== strpos( $changelog, '## 1.4.15 ' ), 'changelog prior File01 owner-adapter release' );
 $assert( false !== strpos( $changelog, '## 1.4.14 ' ), 'changelog prior release-truth correction' );
 $assert( false !== strpos( $changelog, '## 1.4.13 ' ), 'changelog Renderer repair release' );
@@ -90,4 +91,4 @@ if ( $fail ) {
 	exit( 1 );
 }
 
-echo "File 20 1.4.16 release/operator documentation truth PASS\n";
+echo "File 20 1.4.17 release/operator documentation truth PASS\n";

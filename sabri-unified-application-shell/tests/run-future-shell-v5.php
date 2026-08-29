@@ -41,7 +41,7 @@ $features = array('command_palette','pwa_shell','offline_mode','data_saver','rec
 $assert( 18 === count( $features ), 'exact 18 feature ids' );
 foreach ( $features as $feature ) { $assert( false !== strpos( $php, "'{$feature}'" ), 'feature ' . $feature ); }
 
-$assert( false !== strpos( $main, '* Version: 1.4.16' ) && false !== strpos( $main, "define( 'SABRI_SHELL_VERSION', '1.4.16' );" ), 'release 1.4.16' );
+$assert( false !== strpos( $main, '* Version: 1.4.17' ) && false !== strpos( $main, "define( 'SABRI_SHELL_VERSION', '1.4.17' );" ), 'release 1.4.16' );
 foreach ( array('FutureShellV5::register();','FutureShellV5Hardening::register();','FutureShellV5ClientContext::register();','FutureShellV5ControlGuard::register();','FutureShellV5SecondHardening::register();','FutureShellV5ThirdHardening::register();','FutureShellV5FourthHardening::register();','FutureShellV5FifthHardening::register();','FutureShellV5SixthHardening::register();','FutureShellV5SeventhHardening::register();','FutureShellV5EighthHardening::register();','FutureShellV5NinthHardening::register();','FutureShellV5TenthHardening::register();','FutureShellV5EleventhHardening::register();','SecondEightyRestHardening::register();','SystemCheckDuplicateHardening::register();','RouteSecurity::register();') as $registration ) {
     $assert( false !== strpos( $main, $registration ), 'registered ' . $registration );
 }
@@ -104,4 +104,4 @@ if ( $fail ) {
     fwrite( STDERR, "Future Shell v5 comprehensive FAIL: " . implode( '; ', $fail ) . "\n" );
     exit(1);
 }
-echo "Future Shell v5: 18/18 enhancements + eleven corrective layers + native ownership + strict routing/recovery/health/Emergency hardening preserved under 1.4.16 PASS\n";
+echo "Future Shell v5: 18/18 enhancements + eleven corrective layers + native ownership + strict routing/recovery/health/Emergency hardening preserved under 1.4.17 PASS\n";

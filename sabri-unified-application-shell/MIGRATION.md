@@ -4,7 +4,15 @@
 
 Normal release promotion is staging-first. A proven live production incident may use a bounded hotfix path only after live reality is frozen: exact deployed runtime/files, relevant database/schema state, runtime error, active configuration/dependencies and deployment parity where obtainable. Repository state is never assumed to equal Live. A production incident is not Resolved until the exact corrected artifact is deployed, the original live symptom is re-tested and deployed parity is confirmed.
 
-Version **1.4.16** is repository/code/package/automated-QA truth only after its exact candidate CI passes. It is not live truth until the exact artifact is deployed and parity is re-proven.
+Version **1.4.17** is repository/code/package/automated-QA truth only after its exact candidate CI passes. It is not live truth until the exact artifact is deployed and parity is re-proven.
+
+## Upgrade to 1.4.17
+
+1. Treat 1.4.17 as a repository/source hardening over 1.4.16, not as new Live evidence. The additional trusted-write paths were discovered by post-merge code review; only the original File01 persistence defect had live proof.
+2. Use the exact deterministic `20-sabri-unified-application-shell-1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER.zip` candidate after exact-head QA.
+3. Verify all trusted `sabri_shell_settings` programmatic mutations flow through `Settings::update_programmatically()` and that the static direct-write gate is green.
+4. Preserve File20 invariants, Emergency authorization, recovery verification, concurrency/audit evidence and all canonical ownership boundaries.
+5. Repository/CI/package success remains separate from deployment, parity and Live operational acceptance.
 
 ## Upgrade to 1.4.16
 

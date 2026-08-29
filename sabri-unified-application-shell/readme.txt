@@ -4,13 +4,15 @@ Tags: application shell, navigation, layout, accessibility, pwa, offline
 Requires at least: 6.0
 Tested up to: 7.0.1
 Requires PHP: 7.4
-Stable tag: 1.4.16
+Stable tag: 1.4.17
 License: GPLv2 or later
 Text Domain: sabri-unified-application-shell
 
 Responsive canonical application shell and integration layer for the Sabri Social Homeopathy Platform.
 
 == Description ==
+
+Version 1.4.17 centralizes the live-proven Settings API persistence correction into one canonical File20 programmatic writer. A fresh post-merge repository review found the same source-level risk in File20 repair, rollback, Emergency, activation-snapshot rollback and retired-state migration paths. Those internal workflows now use `Settings::update_programmatically()`; direct trusted `sabri_shell_settings` writes outside the Settings owner are rejected by a permanent static gate. This is repository/source-level remediation; it does not claim those additional paths were failing on Live.
 
 Version 1.4.16 is a bounded File 01-B reconciliation persistence correction based on exact live evidence from the failed 1.4.15 controlled apply. The 1.4.15 adapter removed all dry-run blockers, but real WordPress Settings API sanitization discarded the trusted programmatic `sabri_shell_settings` navigation write before File20 pre-update filters, causing File01 to compensate. Live traces proved the proposed Founder Page ID 164 survived every pre-update/read filter, raw DB and `get_option()` both remained 0, and object-cache truth matched DB.
 
@@ -40,6 +42,13 @@ Repository/CI correction does not by itself claim Hostinger staging acceptance, 
 10. Verify all twelve File20 shell routes plus File21 Home/News still resolve correctly after legacy-map retirement; then run System Check and the remaining ownership/recovery/privacy/accessibility gates before declaring operational resolution.
 
 == Changelog ==
+
+= 1.4.17 =
+* Centralized trusted File20 programmatic `sabri_shell_settings` persistence in `Settings::update_programmatically()`.
+* Routed File01 reconciliation, hardened repair/rollback, Emergency lifecycle, activation-snapshot rollback, defaults normalization and retired Home-feed migration through the canonical writer.
+* Added dynamic active-sanitizer regression plus a static gate forbidding direct trusted settings writes outside the Settings owner.
+* Preserved the 1.4.16 live-proven bounded sanitizer strategy while removing adapter-local persistence duplication.
+* No Live deployment or operational-resolution claim is made.
 
 = 1.4.16 =
 * Corrected the live-proven Settings API sanitizer conflict that swallowed trusted programmatic File20 navigation writes during File01 reconciliation.

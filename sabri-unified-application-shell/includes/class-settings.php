@@ -59,8 +59,43 @@ final class Settings {
 
 		$merged                   = self::deep_merge( Defaults::settings(), $current );
 		$merged['schema_version'] = Defaults::SCHEMA_VERSION;
-		$merged = self::enforce_owned_invariants( $merged );
-		update_option( Defaults::OPTION_NAME, $merged, false );
+		self::update_programmatically( $merged );
+	}
+
+	/**
+	 * Canonical persistence path for trusted File 20 programmatic settings writes.
+	 *
+	 * The registered Settings API sanitizer is intentionally tab-oriented for
+	 * options.php submissions. Trusted internal workflows do not carry an
+	 * _active_tab marker, so calling update_option() directly while that sanitizer
+	 * is registered can normalize the proposed value back to the old settings.
+	 *
+	 * This method suspends only this class' Settings API sanitizer for the exact
+	 * bounded write, explicitly applies File 20 ownership invariants, leaves every
+	 * other WordPress/core/security/concurrency pre-update filter active, and
+	 * restores the sanitizer in finally. Nested calls are safe: only the call that
+	 * actually removed the filter restores it.
+	 *
+	 * @param array<string,mixed> $settings Trusted File 20 settings state.
+	 * @return bool WordPress update_option() result.
+	 */
+	public static function update_programmatically( array $settings ) {
+		$settings = self::enforce_owned_invariants( $settings );
+		$hook     = 'sanitize_option_' . Defaults::OPTION_NAME;
+		$callback = array( __CLASS__, 'sanitize' );
+		$removed  = false;
+
+		if ( function_exists( 'remove_filter' ) ) {
+			$removed = remove_filter( $hook, $callback, 10 );
+		}
+
+		try {
+			return update_option( Defaults::OPTION_NAME, $settings, false );
+		} finally {
+			if ( $removed && function_exists( 'add_filter' ) ) {
+				add_filter( $hook, $callback, 10, 1 );
+			}
+		}
 	}
 
 	/**

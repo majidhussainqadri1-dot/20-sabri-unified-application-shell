@@ -258,7 +258,11 @@ final class PlanV4Recovery {
             if ( ! is_array( $value ) ) { return false; }
             $value['emergency_disabled'] = (bool) $emergency_before;
         }
-        update_option( $option, $value, false );
+        if ( Defaults::OPTION_NAME === $option ) {
+            Settings::update_programmatically( $value );
+        } else {
+            update_option( $option, $value, false );
+        }
         $stored = get_option( $option, new \stdClass() );
         return $stored === $value;
     }
@@ -358,7 +362,7 @@ final class PlanV4Recovery {
             if ( $page_id && ! self::valid_bound_page( $key, $page_id ) ) { $after['navigation'][ $key ]['page_id'] = 0; }
         }
         if ( $before === $after ) { return true; }
-        update_option( Defaults::OPTION_NAME, $after, false );
+        Settings::update_programmatically( $after );
         $stored = get_option( Defaults::OPTION_NAME, array() );
         if ( ! is_array( $stored ) || $stored !== $after ) { return false; }
         PlanV4SettingsConcurrency::record_programmatic_change( $before, $stored, 'repair-page-map' );

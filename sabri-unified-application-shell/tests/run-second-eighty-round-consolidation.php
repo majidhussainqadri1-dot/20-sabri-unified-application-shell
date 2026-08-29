@@ -15,7 +15,7 @@ $future=$read('includes/class-future-shell-v5.php');
 $uninstall=$read('uninstall.php');
 $fail=[];
 $a=static function(bool $ok,string $label) use(&$fail): void { if(!$ok){$fail[]=$label;} };
-$a(strpos($main,'* Version: 1.4.16')!==false && strpos($main,"SABRI_SHELL_VERSION', '1.4.16")!==false,'release 1.4.16');
+$a(strpos($main,'* Version: 1.4.17')!==false && strpos($main,"SABRI_SHELL_VERSION', '1.4.17")!==false,'release 1.4.16');
 $a(strpos($main,'FutureShellV5EleventhHardening::register();')!==false && strpos($eleventh,"CONTRACT_VERSION = '1.0.11'")!==false,'eleventh hardening registered');
 $a(strpos($main,'SecondEightyRestHardening::register();')!==false,'REST hardening registered');
 $a(strpos($route,'validated_path')!==false && strpos($route,'rawurldecode')!==false,'absolute/relative path canonicalization');
@@ -35,4 +35,4 @@ $a(strpos($control,"LKG_LOCK_OPTION = 'sabri_shell_future_lkg_restore_lock'")!==
 $a(strpos($uninstall,'sabri_shell_settings_update_lock')!==false && strpos($uninstall,'sabri_shell_future_lkg_restore_lock')!==false,'explicit purge includes new locks');
 $features=['command_palette','pwa_shell','offline_mode','data_saver','recent_resume','module_circuit_breaker','last_known_good','performance_guardian','smart_navigation','keyboard_accessibility','focus_mode','split_workspace','adaptive_foldable','view_transitions','predictive_prefetch','language_direction','accessibility_center','release_rings'];
 $a(count($features)===18,'exact 18 features'); foreach($features as $f){$a(strpos($future,"'{$f}'")!==false,'feature '.$f);}
-if($fail){fwrite(STDERR,"Second eighty-round consolidation FAIL: ".implode('; ',$fail)."\n");exit(1);} echo "Second fresh eighty-round consolidation under 1.4.16: route, ownership, diagnostics, REST privacy, concurrency and LKG controls PASS\n";
+if($fail){fwrite(STDERR,"Second eighty-round consolidation FAIL: ".implode('; ',$fail)."\n");exit(1);} echo "Second fresh eighty-round consolidation under 1.4.17: route, ownership, diagnostics, REST privacy, concurrency and LKG controls PASS\n";

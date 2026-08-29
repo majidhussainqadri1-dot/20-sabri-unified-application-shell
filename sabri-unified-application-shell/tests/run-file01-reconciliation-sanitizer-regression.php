@@ -82,6 +82,13 @@ namespace Sabri\UnifiedShell {
 			return is_array( $value ) ? $value : array();
 		}
 		public static function enforce_owned_invariants( array $value ) { return $value; }
+		public static function update_programmatically( array $value ) {
+			$hook = 'sanitize_option_' . Defaults::OPTION_NAME;
+			$callback = array( __CLASS__, 'sanitize' );
+			$removed = remove_filter( $hook, $callback, 10 );
+			try { return update_option( Defaults::OPTION_NAME, self::enforce_owned_invariants( $value ), false ); }
+			finally { if ( $removed ) { add_filter( $hook, $callback, 10, 1 ); } }
+		}
 	}
 	final class PlanV4SettingsConcurrency {
 		const LOCK_OPTION = 'sabri_shell_settings_update_lock';
