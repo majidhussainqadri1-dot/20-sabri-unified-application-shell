@@ -25,6 +25,7 @@ $rollback  = $read( 'ROLLBACK.md' );
 $recovery  = $read( 'includes/class-plan-v4-recovery.php' );
 $snapshot  = $read( 'includes/class-snapshot.php' );
 $safe      = $read( 'includes/class-safe-mode.php' );
+$adapter   = $read( 'includes/class-file01-reconciliation-adapter.php' );
 
 $fail = array();
 $assert = static function ( bool $condition, string $label ) use ( &$fail ): void {
@@ -33,8 +34,8 @@ $assert = static function ( bool $condition, string $label ) use ( &$fail ): voi
 	}
 };
 
-$current = '1.4.15';
-$artifact = '20-sabri-unified-application-shell-1.4.15-FILE01-RECONCILIATION-REPAIR.zip';
+$current = '1.4.16';
+$artifact = '20-sabri-unified-application-shell-1.4.16-FILE01-SANITIZER-PERSISTENCE-REPAIR.zip';
 
 $assert( false !== strpos( $main, '* Version: ' . $current ), 'plugin header current version' );
 $assert( false !== strpos( $main, "define( 'SABRI_SHELL_VERSION', '" . $current . "' );" ), 'runtime constant current version' );
@@ -44,7 +45,8 @@ $assert( false !== strpos( $migration, '## Upgrade to ' . $current ), 'migration
 $assert( false !== strpos( $migration, $artifact ), 'migration exact current artifact' );
 $assert( false !== strpos( $staging, 'Record File 20 `' . $current . '`' ), 'staging current candidate version' );
 $assert( false !== strpos( $staging, $artifact ), 'staging exact current artifact' );
-$assert( false !== strpos( $changelog, '## 1.4.15 ' ), 'changelog current release' );
+$assert( false !== strpos( $changelog, '## 1.4.16 ' ), 'changelog current release' );
+$assert( false !== strpos( $changelog, '## 1.4.15 ' ), 'changelog prior File01 owner-adapter release' );
 $assert( false !== strpos( $changelog, '## 1.4.14 ' ), 'changelog prior release-truth correction' );
 $assert( false !== strpos( $changelog, '## 1.4.13 ' ), 'changelog Renderer repair release' );
 $assert( false !== strpos( $changelog, '## 1.4.12 ' ), 'changelog second-eighty release' );
@@ -75,9 +77,12 @@ $assert( false !== strpos( $migration, '/google-account-security/' ), 'migration
 $assert( false !== strpos( $staging, '/google-account-security/' ), 'acceptance retains original live incident retest' );
 $assert( false !== strpos( $readme, 'does not by itself claim' ), 'readme preserves repository/live evidence boundary' );
 
-/* File01 reconciliation closure remains deployment/live evidence, not repository truth. */
-$assert( false !== strpos( $migration, '12 blocked owner plans' ), 'migration preserves File01 live root-cause evidence' );
+/* File01 reconciliation sanitizer closure remains deployment/live evidence, not repository truth. */
+$assert( false !== strpos( $migration, 'controlled apply failed' ) && false !== strpos( $migration, 'raw database and `get_option()` both remained `0`' ), 'migration preserves 1.4.15 live sanitizer-persistence root-cause evidence' );
 $assert( false !== strpos( $staging, 'blocker count must be exactly zero' ), 'staging requires zero File01 blockers before apply' );
+$assert( false !== strpos( $staging, 'command version `1.0.1`' ), 'staging requires corrected File20 reconciliation command contract' );
+$assert( false !== strpos( $adapter, "const COMMAND_VERSION = '1.0.1';" ), 'runtime adapter command contract is 1.0.1' );
+$assert( false !== strpos( $adapter, 'persist_settings_option' ) && false !== strpos( $adapter, 'Settings::enforce_owned_invariants' ) && false !== strpos( $adapter, 'remove_filter' ) && false !== strpos( $adapter, 'add_filter' ), 'runtime adapter contains bounded trusted sanitizer persistence path' );
 $assert( false !== strpos( $readme, 'File01 reconciliation completion' ), 'readme does not claim File01 reconciliation completed' );
 
 if ( $fail ) {
@@ -85,4 +90,4 @@ if ( $fail ) {
 	exit( 1 );
 }
 
-echo "File 20 1.4.15 release/operator documentation truth PASS\n";
+echo "File 20 1.4.16 release/operator documentation truth PASS\n";
