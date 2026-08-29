@@ -221,8 +221,8 @@ jobs:
           - Dynamic active-sanitizer regression plus static no-direct-write gate: PASS when this workflow is green.
           - PHP 7.4/8.3 syntax and every repository regression/adversarial suite: PASS when green.
           - Deterministic production package parity and manifest checks: PASS when green.
-          - Live deployed 1.4.17: NO
-          - Operationally resolved: NO
+          - Live deployment status: not inferred from CI. The dated 2026-08-29 incident record separately proves scoped File20 1.4.17 deployment/parity for File01 reconciliation only.
+          - Whole-File20 operational acceptance: not inferred from CI or from the scoped incident closure.
           REPORT
       - uses: actions/upload-artifact@v4
         with:
