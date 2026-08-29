@@ -75,7 +75,7 @@ final class SafeMode {
 
 	private static function write_settings( array $settings ) {
 		self::$emergency_write_authorized = true;
-		try { update_option( Defaults::OPTION_NAME, $settings, false ); }
+		try { Settings::update_programmatically( $settings ); }
 		finally { self::$emergency_write_authorized = false; }
 		$stored = get_option( Defaults::OPTION_NAME, array() );
 		return is_array( $stored ) && ! empty( $stored['emergency_disabled'] ) === ! empty( $settings['emergency_disabled'] );

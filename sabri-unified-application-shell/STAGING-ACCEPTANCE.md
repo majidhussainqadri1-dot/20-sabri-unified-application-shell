@@ -4,11 +4,18 @@ Hostinger staging acceptance is the normal production-promotion gate. Automated 
 
 ## Exact Candidate and Backup
 
-- Record File 20 `1.4.16`, exact GitHub head, deterministic `20-sabri-unified-application-shell-1.4.16-FILE01-SANITIZER-PERSISTENCE-REPAIR.zip` package, SHA-256 and source manifest.
+- Record File 20 `1.4.17`, exact GitHub head, deterministic `20-sabri-unified-application-shell-1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER.zip` package, SHA-256 and source manifest.
 - Confirm one canonical plugin ZIP root, no development tests, safe paths/no duplicates, embedded/external manifest equality and source/stage/extracted SHA-256 parity.
 - Prove a restorable files/database backup; test fresh install and real upgrade from the actually deployed File20 version where staging is the selected deployment path.
 - Preserve the live root-cause evidence from deployed 1.4.15: File01 dry-run blockers zero; controlled apply failed; verified compensation restored all 14 legacy mappings, Founder option, zero quarantined pages and zero residual File20/File21 receipts; Founder page 164 published/owner-compatible; all File20 pre-update/read filters preserved proposed Page ID 164; raw DB and `get_option()` remained 0 with matching object-cache truth.
 - Confirm the 1.4.13 Renderer correction remains unchanged: `render_panel()`, `destination_url()`, and `item_visible_to_user()` each exist exactly once and all owned `self::method()` calls resolve.
+
+## Canonical Programmatic Settings Writer Gate
+
+- Confirm `Settings::update_programmatically()` is the sole trusted full `sabri_shell_settings` writer outside the tab-oriented Settings API submission path.
+- Confirm File01 reconciliation, PlanV4 repair/rollback, Emergency lifecycle, activation-snapshot rollback, defaults normalization and retired Home-feed migration all use the canonical writer.
+- Confirm the dynamic active-sanitizer regression and the static no-direct-write regression both pass.
+- Treat these additional paths as source-level hardening until independently exercised in the selected deployment environment; do not convert repository evidence into a Live claim.
 
 ## File01 Reconciliation Sanitizer Persistence Gate
 

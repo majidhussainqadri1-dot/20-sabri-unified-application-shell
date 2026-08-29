@@ -43,7 +43,7 @@ final class FutureShellV5TenthHardening {
         if ( ! is_array( $current ) ) { return; }
         $target = self::sanitize_retired_local_feed_state( $current, $current, Defaults::OPTION_NAME );
         if ( $target === $current ) { return; }
-        update_option( Defaults::OPTION_NAME, $target, false );
+        Settings::update_programmatically( $target );
         $stored = get_option( Defaults::OPTION_NAME, array() );
         if ( is_array( $stored ) && $stored === $target ) {
             Navigation::invalidate_cache();

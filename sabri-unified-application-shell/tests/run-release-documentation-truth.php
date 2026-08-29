@@ -34,8 +34,8 @@ $assert = static function ( bool $condition, string $label ) use ( &$fail ): voi
 	}
 };
 
-$current = '1.4.16';
-$artifact = '20-sabri-unified-application-shell-1.4.16-FILE01-SANITIZER-PERSISTENCE-REPAIR.zip';
+$current = '1.4.17';
+$artifact = '20-sabri-unified-application-shell-1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER.zip';
 
 $assert( false !== strpos( $main, '* Version: ' . $current ), 'plugin header current version' );
 $assert( false !== strpos( $main, "define( 'SABRI_SHELL_VERSION', '" . $current . "' );" ), 'runtime constant current version' );
@@ -45,7 +45,8 @@ $assert( false !== strpos( $migration, '## Upgrade to ' . $current ), 'migration
 $assert( false !== strpos( $migration, $artifact ), 'migration exact current artifact' );
 $assert( false !== strpos( $staging, 'Record File 20 `' . $current . '`' ), 'staging current candidate version' );
 $assert( false !== strpos( $staging, $artifact ), 'staging exact current artifact' );
-$assert( false !== strpos( $changelog, '## 1.4.16 ' ), 'changelog current release' );
+$assert( false !== strpos( $changelog, '## 1.4.17 ' ), 'changelog current release' );
+$assert( false !== strpos( $changelog, '## 1.4.16 ' ), 'changelog prior sanitizer persistence release' );
 $assert( false !== strpos( $changelog, '## 1.4.15 ' ), 'changelog prior File01 owner-adapter release' );
 $assert( false !== strpos( $changelog, '## 1.4.14 ' ), 'changelog prior release-truth correction' );
 $assert( false !== strpos( $changelog, '## 1.4.13 ' ), 'changelog Renderer repair release' );
@@ -82,7 +83,9 @@ $assert( false !== strpos( $migration, 'controlled apply failed' ) && false !== 
 $assert( false !== strpos( $staging, 'blocker count must be exactly zero' ), 'staging requires zero File01 blockers before apply' );
 $assert( false !== strpos( $staging, 'command version `1.0.1`' ), 'staging requires corrected File20 reconciliation command contract' );
 $assert( false !== strpos( $adapter, "const COMMAND_VERSION = '1.0.1';" ), 'runtime adapter command contract is 1.0.1' );
-$assert( false !== strpos( $adapter, 'persist_settings_option' ) && false !== strpos( $adapter, 'Settings::enforce_owned_invariants' ) && false !== strpos( $adapter, 'remove_filter' ) && false !== strpos( $adapter, 'add_filter' ), 'runtime adapter contains bounded trusted sanitizer persistence path' );
+$settings = $read( 'includes/class-settings.php' );
+$assert( false !== strpos( $adapter, 'Settings::update_programmatically' ) && false === strpos( $adapter, 'persist_settings_option' ), 'runtime adapter delegates trusted persistence to canonical Settings owner' );
+$assert( false !== strpos( $settings, 'public static function update_programmatically' ) && false !== strpos( $settings, 'remove_filter' ) && false !== strpos( $settings, 'add_filter' ), 'canonical Settings owner contains bounded trusted sanitizer persistence path' );
 $assert( false !== strpos( $readme, 'File01 reconciliation completion' ), 'readme does not claim File01 reconciliation completed' );
 
 if ( $fail ) {
@@ -90,4 +93,4 @@ if ( $fail ) {
 	exit( 1 );
 }
 
-echo "File 20 1.4.16 release/operator documentation truth PASS\n";
+echo "File 20 1.4.17 release/operator documentation truth PASS\n";

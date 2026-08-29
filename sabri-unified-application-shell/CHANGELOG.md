@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.4.17 — 2026-08-29 — Canonical Programmatic Settings Writer
+
+- Fresh post-merge review of 1.4.16 found the live-proven tab-oriented Settings API sanitizer hazard was still duplicated as a repository/source-level risk across trusted File20 repair, rollback, Emergency, activation-snapshot rollback and retired-state migration writes.
+- Added `Settings::update_programmatically()` as the single canonical File20-owned persistence path for trusted full settings mutations.
+- The canonical writer explicitly enforces File20 ownership invariants, suspends only `Settings::sanitize` for the bounded write, preserves all other WordPress/core/security/concurrency/pre-update filters and restores the sanitizer in `finally`.
+- File01 reconciliation now delegates to the Settings owner instead of retaining an adapter-local bypass.
+- PlanV4Recovery, SafeMode, Snapshot, Settings defaults normalization and TenthHardening retired-state migration now use the same writer.
+- Added a dynamic regression that reproduces the raw sanitizer swallow and proves canonical persistence/invariants/restoration, plus a static guard rejecting direct File20 settings writes outside `class-settings.php`.
+- This is repository/source remediation; no additional Live-path failure or operational resolution is claimed without deployment/re-test evidence.
+
 ## 1.4.16 — 2026-08-29 — File01 Settings API Sanitizer Persistence Repair
 
 - Live controlled File01 apply on exact deployed File20 `1.4.15` failed after the dry-run had reached zero blockers; verified automatic compensation restored all 14 legacy mappings, the unsafe Founder option, non-quarantined page state and empty owner receipt stores.

@@ -146,7 +146,7 @@ final class File01ReconciliationAdapter {
 			$current_row['page_id']       = $page_id;
 			$raw['navigation'][ $route_key ] = $current_row;
 
-			self::persist_settings_option( $raw );
+			Settings::update_programmatically( $raw );
 			Navigation::invalidate_cache();
 			if ( self::current_page_id( $route_key ) !== $page_id ) {
 				self::restore_navigation_row( $route_key, $navigation_container_exists, $row_exists, $before_row, 'file01-reconciliation-compensation' );
@@ -272,7 +272,7 @@ final class File01ReconciliationAdapter {
 		if ( ! $container_existed && empty( $raw['navigation'] ) ) {
 			unset( $raw['navigation'] );
 		}
-		self::persist_settings_option( $raw );
+		Settings::update_programmatically( $raw );
 		Navigation::invalidate_cache();
 		$verify = get_option( Defaults::OPTION_NAME, array() );
 		$verify = is_array( $verify ) ? $verify : array();
@@ -287,32 +287,6 @@ final class File01ReconciliationAdapter {
 		return $ok;
 	}
 
-	/**
-	 * Persist a trusted File20-owned settings mutation without the tab-oriented
-	 * Settings API sanitizer swallowing a programmatic navigation write.
-	 *
-	 * Only the registered Settings::sanitize callback is suspended. The value is
-	 * still passed through File20 ownership invariants plus every other core,
-	 * security, concurrency and pre-update filter before WordPress persists it.
-	 */
-	private static function persist_settings_option( array $value ) {
-		$value    = Settings::enforce_owned_invariants( $value );
-		$hook     = 'sanitize_option_' . Defaults::OPTION_NAME;
-		$callback = array( __NAMESPACE__ . '\\Settings', 'sanitize' );
-		$removed  = false;
-
-		if ( function_exists( 'remove_filter' ) ) {
-			$removed = remove_filter( $hook, $callback, 10 );
-		}
-
-		try {
-			return update_option( Defaults::OPTION_NAME, $value, false );
-		} finally {
-			if ( $removed && function_exists( 'add_filter' ) ) {
-				add_filter( $hook, $callback, 10, 1 );
-			}
-		}
-	}
 
 	private static function record_settings_change( $old_value, $new_value, $reason ) {
 		if ( class_exists( __NAMESPACE__ . '\\PlanV4SettingsConcurrency', false ) && is_callable( array( __NAMESPACE__ . '\\PlanV4SettingsConcurrency', 'record_programmatic_change' ) ) ) {

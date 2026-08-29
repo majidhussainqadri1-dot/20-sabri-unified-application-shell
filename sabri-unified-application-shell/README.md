@@ -2,7 +2,7 @@
 
 Sabri Unified Application Shell is the canonical responsive WordPress application shell for the **Sabri Social Homeopathy Platform**.
 
-- Version: `1.4.16`
+- Version: `1.4.17`
 - File 22 Create contract: `1.0.1`
 - Central-plan contract: `1.0.0`
 - File 01 reconciliation command contract: `1.0.1`
@@ -16,6 +16,12 @@ Sabri Unified Application Shell is the canonical responsive WordPress applicatio
 ## Canonical scope
 
 File 20 owns the shared structural application frame, navigation/layout resolution, native presentation slots, diagnostics and File-20 recovery continuity. It does not duplicate membership, authentication, Home/News feed/publishing, communication, notification, clinic, marketplace, clinical/support/financial/media-processing/analytics/localization, Search/Discovery/Ranking, security-enforcement or visual-design backends.
+
+## Version 1.4.17 — canonical programmatic settings writer
+
+A fresh post-merge source review of 1.4.16 found that the same Settings API sanitizer class of defect remained reachable in other trusted File20 admin/runtime workflows: PlanV4 repair/rollback, Emergency state persistence, activation-snapshot rollback and retired Home-feed state migration. This is a repository/source-level defect finding; it is not a claim that each path was observed failing on Live.
+
+Version 1.4.17 moves the bounded sanitizer suspension/restoration logic into the canonical Settings owner as `Settings::update_programmatically()`. Every identified trusted File20 settings mutation uses that one path; File20 invariants and all other security/concurrency/pre-update filters remain active, the sanitizer is restored in `finally`, and a static regression forbids new direct `sabri_shell_settings` writes outside `class-settings.php`.
 
 ## Version 1.4.16 — File 01-B Settings API sanitizer persistence repair
 

@@ -109,7 +109,7 @@ final class Snapshot {
 				if ( ! is_array( $snapshot['settings'] ) ) { return false; }
 				$restored_settings = $snapshot['settings'];
 				$restored_settings['emergency_disabled'] = $emergency_before;
-				update_option( Defaults::OPTION_NAME, $restored_settings, false );
+				Settings::update_programmatically( $restored_settings );
 				if ( ! self::option_matches( Defaults::OPTION_NAME, true, $restored_settings ) ) { return self::rollback_failed( 'settings-write' ); }
 			}
 		}
