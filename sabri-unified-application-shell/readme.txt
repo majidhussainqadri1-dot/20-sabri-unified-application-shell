@@ -4,7 +4,7 @@ Tags: application shell, navigation, layout, accessibility, pwa, offline
 Requires at least: 6.0
 Tested up to: 7.0.1
 Requires PHP: 7.4
-Stable tag: 1.4.15
+Stable tag: 1.4.16
 License: GPLv2 or later
 Text Domain: sabri-unified-application-shell
 
@@ -12,9 +12,11 @@ Responsive canonical application shell and integration layer for the Sabri Socia
 
 == Description ==
 
-Version 1.4.15 is a bounded File 01-B reconciliation correction based on frozen live evidence. Deployed File01 2.0.1 was checksum-parity verified, schema 1.2.0 passed physical verification, and its dry-run correctly blocked 12 legacy routes because exact deployed File20 1.4.14 provided no File01 owner-reconciliation hooks. File21 already handled Home/News.
+Version 1.4.16 is a bounded File 01-B reconciliation persistence correction based on exact live evidence from the failed 1.4.15 controlled apply. The 1.4.15 adapter removed all dry-run blockers, but real WordPress Settings API sanitization discarded the trusted programmatic `sabri_shell_settings` navigation write before File20 pre-update filters, causing File01 to compensate. Live traces proved the proposed Founder Page ID 164 survived every pre-update/read filter, raw DB and `get_option()` both remained 0, and object-cache truth matched DB.
 
-Version 1.4.15 adds a reversible File20 owner-plan/execute/rollback adapter for exactly twelve shell-route handoffs: Founder, Learn, Encyclopedia, Doctors, Clinic, Video Wall, Reels, PDF Library, Radar, AI, Network and Marketplace. It stores only File20-owned navigation Page-ID references plus bounded rollback receipts, does not mutate companion content/tables, preserves native domain ownership, and preserves File21 Home/News precedence.
+Version 1.4.16 advances the File01 reconciliation command contract to 1.0.1 and adds a bounded trusted File20 settings writer. It suspends only the tab-oriented `Settings::sanitize` callback for the exact adapter-owned programmatic settings mutation, explicitly applies File20 invariants, leaves all other WordPress/core/security/concurrency/pre-update filters in force, restores the sanitizer in `finally`, and uses the same path for compensation/rollback restoration. A permanent regression first reproduces the live sanitizer-swallow failure and then proves execute/rollback persistence with sanitizer restoration.
+
+Version 1.4.15 is preserved as the owner-adapter release that restored File01 owner-plan/execute/rollback support for exactly twelve shell-route handoffs after live evidence showed deployed File20 1.4.14 had none of the required hooks. File21 remains canonical Home/News owner.
 
 Version 1.4.14 was the first fresh review correction over the 1.4.13 live-Renderer repair. The 1.4.13 runtime correction is preserved unchanged; 1.4.14 corrected release/operator truth that still referenced obsolete 1.4.11 artifacts or obsolete rollback/Safe Mode behavior and added permanent release-documentation regression coverage.
 
@@ -27,17 +29,25 @@ Repository/CI correction does not by itself claim Hostinger staging acceptance, 
 == Installation ==
 
 1. Back up files and database and prove restore.
-2. Install or upgrade the exact `20-sabri-unified-application-shell-1.4.15-FILE01-RECONCILIATION-REPAIR.zip` artifact on the approved deployment target.
+2. Install or upgrade the exact `20-sabri-unified-application-shell-1.4.16-FILE01-SANITIZER-PERSISTENCE-REPAIR.zip` artifact on the approved deployment target.
 3. Verify one canonical ZIP root, no tests/development material and exact source/stage/extracted SHA-256 parity.
-4. Confirm deployed File20 runtime reports 1.4.15 and prove deployed-artifact/runtime parity with the approved candidate.
-5. Re-run File01 reconciliation dry-run. `home` and `news` must remain File21-owned; the twelve formerly blocked mappings must receive accepted `file-20` owner plans; blockers must be zero before apply.
+4. Confirm deployed File20 runtime reports 1.4.16 and prove deployed-artifact/runtime parity with the approved candidate.
+5. Re-run File01 reconciliation dry-run. `home` and `news` must remain File21-owned; the twelve File20 mappings must receive accepted `file-20` owner plans with command version 1.0.1; blockers must be zero before apply.
 6. Verify each File20 plan is `shell_navigation_reference_only`, native content ownership is unchanged, and no foreign table/content mutation is introduced.
 7. Before controlled apply, confirm File01 plan hash is current, rollback snapshot/receipts are available and backup/restore evidence is current.
-8. After controlled File01 reconciliation, verify all twelve shell routes still resolve from File20-owned configured Page IDs after `spf_page_map` removal; verify rollback restores exact previous File20 navigation rows.
-9. Re-test the historical live incident URL `/google-account-security/`; HTTP 500 and the `Renderer::item_visible_to_user()` fatal must remain absent.
-10. Run System Check and all existing ownership, File17 separation, File21 provider-only, recovery, privacy, accessibility and Founder-acceptance gates before declaring operational resolution.
+8. Apply File01 reconciliation once through File01's controlled action; verify the trusted File20 programmatic settings write persists each route and the Settings sanitizer is restored after each bounded mutation.
+9. After apply, verify File01 state is `applied`, all 14 owner receipts are present, `spf_page_map` and `spf_founder_user_id` are removed by File01, and no compensation/error state exists.
+10. Verify all twelve File20 shell routes plus File21 Home/News still resolve correctly after legacy-map retirement; then run System Check and the remaining ownership/recovery/privacy/accessibility gates before declaring operational resolution.
 
 == Changelog ==
+
+= 1.4.16 =
+* Corrected the live-proven Settings API sanitizer conflict that swallowed trusted programmatic File20 navigation writes during File01 reconciliation.
+* Advanced the File01 reconciliation command contract to 1.0.1.
+* Added a bounded trusted File20 settings persistence path that suspends only `Settings::sanitize`, explicitly enforces File20 invariants, preserves all other filters and restores the sanitizer in `finally`.
+* Applied the same corrected persistence path to execute compensation and rollback restoration.
+* Added a permanent regression that reproduces the 1.4.15 live failure before proving corrected execute/rollback behavior under an active sanitizer.
+* Advanced deterministic package identity to 1.4.16; deployment, parity, zero-blocker dry-run, controlled reconciliation and live re-test remain separate gates.
 
 = 1.4.15 =
 * Added File01 owner-plan, execute and rollback reconciliation hooks for exactly twelve shell-route handoffs discovered by live File01 dry-run evidence.
