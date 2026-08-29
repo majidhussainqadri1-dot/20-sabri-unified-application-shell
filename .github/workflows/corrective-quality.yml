@@ -1,4 +1,4 @@
-name: File 20 Version 1.4.16 File01 Sanitizer Persistence Repair Quality
+name: File 20 Version 1.4.17 Canonical Programmatic Settings Writer Quality
 
 on:
   pull_request:
@@ -49,7 +49,7 @@ jobs:
           done
 
   static-package:
-    name: Static ownership reconciliation sanitizer renderer documentation recovery privacy and deterministic production-package parity
+    name: Static canonical-writer ownership reconciliation renderer documentation recovery privacy and deterministic package parity
     needs: php-quality
     runs-on: ubuntu-24.04
     timeout-minutes: 25
@@ -58,7 +58,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - name: JavaScript JSON CSS renderer reconciliation sanitizer and release-truth static checks
+      - name: JavaScript JSON CSS canonical-writer reconciliation and release-truth static checks
         run: |
           set -euo pipefail
           for js in sabri-unified-application-shell/assets/js/*.js; do node --check "$js"; done
@@ -68,11 +68,17 @@ jobs:
           root=Path('sabri-unified-application-shell')
           def read(p): return (root/p).read_text(encoding='utf-8')
           main=read('sabri-unified-application-shell.php')
+          settings=read('includes/class-settings.php')
           renderer=read('includes/class-renderer.php')
           defaults=read('includes/class-defaults.php')
           route=read('includes/class-route-security.php')
           adapter=read('includes/class-file01-reconciliation-adapter.php')
+          recovery=read('includes/class-plan-v4-recovery.php')
+          snapshot=read('includes/class-snapshot.php')
+          tenth=read('includes/class-future-shell-v5-tenth-hardening.php')
           sanitizer_test=read('tests/run-file01-reconciliation-sanitizer-regression.php')
+          writer_test=read('tests/run-programmatic-settings-writer-regression.php')
+          writer_static=read('tests/run-programmatic-settings-writer-static.php')
           eleventh=read('includes/class-future-shell-v5-eleventh-hardening.php')
           resth=read('includes/class-second-eighty-rest-hardening.php')
           system=read('includes/class-system-check.php')
@@ -86,13 +92,13 @@ jobs:
           staging=read('STAGING-ACCEPTANCE.md')
           rollback=read('ROLLBACK.md')
           changelog=read('CHANGELOG.md')
-          assert '* Version: 1.4.16' in main
-          assert "define( 'SABRI_SHELL_VERSION', '1.4.16' );" in main
-          assert 'Stable tag: 1.4.16' in readmetxt
-          assert '## Upgrade to 1.4.16' in migration
-          assert '20-sabri-unified-application-shell-1.4.16-FILE01-SANITIZER-PERSISTENCE-REPAIR.zip' in migration
-          assert 'Record File 20 `1.4.16`' in staging
-          assert '## 1.4.16 ' in changelog and '## 1.4.15 ' in changelog and '## 1.4.14 ' in changelog
+          assert '* Version: 1.4.17' in main
+          assert "define( 'SABRI_SHELL_VERSION', '1.4.17' );" in main
+          assert 'Stable tag: 1.4.17' in readmetxt
+          assert '## Upgrade to 1.4.17' in migration
+          assert '20-sabri-unified-application-shell-1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER.zip' in migration
+          assert 'Record File 20 `1.4.17`' in staging
+          assert '## 1.4.17 ' in changelog and '## 1.4.16 ' in changelog and '## 1.4.15 ' in changelog
           assert 'Automatic rollback **does not restore shared WordPress front-page options**' in rollback
           assert 'Do **not** rely on a raw URL containing only:' in rollback
           assert '`SafeMode::query_safe_mode_url()`' in rollback
@@ -109,10 +115,20 @@ jobs:
               assert "'"+legacy+"'" in adapter
           assert "'home'" not in adapter.split('public static function route_map()',1)[1].split(');',1)[0]
           assert "const COMMAND_VERSION = '1.0.1';" in adapter
-          assert 'persist_settings_option' in adapter
-          assert "remove_filter( $hook, $callback, 10 )" in adapter
-          assert "Settings::enforce_owned_invariants( $value )" in adapter
-          assert "add_filter( $hook, $callback, 10, 1 )" in adapter
+          assert 'Settings::update_programmatically' in adapter
+          assert 'persist_settings_option' not in adapter
+          assert 'public static function update_programmatically' in settings
+          assert "remove_filter( $hook, $callback, 10 )" in settings
+          assert "self::enforce_owned_invariants( $settings )" in settings
+          assert "add_filter( $hook, $callback, 10, 1 )" in settings
+          assert 'Settings::update_programmatically( $settings )' in safe
+          assert 'Settings::update_programmatically( $restored_settings )' in snapshot
+          assert 'Settings::update_programmatically( $after )' in recovery
+          assert 'Settings::update_programmatically( $value )' in recovery
+          assert 'Settings::update_programmatically( $target )' in tenth
+          assert 'Control reproduces the registered tab-oriented sanitizer' in writer_test
+          assert 'Canonical File20 programmatic settings writer regression PASS' in writer_test
+          assert 'Direct File20 settings writes bypass the canonical writer' in writer_static
           assert 'Control reproduces live defect' in sanitizer_test
           assert 'Settings::sanitize callback is restored' in sanitizer_test
           assert 'shell_navigation_reference_only' in adapter
@@ -141,7 +157,7 @@ jobs:
           assert 'CREATE TABLE' not in '\n'.join([route,adapter,eleventh,resth,system,safe,concurrency,control,future])
           for p in sorted((root/'assets/css').glob('*.css')):
               css=p.read_text(encoding='utf-8'); assert css.count('{')==css.count('}'),p.name
-          print('Static File 20 v1.4.16 File01 sanitizer persistence and preserved release-truth checks PASS')
+          print('Static File 20 v1.4.17 canonical programmatic settings writer and preserved release-truth checks PASS')
           PY
 
       - name: Build deterministic production-only package and prove parity
@@ -167,8 +183,8 @@ jobs:
               lines.append(f"{hashlib.sha256(src.read_bytes()).hexdigest()}  {rel.as_posix()}")
           manifest='\n'.join(lines)+'\n'; (stage/'MANIFEST.sha256').write_text(manifest,encoding='utf-8')
           assert sorted(p.relative_to(stage).as_posix() for p in stage.rglob('*') if p.is_file() and p.name!='MANIFEST.sha256')==sorted(p.relative_to(root).as_posix() for p in source)
-          base='20-sabri-unified-application-shell-1.4.16-FILE01-SANITIZER-PERSISTENCE-REPAIR'; archive=release/f'{base}.zip'
-          fixed=(2026,8,29,4,30,0)
+          base='20-sabri-unified-application-shell-1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER'; archive=release/f'{base}.zip'
+          fixed=(2026,8,29,7,15,0)
           with ZipFile(archive,'w') as zf:
               for p in sorted(stage.rglob('*')):
                   if not p.is_file(): continue
@@ -187,36 +203,34 @@ jobs:
           for rel,sha in expected.items(): assert hashlib.sha256((er/rel).read_bytes()).hexdigest()==sha
           assert not (er/'tests').exists() and not (er/'includes/class-home-feed.php').exists()
           assert (er/'includes/class-file01-reconciliation-adapter.php').exists()
-          print('Deterministic File20 1.4.16 File01 sanitizer persistence package PASS')
+          print('Deterministic File20 1.4.17 canonical programmatic settings writer package PASS')
           PY
-          base='20-sabri-unified-application-shell-1.4.16-FILE01-SANITIZER-PERSISTENCE-REPAIR'
+          base='20-sabri-unified-application-shell-1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER'
           (cd release && sha256sum -c "${base}.sha256")
           unzip -t "release/${base}.zip"
 
-      - name: Write exact-head File01 sanitizer persistence repair report
+      - name: Write exact-head canonical settings writer report
         run: |
-          cat > release/FILE-20-1.4.16-FILE01-SANITIZER-PERSISTENCE-TEST-REPORT.md <<REPORT
-          # File 20 Version 1.4.16 File01 Sanitizer Persistence Repair Evidence
+          cat > release/FILE-20-1.4.17-CANONICAL-SETTINGS-WRITER-TEST-REPORT.md <<REPORT
+          # File 20 Version 1.4.17 Canonical Programmatic Settings Writer Evidence
           - Exact candidate source SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-          - Live root-cause basis: deployed File20 1.4.15 exact runtime parity was verified; File01 dry-run reached zero blockers; controlled reconciliation failed and verified compensation restored the pre-apply state.
-          - Live filter trace proved the File20 proposed Founder Page ID 164 survived every pre-update/read filter, while raw DB/get_option both remained 0 and object-cache truth matched DB.
-          - Root cause: the registered tab-oriented Settings::sanitize callback swallowed trusted programmatic sabri_shell_settings navigation writes before pre-update filters.
-          - Correction: File20 command contract 1.0.1 uses a bounded trusted persistence path that suspends only Settings::sanitize, explicitly enforces File20 invariants, preserves all other filters, and restores the sanitizer in finally for execute/compensation/rollback.
-          - Dedicated regression first reproduces the sanitizer-swallow failure and then proves execute/rollback persistence and sanitizer restoration.
-          - PHP 7.4/8.3 syntax and every repository regression/adversarial suite: PASS
-          - Deterministic production package parity and manifest checks: PASS
-          - Live deployed 1.4.16: NO
-          - File01 zero-blocker dry-run re-tested after 1.4.16 deployment: NO
-          - Controlled File01 reconciliation re-applied successfully: NO
+          - Live-proven basis retained from 1.4.16: File01 reconciliation failed because registered tab-oriented Settings::sanitize swallowed a trusted no-tab programmatic settings write before pre-update filters.
+          - Fresh post-merge repository finding: the same source-level hazard remained in other trusted File20 repair/rollback/Emergency/snapshot/migration settings writes; this is source evidence, not a claim those paths failed on Live.
+          - Correction: Settings::update_programmatically is the single canonical trusted File20 full-settings writer; it suspends only Settings::sanitize, explicitly enforces File20 invariants, preserves all other filters, and restores the sanitizer in finally.
+          - File01 reconciliation, PlanV4 repair/rollback, Emergency lifecycle, activation-snapshot rollback, defaults normalization and retired-state migration now use the canonical writer.
+          - Dynamic active-sanitizer regression plus static no-direct-write gate: PASS when this workflow is green.
+          - PHP 7.4/8.3 syntax and every repository regression/adversarial suite: PASS when green.
+          - Deterministic production package parity and manifest checks: PASS when green.
+          - Live deployed 1.4.17: NO
           - Operationally resolved: NO
           REPORT
       - uses: actions/upload-artifact@v4
         with:
-          name: file20-1.4.16-file01-sanitizer-persistence-${{ github.event.pull_request.head.sha || github.sha }}
+          name: file20-1.4.17-canonical-programmatic-settings-writer-${{ github.event.pull_request.head.sha || github.sha }}
           retention-days: 60
           if-no-files-found: error
           path: |
-            release/20-sabri-unified-application-shell-1.4.16-FILE01-SANITIZER-PERSISTENCE-REPAIR.zip
-            release/20-sabri-unified-application-shell-1.4.16-FILE01-SANITIZER-PERSISTENCE-REPAIR.sha256
-            release/20-sabri-unified-application-shell-1.4.16-FILE01-SANITIZER-PERSISTENCE-REPAIR-SOURCE-MANIFEST.sha256
-            release/FILE-20-1.4.16-FILE01-SANITIZER-PERSISTENCE-TEST-REPORT.md
+            release/20-sabri-unified-application-shell-1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER.zip
+            release/20-sabri-unified-application-shell-1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER.sha256
+            release/20-sabri-unified-application-shell-1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER-SOURCE-MANIFEST.sha256
+            release/FILE-20-1.4.17-CANONICAL-SETTINGS-WRITER-TEST-REPORT.md
