@@ -1,15 +1,26 @@
 <?php
 /**
- * Permanent regression for current release/operator documentation truth.
+ * Permanent regression for current release/operator/repository truth.
  * Development-only CI test; tests/ is excluded from the production ZIP.
  */
 declare(strict_types=1);
 
-$root = dirname( __DIR__ );
+$root      = dirname( __DIR__ );
+$repo_root = dirname( $root );
+
 $read = static function ( string $relative ) use ( $root ): string {
 	$value = @file_get_contents( $root . '/' . $relative );
 	if ( ! is_string( $value ) ) {
 		fwrite( STDERR, "Unable to read {$relative}\n" );
+		exit( 1 );
+	}
+	return $value;
+};
+
+$read_repo = static function ( string $relative ) use ( $repo_root ): string {
+	$value = @file_get_contents( $repo_root . '/' . $relative );
+	if ( ! is_string( $value ) ) {
+		fwrite( STDERR, "Unable to read repository file {$relative}\n" );
 		exit( 1 );
 	}
 	return $value;
@@ -26,6 +37,11 @@ $recovery  = $read( 'includes/class-plan-v4-recovery.php' );
 $snapshot  = $read( 'includes/class-snapshot.php' );
 $safe      = $read( 'includes/class-safe-mode.php' );
 $adapter   = $read( 'includes/class-file01-reconciliation-adapter.php' );
+$settings  = $read( 'includes/class-settings.php' );
+
+$repo_status   = $read_repo( 'STATUS.md' );
+$repo_manifest = $read_repo( 'MANIFEST.md' );
+$incident      = $read_repo( 'LIVE-INCIDENT-CLOSURE-FILE01-RECONCILIATION-2026-08-29.md' );
 
 $fail = array();
 $assert = static function ( bool $condition, string $label ) use ( &$fail ): void {
@@ -34,7 +50,7 @@ $assert = static function ( bool $condition, string $label ) use ( &$fail ): voi
 	}
 };
 
-$current = '1.4.17';
+$current  = '1.4.17';
 $artifact = '20-sabri-unified-application-shell-1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER.zip';
 
 $assert( false !== strpos( $main, '* Version: ' . $current ), 'plugin header current version' );
@@ -55,6 +71,17 @@ $assert( false !== strpos( $changelog, '## 1.4.12 ' ), 'changelog second-eighty 
 /* Current operator headings must not direct a deploy to obsolete 1.4.11. Historical sections may retain that version. */
 $assert( false === strpos( $migration, '## Upgrade to 1.4.11' ), 'migration does not advertise obsolete current upgrade' );
 $assert( false === strpos( $staging, 'Record File 20 `1.4.11`' ), 'staging does not advertise obsolete current candidate' );
+
+/* Root repository lifecycle documents must not silently lag behind the current runtime line. */
+$assert( false !== strpos( $repo_status, 'File 20 is **Sabri Unified Application Shell 1.4.17**' ), 'root STATUS identifies current 1.4.17 source truth' );
+$assert( false !== strpos( $repo_status, 'Scoped evidence only' ), 'root STATUS preserves scoped Live evidence boundary' );
+$assert( false !== strpos( $repo_status, 'Operational | **Not established' ), 'root STATUS does not overclaim operational acceptance' );
+$assert( false === strpos( $repo_status, '1.4.11 eighty-round candidate' ), 'root STATUS does not retain obsolete current candidate' );
+$assert( false !== strpos( $repo_manifest, 'Current runtime/source version: **1.4.17**' ), 'root MANIFEST identifies current runtime/source line' );
+$assert( false !== strpos( $repo_manifest, '1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER' ), 'root MANIFEST identifies current package constitution' );
+$assert( false === strpos( $repo_manifest, 'current **1.4.11 eighty-round** release workflow' ), 'root MANIFEST does not advertise obsolete current workflow' );
+$assert( false !== strpos( $incident, 'Status: **LIVE VERIFIED / RESOLVED**' ), 'scoped live incident closure remains explicit' );
+$assert( false !== strpos( $incident, 'Do not infer broader platform-production acceptance' ), 'live incident record preserves closure boundary' );
 
 /* Automatic rollback boundary must match current code rather than old shared WordPress front-page behavior. */
 foreach ( array( 'show_on_front', 'page_on_front', 'page_for_posts' ) as $shared_option ) {
@@ -78,19 +105,18 @@ $assert( false !== strpos( $migration, '/google-account-security/' ), 'migration
 $assert( false !== strpos( $staging, '/google-account-security/' ), 'acceptance retains original live incident retest' );
 $assert( false !== strpos( $readme, 'does not by itself claim' ), 'readme preserves repository/live evidence boundary' );
 
-/* File01 reconciliation sanitizer closure remains deployment/live evidence, not repository truth. */
+/* File01 reconciliation sanitizer closure remains deployment/live evidence, not a repository-only inference. */
 $assert( false !== strpos( $migration, 'controlled apply failed' ) && false !== strpos( $migration, 'raw database and `get_option()` both remained `0`' ), 'migration preserves 1.4.15 live sanitizer-persistence root-cause evidence' );
 $assert( false !== strpos( $staging, 'blocker count must be exactly zero' ), 'staging requires zero File01 blockers before apply' );
 $assert( false !== strpos( $staging, 'command version `1.0.1`' ), 'staging requires corrected File20 reconciliation command contract' );
 $assert( false !== strpos( $adapter, "const COMMAND_VERSION = '1.0.1';" ), 'runtime adapter command contract is 1.0.1' );
-$settings = $read( 'includes/class-settings.php' );
 $assert( false !== strpos( $adapter, 'Settings::update_programmatically' ) && false === strpos( $adapter, 'persist_settings_option' ), 'runtime adapter delegates trusted persistence to canonical Settings owner' );
 $assert( false !== strpos( $settings, 'public static function update_programmatically' ) && false !== strpos( $settings, 'remove_filter' ) && false !== strpos( $settings, 'add_filter' ), 'canonical Settings owner contains bounded trusted sanitizer persistence path' );
-$assert( false !== strpos( $readme, 'File01 reconciliation completion' ), 'readme does not claim File01 reconciliation completed' );
+$assert( false !== strpos( $readme, 'File01 reconciliation completion' ), 'readme retains explicit File01 reconciliation evidence boundary wording' );
 
 if ( $fail ) {
 	fwrite( STDERR, 'File 20 release documentation truth FAIL: ' . implode( '; ', $fail ) . "\n" );
 	exit( 1 );
 }
 
-echo "File 20 1.4.17 release/operator documentation truth PASS\n";
+echo "File 20 1.4.17 release/operator/repository documentation truth PASS\n";
