@@ -2,10 +2,10 @@
 
 Sabri Unified Application Shell is the canonical responsive WordPress application shell for the **Sabri Social Homeopathy Platform**.
 
-- Version: `1.4.15`
+- Version: `1.4.16`
 - File 22 Create contract: `1.0.1`
 - Central-plan contract: `1.0.0`
-- File 01 reconciliation command contract: `1.0.0`
+- File 01 reconciliation command contract: `1.0.1`
 - Four-plan harmonization contract: `1.0.0`
 - Future Shell v5 contract: `1.0.0`; corrective layers `1.0.1` through `1.0.11`
 - Approved Future Shell scope: exactly **18 enhancements**
@@ -17,13 +17,21 @@ Sabri Unified Application Shell is the canonical responsive WordPress applicatio
 
 File 20 owns the shared structural application frame, navigation/layout resolution, native presentation slots, diagnostics and File-20 recovery continuity. It does not duplicate membership, authentication, Home/News feed/publishing, communication, notification, clinic, marketplace, clinical/support/financial/media-processing/analytics/localization, Search/Discovery/Ranking, security-enforcement or visual-design backends.
 
-## Version 1.4.15 — File 01-B reconciliation repair
+## Version 1.4.16 — File 01-B Settings API sanitizer persistence repair
+
+Live-first evidence on 2026-08-29 proved that exact deployed File20 `1.4.15` matched the approved repository runtime and removed all File01 reconciliation dry-run blockers, but the controlled File01 apply failed and verified compensation restored the pre-apply state. Live forensic traces then proved Founder page `164` was published and owner-compatible, every File20 pre-update/read filter preserved the proposed `navigation.founder.page_id=164`, raw database and `get_option()` both remained `0`, and persistent object-cache truth matched the database.
+
+The root cause was the registered WordPress Settings API sanitizer. `Settings::sanitize()` is intentionally tab-oriented for admin form submissions; the trusted reconciliation adapter called `update_option()` programmatically without `_active_tab`, so WordPress invoked that sanitizer before File20's pre-update filters and normalized the proposed navigation change back to existing settings.
+
+Version 1.4.16 advances the File01 reconciliation command contract to `1.0.1` and adds a bounded trusted File20 settings persistence path. It explicitly enforces File20 ownership invariants, temporarily suspends only the registered tab-oriented `Settings::sanitize` callback for the exact adapter-owned programmatic mutation, leaves every other WordPress/core/security/concurrency/pre-update filter in force, restores the sanitizer in `finally`, and uses the same path for compensation and rollback restoration. A permanent regression first reproduces the live 1.4.15 sanitizer-swallow failure and then proves corrected execute/rollback persistence and sanitizer restoration.
+
+This release does **not** itself prove the live incident resolved. Required sequence remains: exact-head CI/package → deploy File20 1.4.16 → prove deployed parity → rerun File01 dry-run → require zero blockers and File20 command version 1.0.1 → controlled File01 reconciliation → verify applied state/receipts/routes → live System Check and recovery re-test.
+
+## Version 1.4.15 — File 01-B reconciliation owner bridge
 
 Live-first evidence on 2026-08-21 proved that deployed File 01-B `2.0.1` matched its canonical repository/package runtime, schema `1.2.0` was physically healthy, and its reconciliation dry-run was correctly fail-closed with 15 actions and 12 blockers. File21 already supplied the owner-plan/execute/rollback contract for legacy `home` and `news`; exact deployed File20 `1.4.14` matched repository runtime and contained none of the three File01 reconciliation hooks required for the remaining legacy routes.
 
-Version 1.4.15 adds a bounded, reversible File20 reconciliation adapter for exactly twelve legacy shell-route handoffs: Founder, Learn, Encyclopedia, Doctors, Clinic, Video Wall, Reels, PDF Library, Radar, AI, Network and Marketplace. The adapter persists only File20-owned navigation Page-ID references before File01 retires `spf_page_map`, keeps native content/domain ownership with Files 03/05/06/07/08/10/11/12/15/16/17/18, stores bounded rollback receipts, preserves earlier File21 Home/News acceptance, and fails closed on invalid/conflicting pages or receipt/state drift.
-
-This release does **not** itself apply File01 reconciliation and does not claim the live incident resolved. Required sequence remains: exact-head CI/package → deploy File20 1.4.15 → prove deployed parity → rerun File01 dry-run → require zero blockers → controlled File01 reconciliation → live route/recovery re-test.
+Version 1.4.15 added a bounded, reversible File20 reconciliation adapter for exactly twelve legacy shell-route handoffs: Founder, Learn, Encyclopedia, Doctors, Clinic, Video Wall, Reels, PDF Library, Radar, AI, Network and Marketplace. The adapter preserves native content/domain ownership with Files 03/05/06/07/08/10/11/12/15/16/17/18 and preserves File21 Home/News precedence. Version 1.4.16 preserves that owner boundary while correcting only its real WordPress persistence path.
 
 ## Future Shell v5 — exact 18 enhancements
 
@@ -59,4 +67,4 @@ CF-01 clinical records, CF-02 support/appeals, CF-03 financial operations, CF-04
 
 ## Deployment acceptance
 
-Repository completion is not production acceptance. The exact `1.4.15` package/head/checksum must be deployed and verified separately. After deployment, rerun File01 reconciliation dry-run and require all twelve formerly missing File20 owner plans to be accepted with zero blockers before any controlled reconciliation is applied. Then verify the 12 shell routes still resolve after File01 removes `spf_page_map`, rollback receipts are reversible, the unsafe Founder option is retired only by File01's controlled transaction, and the original `/google-account-security/` live-Renderer incident remains fixed. Real File00–26 and any activated CF contracts, File17 Network/Messages separation, canonical High-Trust signup, File21 native mount/no-duplication and provider-only right-slot responsiveness, File25 visual truth, File26 unavailable/no-fallback behavior, File00 critical-health behavior, Emergency gate, strict route precedence/overrides, sensitive REST no-store behavior, concurrent Settings/LKG contention, repair/rollback, root/subdirectory privacy/layout, System Check, PWA, browsers/devices, accessibility, RTL/LTR, low-data/offline behavior, backup/restore and Founder acceptance remain separate operational evidence before production resolution may be claimed.
+Repository completion is not production acceptance. The exact `1.4.16` package/head/checksum must be deployed and verified separately. After deployment, rerun File01 reconciliation dry-run and require File21 Home/News plus all twelve File20 owner plans to be accepted, with File20 command version `1.0.1` and zero blockers, before any controlled reconciliation is applied. Then verify File01 state is `applied`, all expected receipts are persisted, `spf_page_map` and the unsafe Founder option are retired only by File01's transaction, the twelve shell routes persist their exact Page IDs after legacy-map removal, rollback remains reversible, the Settings sanitizer is restored after bounded writes, and the original `/google-account-security/` live-Renderer incident remains fixed. Real File00–26 and activated CF contracts, File17 Network/Messages separation, canonical High-Trust signup, File21 native mount/no-duplication and provider-only right-slot responsiveness, File25 visual truth, File26 unavailable/no-fallback behavior, File00 critical-health behavior, Emergency gate, strict route precedence/overrides, sensitive REST no-store behavior, concurrent Settings/LKG contention, repair/rollback, root/subdirectory privacy/layout, System Check, PWA, browsers/devices, accessibility, RTL/LTR, low-data/offline behavior, backup/restore and Founder acceptance remain separate operational evidence before production resolution may be claimed.
