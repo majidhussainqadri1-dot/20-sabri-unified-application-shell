@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /** Publishes File 20 contracts without taking ownership of native domains. */
 final class CentralPlanContract {
-	const CONTRACT_VERSION  = '1.0.0';
+	const CONTRACT_VERSION   = '1.0.0';
 	const FILE25_MIN_VERSION = '1.0.0';
 
 	/** Register the v4 contract surface. */
@@ -233,7 +233,7 @@ final class CentralPlanContract {
 	/** Continuity-only values; File 25 remains authoritative. */
 	private static function fallback_visual_tokens() {
 		return array(
-			'primary_color' => '#15803d', 'background' => '#f7f7f7', 'surface' => '#ffffff', 'surface_strong' => '#f1f3f5',
+			'primary_color' => '#087a4e', 'background' => '#f7f7f7', 'surface' => '#ffffff', 'surface_strong' => '#f1f3f5',
 			'text' => '#202124', 'muted' => '#5f6368', 'border' => '#d9dde2', 'focus' => '#0b57d0', 'radius' => 8,
 			'font_scale' => 1.0, 'density' => 'comfortable', 'shadow' => '0 12px 30px rgba(32,33,36,0.12)',
 		);
