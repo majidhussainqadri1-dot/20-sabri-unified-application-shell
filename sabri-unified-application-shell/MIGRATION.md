@@ -6,7 +6,7 @@ Normal release promotion is staging-first. For a proven production incident, fir
 
 Repository, staging and Live are separate evidence realities.
 
-## Current upgrade target — 1.4.17
+## Upgrade to 1.4.17
 
 1. Use the exact deterministic `20-sabri-unified-application-shell-1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER.zip` artifact only after exact-head QA succeeds.
 2. Record source HEAD, artifact SHA-256, source manifest and the actually deployed previous version before replacement.
