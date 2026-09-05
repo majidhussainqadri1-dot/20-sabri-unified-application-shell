@@ -1,10 +1,10 @@
 {
   "schema": "sabri-file20-central-plan-contract",
   "version": "1.0.0",
-  "runtime_target": "1.2.0",
+  "runtime_target": "1.4.17",
   "owner": "file-20",
   "governing_plan": "SSH-PMP-2026-v3.0",
-  "file_plan": "File 20 v4.0 Central-Plan-Harmonized Specification",
+  "file_plan": "File 20 v4.1 Final Central-Plan-Harmonized Specification + v5.0 Future Shell 18 Enhancements",
   "layout_modes": {
     "three": ["home", "worldwide-clinic-directory", "single-doctor-or-clinic"],
     "two": ["ordinary-public-pages", "profiles-and-timelines", "directories", "knowledge-pages", "private-applications"],
