@@ -49,7 +49,7 @@ $assert( false !== strpos( $readme, 'Stable tag: ' . $current ), 'readme stable 
 $assert( false !== strpos( $readme, $artifact ), 'WordPress readme current artifact' );
 $assert( false !== strpos( $readmemd, '- Version: `' . $current . '`' ), 'plugin README current version' );
 $assert( false !== strpos( $readmemd, 'exact deterministic **1.4.17** production artifact' ), 'plugin README current deployment target' );
-$assert( false !== strpos( $migration, '## Current upgrade target — ' . $current ), 'migration current upgrade heading' );
+$assert( false !== strpos( $migration, '## Upgrade to ' . $current ), 'migration current upgrade heading' );
 $assert( false !== strpos( $migration, $artifact ), 'migration exact current artifact' );
 $assert( false !== strpos( $staging, 'Record File 20 `' . $current . '`' ), 'staging current candidate version' );
 $assert( false !== strpos( $staging, $artifact ), 'staging exact current artifact' );
