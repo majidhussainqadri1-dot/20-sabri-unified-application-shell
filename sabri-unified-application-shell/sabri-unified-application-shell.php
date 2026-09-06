@@ -46,6 +46,7 @@ require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-fifth-hardening.
 require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-sixth-hardening.php';
 require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-seventh-hardening.php';
 require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-eighth-hardening.php';
+require_once SABRI_SHELL_PATH . 'includes/class-admin-post-method-guard.php';
 require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-eleventh-hardening.php';
 require_once SABRI_SHELL_PATH . 'includes/class-second-eighty-rest-hardening.php';
 require_once SABRI_SHELL_PATH . 'includes/class-system-check-duplicate-hardening.php';
@@ -135,6 +136,7 @@ add_action( 'plugins_loaded', static function () use ( $sabri_shell_corrective_c
     Sabri\UnifiedShell\FutureShellV5SixthHardening::register();
     Sabri\UnifiedShell\FutureShellV5SeventhHardening::register();
     Sabri\UnifiedShell\FutureShellV5EighthHardening::register();
+    Sabri\UnifiedShell\AdminPostMethodGuard::register();
     Sabri\UnifiedShell\FutureShellV5NinthHardening::register();
     Sabri\UnifiedShell\FutureShellV5TenthHardening::register();
     Sabri\UnifiedShell\FutureShellV5EleventhHardening::register();
