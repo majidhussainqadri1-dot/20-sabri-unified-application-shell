@@ -155,7 +155,10 @@ final class ContextNavigation {
 		$best_len = 0;
 		foreach ( Navigation::resolved() as $item ) {
 			if ( ! is_array( $item ) || empty( $item['url'] ) ) { continue; }
-			$url = self::same_origin_url( (string) $item['url'], '' );
+			/* Validate every section candidate against the canonical Home origin.
+			 * Passing an empty fallback here made same_origin_url() lack an origin
+			 * reference and therefore rejected every otherwise valid section URL. */
+			$url = self::same_origin_url( (string) $item['url'], $home_url );
 			if ( '' === $url ) { continue; }
 			$target_path = wp_parse_url( $url, PHP_URL_PATH );
 			if ( ! is_string( $target_path ) || '' === $target_path ) { continue; }
