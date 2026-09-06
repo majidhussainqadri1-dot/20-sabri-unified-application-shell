@@ -3,7 +3,7 @@
 	--sabri-context-nav-surface: var(--sabri-color-surface, #ffffff);
 	--sabri-context-nav-text: var(--sabri-color-text, #132235);
 	box-sizing: border-box;
-	direction: rtl;
+	direction: inherit;
 	inline-size: 100%;
 	margin-block: 0.75rem;
 	padding-inline: clamp(1rem, 4vw, 3rem);
@@ -78,6 +78,23 @@ html[dir='ltr'] .sabri-context-navigation__back-icon {
 	transform: rotate(180deg);
 }
 
+/* Immersive owners keep the viewport; File 20 supplies only a small overlay
+ * exit/restoration surface and never takes over playback/reader controls. */
+body.sabri-shell-layout-immersive .sabri-context-navigation {
+	position: fixed;
+	inset-block-start: calc(var(--wp-admin--admin-bar--height, 0px) + 0.75rem);
+	inset-inline-start: 0.75rem;
+	inline-size: auto;
+	margin: 0;
+	padding: 0;
+	z-index: 10020;
+}
+
+body.sabri-shell-layout-immersive .sabri-context-navigation__inner {
+	inline-size: auto;
+	margin: 0;
+}
+
 @media (max-width: 480px) {
 	.sabri-context-navigation {
 		padding-inline: 0.75rem;
@@ -86,6 +103,12 @@ html[dir='ltr'] .sabri-context-navigation__back-icon {
 	.sabri-context-navigation__control {
 		flex: 0 1 auto;
 		padding-inline: 0.85rem;
+	}
+
+	body.sabri-shell-layout-immersive .sabri-context-navigation {
+		inset-block-start: 0.5rem;
+		inset-inline-start: 0.5rem;
+		padding: 0;
 	}
 }
 
