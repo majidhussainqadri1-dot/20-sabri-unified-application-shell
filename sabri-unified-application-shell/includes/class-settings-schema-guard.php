@@ -133,16 +133,22 @@ final class SettingsSchemaGuard {
 		}
 		if ( is_array( $value ) ) {
 			$out = array();
+			$is_list = self::is_list( $value );
 			foreach ( array_slice( $value, 0, self::MAX_ENTRIES, true ) as $key => $child ) {
+				$child = self::sanitize_bounded_value( $child, $depth + 1 );
 				if ( is_int( $key ) ) {
-					$out[] = self::sanitize_bounded_value( $child, $depth + 1 );
+					if ( $is_list ) {
+						$out[] = $child;
+					} elseif ( $key >= 0 ) {
+						$out[ $key ] = $child;
+					}
 					continue;
 				}
 				$safe_key = sanitize_key( (string) $key );
 				if ( '' === $safe_key ) {
 					continue;
 				}
-				$out[ $safe_key ] = self::sanitize_bounded_value( $child, $depth + 1 );
+				$out[ $safe_key ] = $child;
 			}
 			return $out;
 		}
