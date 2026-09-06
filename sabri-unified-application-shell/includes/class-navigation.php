@@ -75,6 +75,24 @@ final class Navigation {
 			}
 		}
 
+		/* A canonical route may not be silently claimed by two destinations,
+		 * regardless of whether the evidence came from Page ID, shortcode,
+		 * archive, slug or validated override. Fail every colliding nav claim
+		 * closed and surface diagnostic evidence for an administrator. */
+		$claims = array();
+		foreach ( $items as $key => $item ) {
+			$identity = self::route_identity( isset( $item['url'] ) ? $item['url'] : '' );
+			if ( '' !== $identity ) {
+				$claims[ $identity ][] = $key;
+			}
+		}
+		foreach ( $claims as $identity => $keys ) {
+			$keys = array_values( array_unique( array_map( 'sanitize_key', $keys ) ) );
+			if ( count( $keys ) < 2 ) { continue; }
+			do_action( 'sabri_shell_navigation_route_collision', $identity, $keys );
+			foreach ( $keys as $key ) { unset( $items[ $key ] ); }
+		}
+
 		uasort( $items, static function ( $a, $b ) { return (int) $a['order'] <=> (int) $b['order']; } );
 		set_transient( $cache_key, $items, HOUR_IN_SECONDS );
 		self::$resolved = $items;
@@ -251,13 +269,32 @@ final class Navigation {
 	}
 
 	private static function find_page_by_slugs( array $slugs ) {
+		$matches = array();
 		foreach ( $slugs as $slug ) {
 			$page = get_page_by_path( $slug );
 			if ( $page && ( ! function_exists( 'get_post_type' ) || 'page' === get_post_type( $page ) ) && 'publish' === get_post_status( $page ) ) {
-				return (string) get_permalink( $page );
+				$page_id = isset( $page->ID ) ? absint( $page->ID ) : 0;
+				$url = get_permalink( $page );
+				if ( $page_id && $url ) { $matches[ $page_id ] = (string) $url; }
 			}
 		}
-		return '';
+		if ( count( $matches ) > 1 ) {
+			do_action( 'sabri_shell_slug_page_collision', array_values( array_map( 'absint', array_keys( $matches ) ) ), array_values( $matches ) );
+			return '';
+		}
+		return 1 === count( $matches ) ? (string) reset( $matches ) : '';
+	}
+
+	/** Normalize one navigation URL into a same-origin-insensitive route identity. */
+	private static function route_identity( $url ) {
+		$parts = wp_parse_url( (string) $url );
+		if ( ! is_array( $parts ) ) { return ''; }
+		$scheme = isset( $parts['scheme'] ) ? strtolower( (string) $parts['scheme'] ) : '';
+		$host   = isset( $parts['host'] ) ? strtolower( rtrim( (string) $parts['host'], '.' ) ) : '';
+		$port   = isset( $parts['port'] ) ? absint( $parts['port'] ) : ( 'https' === $scheme ? 443 : 80 );
+		$path   = isset( $parts['path'] ) && is_string( $parts['path'] ) ? '/' . ltrim( preg_replace( '#/+#', '/', $parts['path'] ), '/' ) : '/';
+		$path   = '/' === $path ? '/' : untrailingslashit( $path );
+		return $scheme . '://' . $host . ':' . $port . $path;
 	}
 
 	/** Compare active state against the canonical site origin and path. */
