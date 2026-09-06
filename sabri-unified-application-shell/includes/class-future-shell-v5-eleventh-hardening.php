@@ -8,6 +8,7 @@ final class FutureShellV5EleventhHardening {
 
     public static function register() {
         add_filter( 'sabri_shell_route_result_allowed', array( __CLASS__, 'reject_page_id_collisions' ), PHP_INT_MAX, 5 );
+        add_filter( 'sabri_shell_page_contracts', array( __CLASS__, 'reject_cross_provider_page_map_collisions' ), PHP_INT_MAX );
         add_filter( 'sabri_shell_navigation_destinations', array( __CLASS__, 'correct_messages_destination' ), PHP_INT_MAX );
         add_filter( 'sabri_shell_contract_registry', array( __CLASS__, 'correct_foundation_contract_metadata' ), PHP_INT_MAX );
         add_filter( 'pre_update_option_' . Defaults::OPTION_NAME, array( __CLASS__, 'normalize_setting_write' ), PHP_INT_MAX - 3, 3 );
@@ -33,6 +34,42 @@ final class FutureShellV5EleventhHardening {
             if ( ! $dedicated && $network_fallback && $network_fallback === $page_id ) { return false; }
         }
         return self::page_id_has_single_canonical_claim( sanitize_key( $key ), $page_id, $source );
+    }
+
+    /**
+     * Do not let Integrations::page_id silently choose the first of disagreeing
+     * cross-provider page maps. Multiple fields in one provider map (for example
+     * role-specific appointment pages) are not treated as provider collisions.
+     */
+    public static function reject_cross_provider_page_map_collisions( $contracts ) {
+        if ( ! is_array( $contracts ) ) { return $contracts; }
+        foreach ( $contracts as $key => $records ) {
+            if ( ! is_array( $records ) || count( $records ) < 2 ) { continue; }
+            $by_provider = array();
+            foreach ( $records as $record ) {
+                if ( ! is_array( $record ) || count( $record ) < 2 ) { continue; }
+                $option_name = sanitize_key( (string) $record[0] );
+                $field       = (string) $record[1];
+                if ( '' === $option_name || '' === $field ) { continue; }
+                $map = get_option( $option_name, array() );
+                if ( ! is_array( $map ) || empty( $map[ $field ] ) ) { continue; }
+                $page_id = absint( $map[ $field ] );
+                if ( ! $page_id || 'publish' !== get_post_status( $page_id ) ) { continue; }
+                if ( function_exists( 'get_post_type' ) && 'page' !== get_post_type( $page_id ) ) { continue; }
+                if ( ! isset( $by_provider[ $option_name ] ) ) { $by_provider[ $option_name ] = array(); }
+                $by_provider[ $option_name ][ $page_id ] = true;
+            }
+            if ( count( $by_provider ) < 2 ) { continue; }
+            $provider_claims = array();
+            foreach ( $by_provider as $option_name => $ids ) {
+                $ids = array_values( array_map( 'absint', array_keys( $ids ) ) );
+                if ( 1 === count( $ids ) ) { $provider_claims[ $option_name ] = $ids[0]; }
+            }
+            if ( count( $provider_claims ) < 2 || 1 === count( array_unique( array_values( $provider_claims ) ) ) ) { continue; }
+            do_action( 'sabri_shell_page_map_collision', sanitize_key( (string) $key ), $provider_claims );
+            $contracts[ $key ] = array();
+        }
+        return $contracts;
     }
 
     private static function page_id_has_single_canonical_claim( $key, $page_id, $source ) {
@@ -156,6 +193,9 @@ final class FutureShellV5EleventhHardening {
             'label' => __( 'Future Shell v5 eleventh corrective hardening', 'sabri-unified-application-shell' ),
             'contract_version' => self::CONTRACT_VERSION,
             'page_id_collision_policy' => 'all-page-id-sources-single-canonical-owner-fail-closed',
+            'page_map_collision_policy' => 'cross-provider-disagreement-fail-closed-no-silent-first-choice',
+            'route_collision_policy' => 'all-route-sources-single-canonical-route-fail-closed',
+            'slug_collision_policy' => 'multiple-published-approved-slugs-fail-closed',
             'file17_messages_shortcode' => 'sabri_messages',
             'file17_network_shortcode' => 'sabri_network',
             'file17_messages_network_page_id_fallback' => 'not-canonical-page-id-evidence',

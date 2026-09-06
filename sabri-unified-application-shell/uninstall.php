@@ -22,4 +22,3 @@ $file20_options = array(
 );
 foreach ( $file20_options as $option_name ) { delete_option( $option_name ); }
 foreach ( array( 'sabri_shell_navigation_cache_v1','sabri_shell_integration_cache','sabri_shell_plan_v4_contract_health' ) as $transient_name ) { delete_transient( $transient_name ); }
-if ( function_exists( 'delete_metadata' ) ) { delete_metadata( 'user', 0, 'sabri_shell_welcome_dismissed_at', '', true ); }

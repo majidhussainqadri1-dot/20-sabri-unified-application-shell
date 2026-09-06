@@ -25,6 +25,7 @@ $assert( false !== strpos( $php, '$scheme !== $home_scheme' ), 'Server validatio
 $assert( false !== strpos( $php, 'data-home-url' ), 'The client must receive the canonical Home fallback, including subdirectory installs.' );
 $assert( false !== strpos( $php, "href=\"' . esc_url( \$fallback_url )" ), 'Back must remain a functional fallback link without JavaScript.' );
 $assert( false !== strpos( $php, 'private static $rendered = false' ), 'Duplicate Back + Home output must be guarded.' );
+$assert( false !== strpos( $php, 'Layout::IMMERSIVE' ), 'Immersive mode must retain an accessible exit/restoration surface.' );
 $assert( false === strpos( $php, 'return_to' ), 'Untrusted return_to input must not control Back navigation.' );
 $assert( false !== strpos( $js, 'url.origin !== window.location.origin' ), 'Client navigation must enforce same-origin URLs.' );
 $assert( false !== strpos( $js, "url.protocol !== 'http:'" ), 'Client navigation must restrict URL schemes.' );
@@ -36,7 +37,9 @@ $assert( false === strpos( $js, 'window.history.back' ), 'Back must not risk cro
 $assert( false === strpos( $js, 'innerHTML' ), 'Context navigation JavaScript must not inject HTML.' );
 $assert( false !== strpos( $css, 'min-block-size: 44px' ), 'Controls must satisfy the minimum touch target.' );
 $assert( false !== strpos( $css, ':focus-visible' ), 'Visible keyboard focus is required.' );
-$assert( false !== strpos( $css, 'direction: rtl' ), 'Right-priority RTL placement is required.' );
+$assert( false !== strpos( $css, 'direction: inherit' ), 'Navigation direction must follow the active locale/document direction.' );
+$assert( false !== strpos( $css, "html[dir='ltr'] .sabri-context-navigation__back-icon" ), 'LTR must reverse the RTL-first Back arrow without forcing layout direction.' );
+$assert( false !== strpos( $css, 'body.sabri-shell-layout-immersive .sabri-context-navigation' ), 'Immersive accessible exit must be a bounded overlay.' );
 $assert( substr_count( $css, '{' ) === substr_count( $css, '}' ), 'Context-navigation CSS braces must balance.' );
 
 echo "Context navigation static regressions passed.\n";

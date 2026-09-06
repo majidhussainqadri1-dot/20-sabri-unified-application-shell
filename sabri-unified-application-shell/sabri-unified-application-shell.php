@@ -27,6 +27,8 @@ require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-assurance.php';
 require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-contract-health.php';
 require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-context.php';
 require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-settings-concurrency.php';
+require_once SABRI_SHELL_PATH . 'includes/class-settings-schema-guard.php';
+require_once SABRI_SHELL_PATH . 'includes/class-programmatic-settings-concurrency-guard.php';
 require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-privacy-cache.php';
 require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-jobs.php';
 require_once SABRI_SHELL_PATH . 'includes/class-plan-v4-recovery.php';
@@ -44,6 +46,7 @@ require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-fifth-hardening.
 require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-sixth-hardening.php';
 require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-seventh-hardening.php';
 require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-eighth-hardening.php';
+require_once SABRI_SHELL_PATH . 'includes/class-admin-post-method-guard.php';
 require_once SABRI_SHELL_PATH . 'includes/class-future-shell-v5-eleventh-hardening.php';
 require_once SABRI_SHELL_PATH . 'includes/class-second-eighty-rest-hardening.php';
 require_once SABRI_SHELL_PATH . 'includes/class-system-check-duplicate-hardening.php';
@@ -114,6 +117,8 @@ register_deactivation_hook( __FILE__, array( 'Sabri\\UnifiedShell\\FutureShellV5
 add_action( 'plugins_loaded', static function () use ( $sabri_shell_corrective_classes_are_owned, $sabri_shell_central_plan_contract_is_owned ) {
     load_plugin_textdomain( 'sabri-unified-application-shell', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
     Sabri\UnifiedShell\Plugin::instance()->register();
+    Sabri\UnifiedShell\SettingsSchemaGuard::register();
+    Sabri\UnifiedShell\ProgrammaticSettingsConcurrencyGuard::register();
     Sabri\UnifiedShell\RouteSecurity::register();
     if ( $sabri_shell_corrective_classes_are_owned ) { Sabri\UnifiedShell\CreateContract::register(); Sabri\UnifiedShell\LayoutCorrection::register(); }
     if ( $sabri_shell_central_plan_contract_is_owned ) { Sabri\UnifiedShell\CentralPlanContract::register(); }
@@ -131,6 +136,7 @@ add_action( 'plugins_loaded', static function () use ( $sabri_shell_corrective_c
     Sabri\UnifiedShell\FutureShellV5SixthHardening::register();
     Sabri\UnifiedShell\FutureShellV5SeventhHardening::register();
     Sabri\UnifiedShell\FutureShellV5EighthHardening::register();
+    Sabri\UnifiedShell\AdminPostMethodGuard::register();
     Sabri\UnifiedShell\FutureShellV5NinthHardening::register();
     Sabri\UnifiedShell\FutureShellV5TenthHardening::register();
     Sabri\UnifiedShell\FutureShellV5EleventhHardening::register();

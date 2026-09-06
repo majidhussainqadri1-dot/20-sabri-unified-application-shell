@@ -9,6 +9,7 @@ final class PlanV4SettingsConcurrency {
     const LOCK_TTL = 30;
     private static $accepted_update = false;
     private static $lock_token = '';
+    private static $last_programmatic_fingerprint = '';
 
     public static function register() {
         foreach ( array( 'sabri_shell_settings', 'sabri_unified_shell_settings' ) as $option ) {
@@ -61,10 +62,22 @@ final class PlanV4SettingsConcurrency {
         finally { self::release_update_lock(); }
     }
 
+    /**
+     * Record one trusted programmatic settings mutation exactly once per request.
+     *
+     * Canonical programmatic writes are now observed centrally. Legacy callers
+     * may still publish their more specific reason after the write; identical
+     * old/new state must not advance the optimistic row version twice.
+     */
     public static function record_programmatic_change( $old_value, $new_value, $reason ) {
         $old_value = is_array( $old_value ) ? $old_value : array();
         $new_value = is_array( $new_value ) ? $new_value : array();
         if ( $old_value === $new_value ) { return self::current_version(); }
+        $fingerprint = hash( 'sha256', wp_json_encode( array( 'old' => $old_value, 'new' => $new_value ) ) );
+        if ( '' !== self::$last_programmatic_fingerprint && hash_equals( self::$last_programmatic_fingerprint, $fingerprint ) ) {
+            return self::current_version();
+        }
+        self::$last_programmatic_fingerprint = $fingerprint;
         return self::record_change( $old_value, $new_value, sanitize_key( (string) $reason ) );
     }
 

@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /** Publishes File 20 contracts without taking ownership of native domains. */
 final class CentralPlanContract {
-	const CONTRACT_VERSION  = '1.0.0';
+	const CONTRACT_VERSION   = '1.0.0';
 	const FILE25_MIN_VERSION = '1.0.0';
 
 	/** Register the v4 contract surface. */
@@ -157,7 +157,7 @@ final class CentralPlanContract {
 		$rows = array(
 			'00' => array( 'Sabri Membership Core', 'identity-authorization-guardian-entitlement', 'consume-current-claims', 'hard', 'fail-closed' ),
 			'01-A' => array( 'Definitive Master Plan v3.0', 'governing-constitution', 'governed-only', 'governance', 'not-runtime' ),
-			'01-B' => array( 'Sabri Platform Foundation', 'bootstrap-registry-search-federation', 'consume-registry-and-mount-search', 'required', 'bounded-last-known-or-unavailable' ),
+			'01-B' => array( 'Sabri Platform Foundation', 'bootstrap-registry-contracts-activation-shared-conventions', 'consume-foundation-registry-no-shell-or-search-truth', 'required', 'bounded-last-known-or-unavailable' ),
 			'02' => array( 'Authentication and Accounts', 'login-oauth-recovery-account-completion', 'minimal-task-layout', 'required', 'route-unavailable' ),
 			'03' => array( 'Profiles and Doctors', 'public-profile-data', 'outer-shell-only', 'required', 'profile-unavailable' ),
 			'04' => array( 'Legacy Publishing Adapter', 'migration-compatibility', 'suppress-writes-after-cutover', 'legacy', 'redirect-or-hidden' ),
@@ -233,7 +233,7 @@ final class CentralPlanContract {
 	/** Continuity-only values; File 25 remains authoritative. */
 	private static function fallback_visual_tokens() {
 		return array(
-			'primary_color' => '#15803d', 'background' => '#f7f7f7', 'surface' => '#ffffff', 'surface_strong' => '#f1f3f5',
+			'primary_color' => '#087a4e', 'background' => '#f7f7f7', 'surface' => '#ffffff', 'surface_strong' => '#f1f3f5',
 			'text' => '#202124', 'muted' => '#5f6368', 'border' => '#d9dde2', 'focus' => '#0b57d0', 'radius' => 8,
 			'font_scale' => 1.0, 'density' => 'comfortable', 'shadow' => '0 12px 30px rgba(32,33,36,0.12)',
 		);

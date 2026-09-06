@@ -97,9 +97,9 @@ final class Admin {
 			self::render_tab( $active, $settings );
 			submit_button();
 			echo '</form>';
-			if ( 'safe-mode' === $active ) {
-				self::safe_mode_controls();
-			}
+			/* Emergency action forms are intentionally not rendered here. The
+			 * hardened FutureShellV5EighthHardening controls are the sole server-
+			 * rendered Emergency lifecycle UI and require an explicit reason. */
 		}
 
 		echo '</div>';
@@ -356,28 +356,6 @@ final class Admin {
 		unset( $settings );
 		echo '<h2>' . esc_html__( 'Safe Mode', 'sabri-unified-application-shell' ) . '</h2>';
 		echo '<p>' . esc_html__( 'Safe Mode URLs are nonce-bound and administrator-only. Use the hardened controls on this page. A developer may also define SABRI_SHELL_DISABLE as true in wp-config.php for an emergency constant kill switch.', 'sabri-unified-application-shell' ) . '</p>';
-	}
-
-	/**
-	 * Render Safe Mode action controls outside the settings form.
-	 *
-	 * @return void
-	 */
-	private static function safe_mode_controls() {
-		echo '<h3>' . esc_html__( 'Emergency controls', 'sabri-unified-application-shell' ) . '</h3>';
-		echo '<p>' . esc_html__( 'These controls only toggle the shell renderer. They do not remove posts, pages, users, media, comments, messages, appointments, marketplace data, clinic data, or companion-plugin tables.', 'sabri-unified-application-shell' ) . '</p>';
-		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" style="display:inline-block;margin-inline-end:8px;">';
-		wp_nonce_field( 'sabri_shell_emergency' );
-		echo '<input type="hidden" name="action" value="sabri_shell_emergency">';
-		echo '<input type="hidden" name="disable" value="1">';
-		submit_button( __( 'Emergency Disable', 'sabri-unified-application-shell' ), 'delete', 'submit', false );
-		echo '</form>';
-		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" style="display:inline-block;">';
-		wp_nonce_field( 'sabri_shell_emergency' );
-		echo '<input type="hidden" name="action" value="sabri_shell_emergency">';
-		echo '<input type="hidden" name="disable" value="0">';
-		submit_button( __( 'Re-enable', 'sabri-unified-application-shell' ), 'secondary', 'submit', false );
-		echo '</form>';
 	}
 
 	/**

@@ -97,7 +97,7 @@ final class Defaults {
 				'group'      => 'media',
 				'slugs'      => array( 'reels', 'short-videos' ),
 				'shortcodes' => array( 'srl_reels' ),
-				'post_type'  => 'svw_video',
+				'post_type'  => 'srl_reel',
 				'order'      => 90,
 			),
 			'pdf_library'  => array(
@@ -169,7 +169,7 @@ final class Defaults {
 				'label'      => __( 'Messages', 'sabri-unified-application-shell' ),
 				'group'      => 'social',
 				'slugs'      => array( 'messages', 'inbox' ),
-				'shortcodes' => array( 'sabri_network' ),
+				'shortcodes' => array( 'sabri_messages', 'sabri_communication' ),
 				'post_type'  => '',
 				'order'      => 180,
 				'visibility' => 'logged_in',

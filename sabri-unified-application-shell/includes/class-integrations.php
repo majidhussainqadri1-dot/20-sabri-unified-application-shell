@@ -44,7 +44,7 @@ final class Integrations {
 		self::$detected = array(
 			'notifications'         => shortcode_exists( 'sabri_notifications' ) || shortcode_exists( 'sabri_notification_bell' ) || ( class_exists( 'SUN_Utils' ) && is_callable( array( 'SUN_Utils', 'page_url' ) ) ) || ! empty( $settings['integrations']['urls']['notifications'] ),
 			'network'               => shortcode_exists( 'sabri_network' ) || class_exists( 'SN_Activator' ) || (int) get_option( 'sn_network_page_id', 0 ) > 0,
-			'messages'              => shortcode_exists( 'sabri_messages' ) || shortcode_exists( 'sabri_network' ) || class_exists( 'SN_Activator' ) || ! empty( $settings['integrations']['urls']['messages'] ),
+			'messages'              => shortcode_exists( 'sabri_messages' ) || shortcode_exists( 'sabri_communication' ) || ( class_exists( 'SN_Activator' ) && is_callable( array( 'SN_Activator', 'messages_url' ) ) ) || ! empty( self::page_id( 'messages' ) ) || ! empty( $settings['integrations']['urls']['messages'] ),
 			'marketplace'           => shortcode_exists( 'sabri_marketplace' ) || class_exists( 'SMP_Activator' ) || (int) get_option( 'smp_marketplace_page_id', 0 ) > 0,
 			'appointments'          => shortcode_exists( 'swc_my_appointments' ) || shortcode_exists( 'swc_request_appointment' ) || ! empty( self::page_id( 'appointments' ) ) || ! empty( $settings['integrations']['urls']['appointments'] ),
 			'language'              => '' !== self::language_switcher(),
@@ -141,7 +141,6 @@ final class Integrations {
 
 		$standalone = array(
 			'network'     => 'sn_network_page_id',
-			'messages'    => 'sn_network_page_id',
 			'marketplace' => 'smp_marketplace_page_id',
 		);
 		if ( isset( $standalone[ $key ] ) ) {
@@ -289,13 +288,6 @@ final class Integrations {
 				if ( $url ) { return $url; }
 			}
 		}
-		if ( 'messages' === $key && class_exists( 'SN_Activator' ) && is_callable( array( 'SN_Activator', 'network_url' ) ) ) {
-			$url = \SN_Activator::network_url();
-			if ( $url ) {
-				$url = self::same_site_url( $url );
-				if ( $url ) { return $url; }
-			}
-		}
 		if ( 'marketplace' === $key && class_exists( 'SMP_Activator' ) && is_callable( array( 'SMP_Activator', 'marketplace_url' ) ) ) {
 			$url = self::same_site_url( \SMP_Activator::marketplace_url() );
 			if ( $url ) { return $url; }
@@ -309,7 +301,7 @@ final class Integrations {
 		$shortcodes = array(
 			'notifications' => array( 'sabri_notifications' ),
 			'network'       => array( 'sabri_network' ),
-			'messages'      => array( 'sabri_network', 'sabri_messages' ),
+			'messages'      => array( 'sabri_messages', 'sabri_communication' ),
 			'marketplace'   => array( 'sabri_marketplace' ),
 			'appointments'  => array( 'swc_my_appointments', 'swc_request_appointment' ),
 		);

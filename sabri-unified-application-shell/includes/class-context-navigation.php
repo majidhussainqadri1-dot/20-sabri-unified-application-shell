@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Provides safe, RTL-first contextual navigation on internal public pages.
+ * Provides safe bidirectional contextual navigation on internal public pages.
  */
 final class ContextNavigation {
 	/**
@@ -89,7 +89,12 @@ final class ContextNavigation {
 	}
 
 	/**
-	 * Decide whether the current request is an internal public page.
+	 * Decide whether the current request needs File 20 contextual/exit controls.
+	 *
+	 * Two/three-column pages use Back + Home as ordinary contextual navigation.
+	 * Immersive pages retain the same small, accessible exit/restoration surface
+	 * required by the governing layout contract while native media/reader owners
+	 * continue to own playback/content controls.
 	 *
 	 * @return bool
 	 */
@@ -98,7 +103,7 @@ final class ContextNavigation {
 			return false;
 		}
 		$mode = Layout::current_mode();
-		if ( ! in_array( $mode, array( Layout::TWO, Layout::THREE ), true ) ) {
+		if ( ! in_array( $mode, array( Layout::TWO, Layout::THREE, Layout::IMMERSIVE ), true ) ) {
 			return false;
 		}
 
@@ -106,7 +111,8 @@ final class ContextNavigation {
 		 * Filter whether File 20 renders the shared Back + Home controls.
 		 *
 		 * Native modules may disable the component only for a documented context
-		 * such as a true full-screen player that supplies an equivalent control.
+		 * when they supply an equivalent accessible same-origin exit/restoration
+		 * control; otherwise immersive mode must retain the File 20 exit surface.
 		 *
 		 * @param bool $enabled Whether the component is enabled.
 		 */
@@ -155,7 +161,10 @@ final class ContextNavigation {
 		$best_len = 0;
 		foreach ( Navigation::resolved() as $item ) {
 			if ( ! is_array( $item ) || empty( $item['url'] ) ) { continue; }
-			$url = self::same_origin_url( (string) $item['url'], '' );
+			/* Validate every section candidate against the canonical Home origin.
+			 * Passing an empty fallback here made same_origin_url() lack an origin
+			 * reference and therefore rejected every otherwise valid section URL. */
+			$url = self::same_origin_url( (string) $item['url'], $home_url );
 			if ( '' === $url ) { continue; }
 			$target_path = wp_parse_url( $url, PHP_URL_PATH );
 			if ( ! is_string( $target_path ) || '' === $target_path ) { continue; }
