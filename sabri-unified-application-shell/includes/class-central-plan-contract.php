@@ -157,7 +157,7 @@ final class CentralPlanContract {
 		$rows = array(
 			'00' => array( 'Sabri Membership Core', 'identity-authorization-guardian-entitlement', 'consume-current-claims', 'hard', 'fail-closed' ),
 			'01-A' => array( 'Definitive Master Plan v3.0', 'governing-constitution', 'governed-only', 'governance', 'not-runtime' ),
-			'01-B' => array( 'Sabri Platform Foundation', 'bootstrap-registry-search-federation', 'consume-registry-and-mount-search', 'required', 'bounded-last-known-or-unavailable' ),
+			'01-B' => array( 'Sabri Platform Foundation', 'bootstrap-registry-contracts-activation-shared-conventions', 'consume-foundation-registry-no-shell-or-search-truth', 'required', 'bounded-last-known-or-unavailable' ),
 			'02' => array( 'Authentication and Accounts', 'login-oauth-recovery-account-completion', 'minimal-task-layout', 'required', 'route-unavailable' ),
 			'03' => array( 'Profiles and Doctors', 'public-profile-data', 'outer-shell-only', 'required', 'profile-unavailable' ),
 			'04' => array( 'Legacy Publishing Adapter', 'migration-compatibility', 'suppress-writes-after-cutover', 'legacy', 'redirect-or-hidden' ),
