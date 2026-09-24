@@ -52,11 +52,34 @@ final class Plugin {
 		 */
 		Renderer::register();
 		ContextNavigation::register();
+		/* File 19 consumes these versioned shell-owned notification integration signals.
+		 * File 20 remains the only authority for global Safe Mode and shell placement. */
+		add_filter( 'sun_file20_safe_mode_active', array( __CLASS__, 'file19_safe_mode_state' ), 10, 1 );
+		add_filter( 'sun_file20_notification_surface_state', array( __CLASS__, 'file19_notification_surface_state' ), 10, 1 );
 		add_action( 'init', array( __CLASS__, 'maybe_flush_rewrite_rules' ), 99 );
 
 		if ( is_admin() ) {
 			Admin::register();
 		}
+	}
+
+	/** File 19 contract: authoritative File 20 Safe Mode state. */
+	public static function file19_safe_mode_state( $current = false ) {
+		unset( $current );
+		return SafeMode::disabled();
+	}
+
+	/** File 19 contract: shell-owned notification surface evidence. */
+	public static function file19_notification_surface_state( $current = array() ) {
+		unset( $current );
+		$detected = Integrations::detect();
+		return array(
+			'contract'    => 'file20.notifications.surface.v1',
+			'owner'       => 'file-20',
+			'detected'    => ! empty( $detected['notifications'] ),
+			'destination' => Integrations::destination_url( 'notifications' ),
+			'safe_mode'   => SafeMode::disabled(),
+		);
 	}
 
 	/**
