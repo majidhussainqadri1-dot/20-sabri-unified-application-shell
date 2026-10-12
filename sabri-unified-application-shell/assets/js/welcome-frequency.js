@@ -33,11 +33,8 @@
   put(session, key, now);
   var previousFocus = document.activeElement || null;
   host.hidden = false;
-  var heading = host.querySelector && host.querySelector('h2');
-  if (heading && typeof heading.focus === 'function') {
-    if (typeof heading.setAttribute === 'function') { heading.setAttribute('tabindex', '-1'); }
-    try { heading.focus({ preventScroll: true }); } catch (_) { heading.focus(); }
-  }
+  // This is a non-modal region, not a dialog. Do not steal keyboard or
+  // screen-reader focus as the user reads/interacts with the underlying page.
   var closed = false;
   function dismiss() {
     if (closed) { return; }
@@ -46,10 +43,14 @@
       (!host.contains || host.contains(document.activeElement));
     host.hidden = true;
     if (restoreFocus) { try { previousFocus.focus({ preventScroll: true }); } catch (_) { previousFocus.focus(); } }
+    // The governing 30-day window begins at the user's actual dismissal,
+    // not when the page first loaded (which may have been days earlier).
+    var dismissedAt = Math.floor(Date.now() / 1000);
+    put(session, key, dismissedAt);
     // Do not leak an authenticated account dismissal into shared guest storage.
     if (cfg.loggedIn !== true) {
-      put(local, localKey, now);
-      document.cookie = cfg.cookieName + '=' + now + '; Path=' + cookiePath + '; Max-Age=' + period + '; SameSite=Lax' +
+      put(local, localKey, dismissedAt);
+      document.cookie = cfg.cookieName + '=' + dismissedAt + '; Path=' + cookiePath + '; Max-Age=' + period + '; SameSite=Lax' +
         (window.location.protocol === 'https:' ? '; Secure' : '');
     }
     if (cfg.loggedIn !== true || !cfg.endpoint || !cfg.nonce || typeof window.fetch !== 'function') { return; }
