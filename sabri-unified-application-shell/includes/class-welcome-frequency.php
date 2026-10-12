@@ -36,6 +36,13 @@ final class WelcomeFrequency {
             || ! function_exists( 'sabri_visual_experience_render_welcome' ) ) {
             return false;
         }
+        // File25 may be installed but fail-closed in its own Safe Mode.
+        // Never show a raw/un-styled overlay without its registered contract.
+        $visual = apply_filters( 'sabri_shell_file25_visual_contract', array() );
+        if ( ! is_array( $visual ) || ( $visual['owner'] ?? '' ) !== 'file-25'
+            || empty( $visual['tokens'] ) || ! is_array( $visual['tokens'] ) ) {
+            return false;
+        }
         $uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
         $path = is_string( $uri ) ? wp_parse_url( $uri, PHP_URL_PATH ) : '';
         $base = wp_parse_url( home_url( '/' ), PHP_URL_PATH );
