@@ -15,11 +15,16 @@ final class WelcomeFrequency {
 
     private static $prepared = false;
     private static $eligible = false;
+    /** One welcome host per HTTP response even when both theme hooks fire. */
+    private static $rendered = false;
 
     public static function register() {
         add_action( 'wp', array( __CLASS__, 'prepare' ), 98 );
         add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue' ), 125 );
         add_action( 'wp_body_open', array( __CLASS__, 'render' ), 2 );
+        // A few themes omit wp_body_open; footer priority 2 precedes printed
+        // footer scripts, while render() enforces a single canonical host.
+        add_action( 'wp_footer', array( __CLASS__, 'render' ), 2 );
         add_action( 'rest_api_init', array( __CLASS__, 'register_rest' ) );
         add_filter( 'sabri_shell_welcome_frequency_contract', array( __CLASS__, 'contract' ) );
     }
@@ -72,6 +77,7 @@ final class WelcomeFrequency {
         if ( self::$prepared ) { return; }
         self::$prepared = true;
         self::$eligible = false;
+        self::$rendered = false;
         if ( ! self::eligible_route() ) { return; }
         $now = time();
         // An account never inherits a different account's or a guest's
@@ -108,7 +114,7 @@ final class WelcomeFrequency {
     }
 
     public static function render() {
-        if ( ! self::$eligible ) { return; }
+        if ( ! self::$eligible || self::$rendered ) { return; }
         $html = sabri_visual_experience_render_welcome( array(
             'invoked_by_file_20' => true,
             'title' => __( 'Welcome to Sabri Social Homeopathy Platform', 'sabri-unified-application-shell' ),
@@ -118,6 +124,7 @@ final class WelcomeFrequency {
             'skip_label' => __( 'Skip intro', 'sabri-unified-application-shell' ),
         ) );
         if ( ! is_string( $html ) || '' === $html ) { return; }
+        self::$rendered = true;
         echo '<aside id="sabri-shell-welcome-host" class="sabri-shell-welcome-host" hidden aria-label="' . esc_attr__( 'Welcome', 'sabri-unified-application-shell' ) . '">';
         echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped by File25 canonical renderer.
         echo '</aside>';
