@@ -49,7 +49,12 @@ final class WelcomeFrequency {
             return false;
         }
         $uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
-        $path = is_string( $uri ) ? wp_parse_url( $uri, PHP_URL_PATH ) : '';
+        // Query URLs can be search, REST fallback, appointment or other deep links
+        // even when their path is exactly the homepage. Never overlay those tasks.
+        if ( ! is_string( $uri ) || false === wp_parse_url( $uri ) ) { return false; }
+        $query = wp_parse_url( $uri, PHP_URL_QUERY );
+        if ( is_string( $query ) && '' !== $query ) { return false; }
+        $path = wp_parse_url( $uri, PHP_URL_PATH );
         $base = wp_parse_url( home_url( '/' ), PHP_URL_PATH );
         if ( ! is_string( $path ) || ! is_string( $base ) ) { return false; }
         $path = '/' . trim( $path, '/' );
@@ -96,6 +101,7 @@ final class WelcomeFrequency {
             'cookiePath' => self::cookie_path(),
             'seconds' => self::PERIOD_SECONDS,
             'cookieName' => self::guest_cookie_name(),
+            'homeUrl' => esc_url_raw( home_url( '/' ) ),
             'endpoint' => esc_url_raw( rest_url( 'sabri-shell/v1/welcome-dismiss' ) ),
             'nonce' => is_user_logged_in() ? wp_create_nonce( 'wp_rest' ) : '',
         ) );
