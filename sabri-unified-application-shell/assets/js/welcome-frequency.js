@@ -60,7 +60,18 @@
     } catch (_) {}
   }
   var controls = host.querySelectorAll('[data-sabri-welcome-dismiss], [data-sabri-welcome-skip], .sabri-ui-welcome-panel__actions a');
-  Array.prototype.forEach.call(controls, function (element) { element.addEventListener('click', dismiss, { once: true }); });
+  Array.prototype.forEach.call(controls, function (element) {
+    element.addEventListener('click', function (event) {
+      // Continue already points to the current eligible homepage. A forced
+      // reload disrupts content and may race an authenticated preference POST.
+      // Preserve normal navigation for any future externally linked action.
+      if (element.tagName === 'A' && typeof element.getAttribute === 'function' &&
+          element.getAttribute('href') === cfg.homeUrl && event && typeof event.preventDefault === 'function') {
+        event.preventDefault();
+      }
+      dismiss();
+    }, { once: true });
+  });
   document.addEventListener('keydown', function (event) {
     if (event.key === 'Escape' && !host.hidden) { dismiss(); }
   });
