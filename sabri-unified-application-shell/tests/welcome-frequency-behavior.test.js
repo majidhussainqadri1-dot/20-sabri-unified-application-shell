@@ -7,12 +7,12 @@ const source = fs.readFileSync(path.join(__dirname,'../assets/js/welcome-frequen
 function scenario({ loggedIn=false, blockedStorage=false, oldDismissal=0, sessionSeen=false, sessionAgeSeconds=15, foreignRootCookie=false, alternateContinueHref=false, memberScope='member-opaque-a', storedMemberScope='member-opaque-a' }={}) {
   const listeners = {};
   const attrs = [];
-  const controls = Array.from({length:3}, () => ({addEventListener(type,fn){listeners['control'+attrs.length]=fn;attrs.push(type);}}));
+  const controls = Array.from({length:3}, () => ({addEventListener(type,fn){listeners['control'+attrs.length]=fn;attrs.push(type);},focus(){doc.activeElement=this;}}));
   controls[0].tagName='A';
   controls[0].getAttribute=function(k){return k==='href'?(alternateContinueHref?'https://example.test/other/':'https://example.test/subsite/'):null;};
   const heading={tabindex:null,setAttribute(k,v){this[k]=v;},focus(){doc.activeElement=this;}};
   const previous={focus(){doc.activeElement=this;}};
-  const root={hidden:true,querySelectorAll(){return controls;},querySelector(sel){return sel==='h2'?heading:null;},contains(item){return item===heading;}};
+  const root={hidden:true,querySelectorAll(){return controls;},querySelector(sel){return sel==='h2'?heading:null;},contains(item){return item===heading||controls.includes(item);}};
   let cookie=oldDismissal?((foreignRootCookie?'sabri_welcome_dismissed_at':'sabri_welcome_dismissed_at_sitea')+'='+oldDismissal):'';
   const doc={activeElement:previous,getElementById(){return root;},get cookie(){return cookie;},set cookie(value){cookie=value;},addEventListener(name,fn){listeners[name]=fn;}};
   const sessionData={};
@@ -23,14 +23,17 @@ function scenario({ loggedIn=false, blockedStorage=false, oldDismissal=0, sessio
   const win={sabriWelcomeFrequency:{loggedIn,seconds:2592000,scope:loggedIn?memberScope:'guest',siteScope:'site-a',cookiePath:'/subsite/',cookieName:'sabri_welcome_dismissed_at_sitea',homeUrl:'https://example.test/subsite/',endpoint:'/wp-json/sabri-shell/v1/welcome-dismiss',nonce:'nonce'},location:{protocol:'https:'},fetch(url,opts){calls.push({url,opts});return Promise.resolve({ok:true});}};
   Object.defineProperty(win,'sessionStorage',{get(){if(blockedStorage)throw new Error('storage blocked');return store(sessionData);}});
   Object.defineProperty(win,'localStorage',{get(){if(blockedStorage)throw new Error('storage blocked');return store(localData);}});
-  vm.runInNewContext(source,{window:win,document:doc,Date,Number,Array,console});
-  return {root,listeners,controls,sessionData,localData,calls,doc,heading,previous,get cookie(){return cookie;}};
+  let fakeTime=Date.now();
+  class TestDate extends Date { static now(){return fakeTime;} }
+  vm.runInNewContext(source,{window:win,document:doc,Date:TestDate,Number,Array,console});
+  return {root,listeners,controls,sessionData,localData,calls,doc,heading,previous,advance(seconds){fakeTime+=seconds*1000;},get cookie(){return cookie;}};
 }
 const now=Math.floor(Date.now()/1000);
 const guest=scenario();assert.strictEqual(guest.root.hidden,false,'first guest visit visible');
-assert.strictEqual(guest.doc.activeElement,guest.heading,'Welcome heading focused on first eligible display');
-assert.strictEqual(guest.heading.tabindex,'-1','non-tabstop programmatic heading focus');
+assert.strictEqual(guest.doc.activeElement,guest.previous,'Nonmodal welcome must not steal existing keyboard/screen-reader focus');
+assert.strictEqual(guest.heading.tabindex,null,'Nonmodal region must not turn heading into a programmatic focus target');
 let suppressedNavigation=0;
+guest.controls[0].focus();
 guest.listeners.control0({preventDefault(){suppressedNavigation++;}});
 assert.strictEqual(suppressedNavigation,1,'Continue must enter current homepage without an unnecessary page reload');
 assert.strictEqual(guest.root.hidden,true,'Continue hides welcome');
@@ -38,6 +41,17 @@ assert(guest.cookie.startsWith('sabri_welcome_dismissed_at_sitea='),'own WordPre
 assert(guest.cookie.includes('Path=/subsite/'),'guest cookie scoped to WordPress site path');
 assert.strictEqual(guest.doc.activeElement,guest.previous,'dismissal restores prior focus');
 assert.strictEqual(Number(guest.sessionData['sabri-shell-welcome:v1:site-a:guest'])>now-5,true,'site-scoped session records a real timestamp');
+// Regression: the tab can stay open for days before the user actually dismisses.
+// The 30-day hold must start at the action, not at the initial presentation.
+const delayed=scenario();
+delayed.advance(10*86400);
+delayed.controls[1].focus();
+delayed.listeners.control1();
+const dismissalTime=now+10*86400;
+assert.strictEqual(Number(delayed.localData['sabri-shell-welcome-dismissed:v1:site-a']),dismissalTime,'Guest local dismissal timestamp must reflect click time, not page-load time');
+assert.strictEqual(Number(delayed.sessionData['sabri-shell-welcome:v1:site-a:guest']),dismissalTime,'Session expiry window must restart on explicit dismissal');
+assert(delayed.cookie.includes('='+dismissalTime+';'),'Guest cookie timestamp must reflect actual Close time');
+assert.strictEqual(delayed.doc.activeElement,delayed.previous,'Focus must return to pre-welcome location after manually focused close');
 const notDue=scenario({oldDismissal:now-90});assert.strictEqual(notDue.root.hidden,true,'guest 30-day suppression');
 const due=scenario({oldDismissal:now-2592100});assert.strictEqual(due.root.hidden,false,'guest returns after 30 days');
 const crossSite=scenario({oldDismissal:now-90,foreignRootCookie:true});
