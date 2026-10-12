@@ -4,7 +4,7 @@ define('ABSPATH',__DIR__);define('SABRI_SHELL_URL','https://example.test/wp-cont
 $GLOBALS['logged_in']=false;$GLOBALS['user_id']=7;$GLOBALS['user_meta']=[];$GLOBALS['authorized']=true;$GLOBALS['route_ok']=true;$GLOBALS['safe_mode']=false;$GLOBALS['styles']=[];
 function __($s,$domain=''){return $s;}function add_action(...$args){}function add_filter(...$args){}function apply_filters($n,$value){return $value;}
 function is_user_logged_in(){return $GLOBALS['logged_in'];}function current_user_can($x){return $GLOBALS['authorized'];}function get_current_user_id(){return $GLOBALS['user_id'];}
-function get_user_meta($user,$key,$single=true){return $GLOBALS['user_meta'][$user][$key]??'';}function update_user_meta($user,$key,$value){$GLOBALS['user_meta'][$user][$key]=$value;return true;}
+function get_user_meta($user,$key,$single=true){return $GLOBALS['user_meta'][$user][$key]??'';}function update_user_meta($user,$key,$value){$GLOBALS['writes']=($GLOBALS['writes']??0)+1;$GLOBALS['user_meta'][$user][$key]=$value;return true;}
 function wp_verify_nonce($nonce,$action){return $nonce==='valid'&&$action==='wp_rest';}function wp_unslash($x){return $x;}
 function wp_parse_url($x,$part=-1){return parse_url($x,$part);}function home_url($p='/'){return 'https://example.test/subsite'.$p;}
 function esc_url_raw($x){return $x;}function esc_attr__($x,$domain=''){return $x;}function rest_url($p){return 'https://example.test/wp-json/'.$p;}
@@ -43,6 +43,9 @@ $assert(($GLOBALS['localized']['loggedIn']??null)===true,'Member context');
 class Req{private $nonce;public function __construct($nonce){$this->nonce=$nonce;}public function get_header($key){return $this->nonce;}}
 $bad=WelcomeFrequency::dismiss(new Req('invalid'));$assert($bad instanceof \WP_Error&&$bad->get_error_code()==='sabri_welcome_forbidden','Invalid CSRF rejected');
 $good=WelcomeFrequency::dismiss(new Req('valid'));$assert(is_array($good)&&$good['saved']===true,'Authenticated preference persisted');
+$writes=$GLOBALS['writes'];$again=WelcomeFrequency::dismiss(new Req('valid'));
+$assert(is_array($again)&&$again['next_eligible_at']===$good['next_eligible_at'],'Repeat dismiss must retain original 30-day deadline');
+$assert($GLOBALS['writes']===$writes,'Repeat dismiss must not rewrite user meta');
 $GLOBALS['logged_in']=false;$bad=WelcomeFrequency::dismiss(new Req('valid'));$assert($bad instanceof \WP_Error,'Guest cannot mutate account meta');
 echo "File20 welcome frequency/dismissal source regression PASS\n";
 }
