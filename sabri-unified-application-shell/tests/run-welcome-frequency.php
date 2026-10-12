@@ -6,7 +6,7 @@ function __($s,$domain=''){return $s;}function add_action(...$args){}function ad
 function is_user_logged_in(){return $GLOBALS['logged_in'];}function current_user_can($x){return $GLOBALS['authorized'];}function get_current_user_id(){return $GLOBALS['user_id'];}
 function get_user_meta($user,$key,$single=true){return $GLOBALS['user_meta'][$user][$key]??'';}function update_user_meta($user,$key,$value){$GLOBALS['writes']=($GLOBALS['writes']??0)+1;$GLOBALS['user_meta'][$user][$key]=$value;return true;}
 function wp_verify_nonce($nonce,$action){return $nonce==='valid'&&$action==='wp_rest';}function wp_unslash($x){return $x;}
-function wp_parse_url($x,$part=-1){return parse_url($x,$part);}function home_url($p='/'){return 'https://example.test/subsite'.$p;}
+function wp_parse_url($x,$part=-1){return parse_url($x,$part);}function home_url($p='/'){return 'https://example.test'.($GLOBALS['wp_install_prefix']??'/subsite').$p;}
 function esc_url_raw($x){return $x;}function esc_attr__($x,$domain=''){return $x;}function rest_url($p){return 'https://example.test/wp-json/'.$p;}
 function wp_create_nonce($x){return 'valid';}function absint($x){return abs((int)$x);}function wp_enqueue_style(...$args){$GLOBALS['styles'][]=$args[0];}
 function wp_enqueue_script(...$args){}function wp_localize_script($h,$n,$data){$GLOBALS['localized']=$data;}
@@ -24,6 +24,11 @@ $assert(WelcomeFrequency::due(3000000,3000000-2592000),'Exact 30-day recurrence'
 $assert(WelcomeFrequency::due(3000000,3000100),'Future timestamp not permanent');
 $_SERVER['REQUEST_URI']='/subsite/';
 $assert(WelcomeFrequency::eligible_route(),'Canonical home eligibility');
+$subsite_cookie=WelcomeFrequency::guest_cookie_name();
+$GLOBALS['wp_install_prefix']='';$root_cookie=WelcomeFrequency::guest_cookie_name();
+$GLOBALS['wp_install_prefix']='/subsite';
+$assert($subsite_cookie!==$root_cookie,'Distinct WordPress installations must have distinct guest cookie names');
+$assert(strpos($subsite_cookie,WelcomeFrequency::GUEST_COOKIE.'_')===0,'Guest cookie must be correctly namespaced');
 $GLOBALS['file25_ready']=false;$assert(!WelcomeFrequency::eligible_route(),'Missing or safe-mode File25 contract suppresses welcome');$GLOBALS['file25_ready']=true;
 foreach(['/subsite/account','/subsite/login','/subsite/appointment','/subsite/clinical','/subsite/emergency','/subsite/news/post']as$path){$_SERVER['REQUEST_URI']=$path;$assert(!WelcomeFrequency::eligible_route(),'Task route excluded '.$path);}
 $_SERVER['REQUEST_URI']='/subsite/';$GLOBALS['safe_mode']=true;
@@ -32,7 +37,7 @@ $GLOBALS['logged_in']=true;$GLOBALS['user_meta'][7][WelcomeFrequency::USER_META]
 WelcomeFrequency::prepare();ob_start();WelcomeFrequency::render();$out=ob_get_clean();$assert(''===$out,'Recent member dismissal suppressed');
 $prop=new \ReflectionProperty(WelcomeFrequency::class,'prepared');$prop->setAccessible(true);$prop->setValue(null,false);
 // A guest cookie must never suppress an independent logged-in account.
-$GLOBALS['user_id']=8;$_COOKIE[WelcomeFrequency::GUEST_COOKIE]=(string)time();
+$GLOBALS['user_id']=8;$_COOKIE[$subsite_cookie]=(string)time();
 WelcomeFrequency::prepare();ob_start();WelcomeFrequency::render();$account8=ob_get_clean();
 $assert(strpos($account8,'sabri-shell-welcome-host')!==false,'Account must not inherit guest or another account dismissal');
 $prop->setValue(null,false);$GLOBALS['user_id']=7;unset($_COOKIE[WelcomeFrequency::GUEST_COOKIE]);
@@ -48,5 +53,12 @@ $writes=$GLOBALS['writes'];$again=WelcomeFrequency::dismiss(new Req('valid'));
 $assert(is_array($again)&&$again['next_eligible_at']===$good['next_eligible_at'],'Repeat dismiss must retain original 30-day deadline');
 $assert($GLOBALS['writes']===$writes,'Repeat dismiss must not rewrite user meta');
 $GLOBALS['logged_in']=false;$bad=WelcomeFrequency::dismiss(new Req('valid'));$assert($bad instanceof \WP_Error,'Guest cannot mutate account meta');
+$prop->setValue(null,false);
+$_COOKIE[WelcomeFrequency::GUEST_COOKIE]=(string)time();unset($_COOKIE[$subsite_cookie]);
+WelcomeFrequency::prepare();ob_start();WelcomeFrequency::render();$guest_eligible=ob_get_clean();
+$assert(strpos($guest_eligible,'sabri-shell-welcome-host')!==false,'Legacy/root cookie must not suppress child installation');
+$prop->setValue(null,false);$_COOKIE[$subsite_cookie]=(string)time();
+WelcomeFrequency::prepare();ob_start();WelcomeFrequency::render();$guest_suppressed=ob_get_clean();
+$assert($guest_suppressed==='','Own installation cookie suppresses welcome for 30 days');
 echo "File20 welcome frequency/dismissal source regression PASS\n";
 }
