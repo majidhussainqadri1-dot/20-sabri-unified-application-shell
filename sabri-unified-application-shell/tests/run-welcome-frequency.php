@@ -2,7 +2,7 @@
 namespace {
 define('ABSPATH',__DIR__);define('SABRI_SHELL_URL','https://example.test/wp-content/plugins/shell/');define('SABRI_SHELL_VERSION','1.4.17');
 $GLOBALS['logged_in']=false;$GLOBALS['user_id']=7;$GLOBALS['user_meta']=[];$GLOBALS['authorized']=true;$GLOBALS['route_ok']=true;$GLOBALS['safe_mode']=false;$GLOBALS['styles']=[];
-function __($s,$domain=''){return $s;}function add_action(...$args){}function add_filter(...$args){}function apply_filters($n,$value){if($n==='sabri_shell_file25_visual_contract'){return $GLOBALS['file25_ready']??true?['owner'=>'file-25','tokens'=>['primary_color'=>'#087a4e']]:[];}return $value;}
+function __($s,$domain=''){return $s;}function add_action($hook,$callback,$priority=10){$GLOBALS['wp_actions'][$hook][$priority][]=$callback;}function add_filter(...$args){}function apply_filters($n,$value){if($n==='sabri_shell_file25_visual_contract'){return $GLOBALS['file25_ready']??true?['owner'=>'file-25','tokens'=>['primary_color'=>'#087a4e']]:[];}return $value;}
 function is_user_logged_in(){return $GLOBALS['logged_in'];}function current_user_can($x){return $GLOBALS['authorized'];}function get_current_user_id(){return $GLOBALS['user_id'];}
 function get_user_meta($user,$key,$single=true){return $GLOBALS['user_meta'][$user][$key]??'';}function update_user_meta($user,$key,$value){$GLOBALS['writes']=($GLOBALS['writes']??0)+1;$GLOBALS['user_meta'][$user][$key]=$value;return true;}
 function wp_verify_nonce($nonce,$action){return $nonce==='valid'&&$action==='wp_rest';}function wp_unslash($x){return $x;}
@@ -11,7 +11,7 @@ function esc_url_raw($x){return $x;}function esc_attr__($x,$domain=''){return $x
 function wp_create_nonce($x){return 'valid';}function absint($x){return abs((int)$x);}function wp_enqueue_style(...$args){$GLOBALS['styles'][]=$args[0];}
 function wp_enqueue_script(...$args){}function wp_localize_script($h,$n,$data){$GLOBALS['localized']=$data;}
 function register_rest_route($n,$p,$args){$GLOBALS['rest']=$args;}function rest_ensure_response($v){return $v;}
-function sabri_visual_experience_render_welcome($args){return empty($args['invoked_by_file_20'])?'':'<section data-sabri-welcome-skip>Welcome</section>';}
+function sabri_visual_experience_render_welcome($args){return !empty($GLOBALS['file25_renderer_empty'])||empty($args['invoked_by_file_20'])?'':'<section data-sabri-welcome-skip>Welcome</section>';}
 class WP_Error{private $code;public function __construct($code,$message='',$data=[]){$this->code=$code;}public function get_error_code(){return $this->code;}}
 }
 namespace Sabri\UnifiedShell {
@@ -19,6 +19,8 @@ class FourPlanHarmonization{public static function welcome_eligible(){return $GL
 class SafeMode{public static function constant_disabled(){return $GLOBALS['safe_mode'];}public static function emergency_disabled(){return $GLOBALS['safe_mode'];}}
 require dirname(__DIR__).'/includes/class-welcome-frequency.php';
 $assert=function($ok,$label){if(!$ok){fwrite(STDERR,"FAIL: $label\n");exit(1);}};
+WelcomeFrequency::register();
+$assert(isset($GLOBALS['wp_actions']['wp_body_open'][2][0]) && isset($GLOBALS['wp_actions']['wp_footer'][2][0]),'Welcome must register early body placement and pre-script footer fallback');
 $assert(!WelcomeFrequency::due(3000000,3000000-2591999),'No early recurrence');
 $assert(WelcomeFrequency::due(3000000,3000000-2592000),'Exact 30-day recurrence');
 $assert(WelcomeFrequency::due(3000000,3000100),'Future timestamp not permanent');
@@ -49,6 +51,21 @@ $prop->setValue(null,false);$GLOBALS['user_id']=7;unset($_COOKIE[WelcomeFrequenc
 $assert(WelcomeFrequency::cookie_path()==='/subsite/','Guest cookie must use site-local WordPress path');
 $GLOBALS['user_meta'][7][WelcomeFrequency::USER_META]=time()-2592100;WelcomeFrequency::prepare();
 ob_start();WelcomeFrequency::render();$out=ob_get_clean();$assert(strpos($out,'sabri-shell-welcome-host')!==false,'Due welcome supplied by File25');
+// Both theme hooks must not duplicate the canonical host/ID.
+ob_start();call_user_func($GLOBALS['wp_actions']['wp_footer'][2][0]);$repeat=ob_get_clean();
+$assert($repeat==='','Footer must not duplicate a Welcome already emitted in wp_body_open');
+// Legacy theme: no body-open hook, but footer exists. It must still render once.
+$prop->setValue(null,false);WelcomeFrequency::prepare();
+ob_start();call_user_func($GLOBALS['wp_actions']['wp_footer'][2][0]);$footer_only=ob_get_clean();
+$assert(substr_count($footer_only,'id="sabri-shell-welcome-host"')===1,'Footer-only theme must display exactly one Welcome');
+ob_start();call_user_func($GLOBALS['wp_actions']['wp_body_open'][2][0]);$late_body=ob_get_clean();
+$assert($late_body==='','Late body-open must not duplicate footer-rendered Welcome');
+// A temporarily empty File25 response must not consume the one-render guard.
+$prop->setValue(null,false);WelcomeFrequency::prepare();$GLOBALS['file25_renderer_empty']=true;
+ob_start();WelcomeFrequency::render();$empty_render=ob_get_clean();
+$GLOBALS['file25_renderer_empty']=false;
+ob_start();call_user_func($GLOBALS['wp_actions']['wp_footer'][2][0]);$recovered_render=ob_get_clean();
+$assert($empty_render==='' && strpos($recovered_render,'sabri-shell-welcome-host')!==false,'An empty File25 response must not permanently consume fallback');
 WelcomeFrequency::enqueue();$assert(in_array('sabri-shell-welcome-owner',$GLOBALS['styles'],true),'Structural CSS enqueued');
 $assert(($GLOBALS['localized']['loggedIn']??null)===true,'Member context');
 $assert(($GLOBALS['localized']['homeUrl']??null)==='https://example.test/subsite/','Continue target remains exact canonical home URL');
