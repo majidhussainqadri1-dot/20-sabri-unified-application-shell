@@ -24,6 +24,11 @@ $assert(WelcomeFrequency::due(3000000,3000000-2592000),'Exact 30-day recurrence'
 $assert(WelcomeFrequency::due(3000000,3000100),'Future timestamp not permanent');
 $_SERVER['REQUEST_URI']='/subsite/';
 $assert(WelcomeFrequency::eligible_route(),'Canonical home eligibility');
+foreach(['/subsite/?s=doctor','/subsite/?rest_route=/wp/v2','/subsite/?appointment=1','/subsite/?utm_source=campaign'] as $query_url) {
+    $_SERVER['REQUEST_URI']=$query_url;
+    $assert(!WelcomeFrequency::eligible_route(),'Homepage query deep-link suppressed: '.$query_url);
+}
+$_SERVER['REQUEST_URI']='/subsite/';
 $subsite_cookie=WelcomeFrequency::guest_cookie_name();
 $GLOBALS['wp_install_prefix']='';$root_cookie=WelcomeFrequency::guest_cookie_name();
 $GLOBALS['wp_install_prefix']='/subsite';
@@ -46,6 +51,7 @@ $GLOBALS['user_meta'][7][WelcomeFrequency::USER_META]=time()-2592100;WelcomeFreq
 ob_start();WelcomeFrequency::render();$out=ob_get_clean();$assert(strpos($out,'sabri-shell-welcome-host')!==false,'Due welcome supplied by File25');
 WelcomeFrequency::enqueue();$assert(in_array('sabri-shell-welcome-owner',$GLOBALS['styles'],true),'Structural CSS enqueued');
 $assert(($GLOBALS['localized']['loggedIn']??null)===true,'Member context');
+$assert(($GLOBALS['localized']['homeUrl']??null)==='https://example.test/subsite/','Continue target remains exact canonical home URL');
 class Req{private $nonce;public function __construct($nonce){$this->nonce=$nonce;}public function get_header($key){return $this->nonce;}}
 $bad=WelcomeFrequency::dismiss(new Req('invalid'));$assert($bad instanceof \WP_Error&&$bad->get_error_code()==='sabri_welcome_forbidden','Invalid CSRF rejected');
 $good=WelcomeFrequency::dismiss(new Req('valid'));$assert(is_array($good)&&$good['saved']===true,'Authenticated preference persisted');
