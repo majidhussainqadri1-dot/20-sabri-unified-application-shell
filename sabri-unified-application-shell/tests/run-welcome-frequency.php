@@ -1,10 +1,10 @@
 <?php
 namespace {
 define('ABSPATH',__DIR__);define('SABRI_SHELL_URL','https://example.test/wp-content/plugins/shell/');define('SABRI_SHELL_VERSION','1.4.17');
-$GLOBALS['logged_in']=false;$GLOBALS['user_id']=7;$GLOBALS['login_session_token']='session-7a';$GLOBALS['user_meta']=[];$GLOBALS['authorized']=true;$GLOBALS['route_ok']=true;$GLOBALS['safe_mode']=false;$GLOBALS['styles']=[];
-function __($s,$domain=''){return $s;}function add_action($hook,$callback,$priority=10){$GLOBALS['wp_actions'][$hook][$priority][]=$callback;}function add_filter(...$args){}function apply_filters($n,$value){if($n==='sabri_shell_file25_visual_contract'){return $GLOBALS['file25_ready']??true?['owner'=>'file-25','tokens'=>['primary_color'=>'#087a4e']]:[];}return $value;}
+$GLOBALS['logged_in']=false;$GLOBALS['user_id']=7;$GLOBALS['login_session_token']='session-7a';$GLOBALS['user_meta']=[];$GLOBALS['authorized']=true;$GLOBALS['erasure_hold']=false;$GLOBALS['erase_fail']=false;$GLOBALS['route_ok']=true;$GLOBALS['safe_mode']=false;$GLOBALS['styles']=[];
+function __($s,$domain=''){return $s;}function add_action($hook,$callback,$priority=10){$GLOBALS['wp_actions'][$hook][$priority][]=$callback;}function add_filter($hook,$callback){$GLOBALS['wp_filters'][$hook]=$callback;}function apply_filters($n,$value){if($n==='sabri_shell_welcome_erasure_hold'){return $GLOBALS['erasure_hold'];}if($n==='sabri_shell_file25_visual_contract'){return $GLOBALS['file25_ready']??true?['owner'=>'file-25','tokens'=>['primary_color'=>'#087a4e']]:[];}return $value;}
 function is_user_logged_in(){return $GLOBALS['logged_in'];}function current_user_can($x){return $GLOBALS['authorized'];}function get_current_user_id(){return $GLOBALS['user_id'];}
-function get_user_meta($user,$key,$single=true){return $GLOBALS['user_meta'][$user][$key]??'';}function update_user_meta($user,$key,$value){$GLOBALS['writes']=($GLOBALS['writes']??0)+1;$GLOBALS['user_meta'][$user][$key]=$value;return true;}
+function get_user_meta($user,$key,$single=true){return $GLOBALS['user_meta'][$user][$key]??'';}function update_user_meta($user,$key,$value){$GLOBALS['writes']=($GLOBALS['writes']??0)+1;$GLOBALS['user_meta'][$user][$key]=$value;return true;}function delete_user_meta($user,$key){if($GLOBALS['erase_fail'])return false;unset($GLOBALS['user_meta'][$user][$key]);return true;}function get_user_by($type,$value){return $type==='email'&&$value==='person@example.test'?(object)['ID'=>7]:false;}
 function wp_verify_nonce($nonce,$action){return $nonce==='valid'&&$action==='wp_rest';}function wp_unslash($x){return $x;}
 function wp_parse_url($x,$part=-1){return parse_url($x,$part);}function home_url($p='/'){return 'https://example.test'.($GLOBALS['wp_install_prefix']??'/subsite').$p;}
 function esc_url_raw($x){return $x;}function esc_attr__($x,$domain=''){return $x;}function rest_url($p){return 'https://example.test/wp-json/'.$p;}
@@ -21,6 +21,7 @@ require dirname(__DIR__).'/includes/class-welcome-frequency.php';
 $assert=function($ok,$label){if(!$ok){fwrite(STDERR,"FAIL: $label\n");exit(1);}};
 WelcomeFrequency::register();
 $assert(isset($GLOBALS['wp_actions']['wp_body_open'][2][0]) && isset($GLOBALS['wp_actions']['wp_footer'][2][0]),'Welcome must register early body placement and pre-script footer fallback');
+$assert(isset($GLOBALS['wp_filters']['wp_privacy_personal_data_exporters']) && isset($GLOBALS['wp_filters']['wp_privacy_personal_data_erasers']),'Owner must register both WP core personal-data lifecycle hooks');
 $assert(!WelcomeFrequency::due(3000000,3000000-2591999),'No early recurrence');
 $assert(WelcomeFrequency::due(3000000,3000000-2592000),'Exact 30-day recurrence');
 $assert(WelcomeFrequency::due(3000000,3000100),'Future timestamp not permanent');
@@ -90,5 +91,29 @@ $assert(strpos($guest_eligible,'sabri-shell-welcome-host')!==false,'Legacy/root 
 $prop->setValue(null,false);$_COOKIE[$subsite_cookie]=(string)time();
 WelcomeFrequency::prepare();ob_start();WelcomeFrequency::render();$guest_suppressed=ob_get_clean();
 $assert($guest_suppressed==='','Own installation cookie suppresses welcome for 30 days');
+// Privacy lifecycle belongs to File20: own user-meta only, not other fields.
+$GLOBALS['user_meta'][7][WelcomeFrequency::USER_META]=1700000000;
+$GLOBALS['user_meta'][7]['unrelated_meta']='retain';
+$exporters=WelcomeFrequency::register_privacy_exporter(array());
+$erasers=WelcomeFrequency::register_privacy_eraser(array());
+$assert(isset($exporters['sabri-shell-welcome-preference']['callback'])&&isset($erasers['sabri-shell-welcome-preference']['callback']),'Native personal-data exporter and eraser both discoverable');
+$export=WelcomeFrequency::export_personal_data('person@example.test');
+$assert($export['done']===true&&count($export['data'])===1,'Known subject may export only one welcome preference record');
+$assert(strpos($export['data'][0]['data'][0]['value'],'UTC')!==false,'Export timestamp must use explicit UTC context');
+$assert(strpos(json_encode($export),'session-7a')===false&&strpos(json_encode($export),'person@example.test')===false,'Export must not contain session token or email');
+$assert(WelcomeFrequency::export_personal_data('unknown@example.test')['data']===array(),'Unknown subject must not expose other account data');
+$GLOBALS['erasure_hold']=true;
+$held=WelcomeFrequency::erase_personal_data('person@example.test');
+$assert($held['items_retained']===true&&$held['items_removed']===false,'Applicable legal hold must retain preference');
+$assert(get_user_meta(7,WelcomeFrequency::USER_META,true)===1700000000,'Legal hold cannot silently delete data');
+$GLOBALS['erasure_hold']=false;$GLOBALS['erase_fail']=true;
+$failed=WelcomeFrequency::erase_personal_data('person@example.test');
+$assert($failed['items_retained']===true&&$failed['items_removed']===false,'Failed erasure must report retention');
+$GLOBALS['erase_fail']=false;
+$erased=WelcomeFrequency::erase_personal_data('person@example.test');
+$assert($erased['items_removed']===true&&!$erased['items_retained'],'Valid erasure removes owner-scoped preference');
+$assert(get_user_meta(7,WelcomeFrequency::USER_META,true)===''&&get_user_meta(7,'unrelated_meta',true)==='retain','Erasure cannot delete unrelated user metadata');
+$assert(WelcomeFrequency::export_personal_data('person@example.test')['data']===array(),'Erased preference must not remain exportable');
+$assert(!WelcomeFrequency::erase_personal_data('person@example.test')['items_removed'],'Repeat erasure must be idempotent');
 echo "File20 welcome frequency/dismissal source regression PASS\n";
 }
