@@ -2,7 +2,7 @@
 namespace {
 define('ABSPATH',__DIR__);define('SABRI_SHELL_URL','https://example.test/wp-content/plugins/shell/');define('SABRI_SHELL_VERSION','1.4.17');
 $GLOBALS['logged_in']=false;$GLOBALS['user_id']=7;$GLOBALS['user_meta']=[];$GLOBALS['authorized']=true;$GLOBALS['route_ok']=true;$GLOBALS['safe_mode']=false;$GLOBALS['styles']=[];
-function __($s,$domain=''){return $s;}function add_action(...$args){}function add_filter(...$args){}function apply_filters($n,$value){return $value;}
+function __($s,$domain=''){return $s;}function add_action(...$args){}function add_filter(...$args){}function apply_filters($n,$value){if($n==='sabri_shell_file25_visual_contract'){return $GLOBALS['file25_ready']??true?['owner'=>'file-25','tokens'=>['primary_color'=>'#087a4e']]:[];}return $value;}
 function is_user_logged_in(){return $GLOBALS['logged_in'];}function current_user_can($x){return $GLOBALS['authorized'];}function get_current_user_id(){return $GLOBALS['user_id'];}
 function get_user_meta($user,$key,$single=true){return $GLOBALS['user_meta'][$user][$key]??'';}function update_user_meta($user,$key,$value){$GLOBALS['writes']=($GLOBALS['writes']??0)+1;$GLOBALS['user_meta'][$user][$key]=$value;return true;}
 function wp_verify_nonce($nonce,$action){return $nonce==='valid'&&$action==='wp_rest';}function wp_unslash($x){return $x;}
@@ -24,6 +24,7 @@ $assert(WelcomeFrequency::due(3000000,3000000-2592000),'Exact 30-day recurrence'
 $assert(WelcomeFrequency::due(3000000,3000100),'Future timestamp not permanent');
 $_SERVER['REQUEST_URI']='/subsite/';
 $assert(WelcomeFrequency::eligible_route(),'Canonical home eligibility');
+$GLOBALS['file25_ready']=false;$assert(!WelcomeFrequency::eligible_route(),'Missing or safe-mode File25 contract suppresses welcome');$GLOBALS['file25_ready']=true;
 foreach(['/subsite/account','/subsite/login','/subsite/appointment','/subsite/clinical','/subsite/emergency','/subsite/news/post']as$path){$_SERVER['REQUEST_URI']=$path;$assert(!WelcomeFrequency::eligible_route(),'Task route excluded '.$path);}
 $_SERVER['REQUEST_URI']='/subsite/';$GLOBALS['safe_mode']=true;
 $assert(!WelcomeFrequency::eligible_route(),'Safe mode suppression');$GLOBALS['safe_mode']=false;
