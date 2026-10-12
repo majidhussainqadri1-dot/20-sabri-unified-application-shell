@@ -119,6 +119,13 @@ final class WelcomeFrequency {
             return new \WP_Error( 'sabri_welcome_forbidden', __( 'Welcome preference not authorized.', 'sabri-unified-application-shell' ), array( 'status' => 403 ) );
         }
         $now = time();
+        // Replayed/duplicated dismiss requests must not perpetually extend
+        // the 30-day hold or generate unnecessary user-meta writes.
+        $prior = get_user_meta( $actor, self::USER_META, true );
+        if ( ( is_int( $prior ) || ( is_string( $prior ) && ctype_digit( $prior ) ) )
+            && ! self::due( $now, $prior ) ) {
+            return rest_ensure_response( array( 'saved' => true, 'next_eligible_at' => (int) $prior + self::PERIOD_SECONDS ) );
+        }
         update_user_meta( $actor, self::USER_META, $now );
         $persisted = get_user_meta( $actor, self::USER_META, true );
         if ( (int) $persisted !== $now ) {
