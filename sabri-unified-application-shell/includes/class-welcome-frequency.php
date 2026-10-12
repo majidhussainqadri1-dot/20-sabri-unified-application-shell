@@ -96,13 +96,23 @@ final class WelcomeFrequency {
         return is_string( $path ) ? '/' . trim( $path, '/' ) . ( '/' === $path ? '' : '/' ) : '/';
     }
 
+    /** An opaque login-session partition; never write a raw user ID to storage. */
+    public static function member_session_scope() {
+        if ( ! is_user_logged_in() ) { return 'guest'; }
+        $token = function_exists( 'wp_get_session_token' ) ? (string) wp_get_session_token() : '';
+        if ( '' === $token ) {
+            $token = (string) wp_create_nonce( 'sabri-welcome-session-partition' );
+        }
+        return 'member-' . substr( wp_hash( (string) get_current_user_id() . '|' . $token, 'nonce' ), 0, 24 );
+    }
+
     public static function enqueue() {
         if ( ! self::$eligible ) { return; }
         wp_enqueue_style( 'sabri-shell-welcome-owner', SABRI_SHELL_URL . 'assets/css/welcome-frequency.css', array( 'sabri-visual-design-system' ), SABRI_SHELL_VERSION );
         wp_enqueue_script( 'sabri-shell-welcome-owner', SABRI_SHELL_URL . 'assets/js/welcome-frequency.js', array(), SABRI_SHELL_VERSION, true );
         wp_localize_script( 'sabri-shell-welcome-owner', 'sabriWelcomeFrequency', array(
             'loggedIn' => is_user_logged_in(),
-            'scope' => is_user_logged_in() ? 'user-' . absint( get_current_user_id() ) : 'guest',
+            'scope' => self::member_session_scope(),
             'siteScope' => md5( home_url( '/' ) ),
             'cookiePath' => self::cookie_path(),
             'seconds' => self::PERIOD_SECONDS,
