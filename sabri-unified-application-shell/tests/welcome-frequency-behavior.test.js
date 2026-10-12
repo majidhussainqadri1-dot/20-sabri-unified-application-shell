@@ -4,10 +4,12 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 const source = fs.readFileSync(path.join(__dirname,'../assets/js/welcome-frequency.js'),'utf8');
-function scenario({ loggedIn=false, blockedStorage=false, oldDismissal=0, sessionSeen=false, foreignRootCookie=false }={}) {
+function scenario({ loggedIn=false, blockedStorage=false, oldDismissal=0, sessionSeen=false, foreignRootCookie=false, alternateContinueHref=false }={}) {
   const listeners = {};
   const attrs = [];
   const controls = Array.from({length:3}, () => ({addEventListener(type,fn){listeners['control'+attrs.length]=fn;attrs.push(type);}}));
+  controls[0].tagName='A';
+  controls[0].getAttribute=function(k){return k==='href'?(alternateContinueHref?'https://example.test/other/':'https://example.test/subsite/'):null;};
   const heading={tabindex:null,setAttribute(k,v){this[k]=v;},focus(){doc.activeElement=this;}};
   const previous={focus(){doc.activeElement=this;}};
   const root={hidden:true,querySelectorAll(){return controls;},querySelector(sel){return sel==='h2'?heading:null;},contains(item){return item===heading;}};
@@ -18,7 +20,7 @@ function scenario({ loggedIn=false, blockedStorage=false, oldDismissal=0, sessio
   const localData={};
   function store(data){return {getItem(k){return data[k]||null;},setItem(k,v){data[k]=String(v);}};}
   const calls=[];
-  const win={sabriWelcomeFrequency:{loggedIn,seconds:2592000,scope:loggedIn?'user-7':'guest',siteScope:'site-a',cookiePath:'/subsite/',cookieName:'sabri_welcome_dismissed_at_sitea',endpoint:'/wp-json/sabri-shell/v1/welcome-dismiss',nonce:'nonce'},location:{protocol:'https:'},fetch(url,opts){calls.push({url,opts});return Promise.resolve({ok:true});}};
+  const win={sabriWelcomeFrequency:{loggedIn,seconds:2592000,scope:loggedIn?'user-7':'guest',siteScope:'site-a',cookiePath:'/subsite/',cookieName:'sabri_welcome_dismissed_at_sitea',homeUrl:'https://example.test/subsite/',endpoint:'/wp-json/sabri-shell/v1/welcome-dismiss',nonce:'nonce'},location:{protocol:'https:'},fetch(url,opts){calls.push({url,opts});return Promise.resolve({ok:true});}};
   Object.defineProperty(win,'sessionStorage',{get(){if(blockedStorage)throw new Error('storage blocked');return store(sessionData);}});
   Object.defineProperty(win,'localStorage',{get(){if(blockedStorage)throw new Error('storage blocked');return store(localData);}});
   vm.runInNewContext(source,{window:win,document:doc,Date,Number,Array,console});
@@ -28,7 +30,10 @@ const now=Math.floor(Date.now()/1000);
 const guest=scenario();assert.strictEqual(guest.root.hidden,false,'first guest visit visible');
 assert.strictEqual(guest.doc.activeElement,guest.heading,'Welcome heading focused on first eligible display');
 assert.strictEqual(guest.heading.tabindex,'-1','non-tabstop programmatic heading focus');
-guest.listeners.control0();assert.strictEqual(guest.root.hidden,true,'close hides welcome');
+let suppressedNavigation=0;
+guest.listeners.control0({preventDefault(){suppressedNavigation++;}});
+assert.strictEqual(suppressedNavigation,1,'Continue must enter current homepage without an unnecessary page reload');
+assert.strictEqual(guest.root.hidden,true,'Continue hides welcome');
 assert(guest.cookie.startsWith('sabri_welcome_dismissed_at_sitea='),'own WordPress cookie name must be used on dismissal');assert(guest.cookie.includes('Max-Age=2592000'),'30-day cookie');
 assert(guest.cookie.includes('Path=/subsite/'),'guest cookie scoped to WordPress site path');
 assert.strictEqual(guest.doc.activeElement,guest.previous,'dismissal restores prior focus');
@@ -39,6 +44,10 @@ const crossSite=scenario({oldDismissal:now-90,foreignRootCookie:true});
 assert.strictEqual(crossSite.root.hidden,false,'unrelated root installation cookie must not suppress current subsite welcome');
 const noStorage=scenario({blockedStorage:true});assert.strictEqual(noStorage.root.hidden,false,'storage denial must not hide eligible welcome');
 noStorage.listeners.keydown({key:'Escape'});assert.strictEqual(noStorage.root.hidden,true,'Escape dismisses despite storage denial');
+const externalContinue=scenario({alternateContinueHref:true});let preventedExternal=0;
+externalContinue.listeners.control0({preventDefault(){preventedExternal++;}});
+assert.strictEqual(preventedExternal,0,'An explicitly different Continue destination must preserve real navigation');
+assert.strictEqual(externalContinue.root.hidden,true,'External Continue still dismisses welcome');
 const member=scenario({loggedIn:true});member.listeners.control2();assert.strictEqual(member.calls.length,1,'member preference posted');
 assert.strictEqual(member.cookie,'','authenticated dismissal must not set shared guest cookie');
 assert.deepStrictEqual(member.localData,{},'authenticated dismissal must not write shared guest localStorage');assert.strictEqual(member.calls[0].opts.headers['X-WP-Nonce'],'nonce','authenticated nonce');
