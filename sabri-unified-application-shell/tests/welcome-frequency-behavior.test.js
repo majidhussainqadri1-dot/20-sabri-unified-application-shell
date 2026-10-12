@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 const source = fs.readFileSync(path.join(__dirname,'../assets/js/welcome-frequency.js'),'utf8');
-function scenario({ loggedIn=false, blockedStorage=false, oldDismissal=0, sessionSeen=false, foreignRootCookie=false, alternateContinueHref=false }={}) {
+function scenario({ loggedIn=false, blockedStorage=false, oldDismissal=0, sessionSeen=false, sessionAgeSeconds=15, foreignRootCookie=false, alternateContinueHref=false }={}) {
   const listeners = {};
   const attrs = [];
   const controls = Array.from({length:3}, () => ({addEventListener(type,fn){listeners['control'+attrs.length]=fn;attrs.push(type);}}));
@@ -16,7 +16,7 @@ function scenario({ loggedIn=false, blockedStorage=false, oldDismissal=0, sessio
   let cookie=oldDismissal?((foreignRootCookie?'sabri_welcome_dismissed_at':'sabri_welcome_dismissed_at_sitea')+'='+oldDismissal):'';
   const doc={activeElement:previous,getElementById(){return root;},get cookie(){return cookie;},set cookie(value){cookie=value;},addEventListener(name,fn){listeners[name]=fn;}};
   const sessionData={};
-  if(sessionSeen)sessionData['sabri-shell-welcome:v1:site-a:'+(loggedIn?'user-7':'guest')]='1';
+  if(sessionSeen)sessionData['sabri-shell-welcome:v1:site-a:'+(loggedIn?'user-7':'guest')]=String(Math.floor(Date.now()/1000)-sessionAgeSeconds);
   const localData={};
   function store(data){return {getItem(k){return data[k]||null;},setItem(k,v){data[k]=String(v);}};}
   const calls=[];
@@ -37,7 +37,7 @@ assert.strictEqual(guest.root.hidden,true,'Continue hides welcome');
 assert(guest.cookie.startsWith('sabri_welcome_dismissed_at_sitea='),'own WordPress cookie name must be used on dismissal');assert(guest.cookie.includes('Max-Age=2592000'),'30-day cookie');
 assert(guest.cookie.includes('Path=/subsite/'),'guest cookie scoped to WordPress site path');
 assert.strictEqual(guest.doc.activeElement,guest.previous,'dismissal restores prior focus');
-assert.strictEqual(guest.sessionData['sabri-shell-welcome:v1:site-a:guest'],'1','site-scoped same-session suppression');
+assert.strictEqual(Number(guest.sessionData['sabri-shell-welcome:v1:site-a:guest'])>now-5,true,'site-scoped session records a real timestamp');
 const notDue=scenario({oldDismissal:now-90});assert.strictEqual(notDue.root.hidden,true,'guest 30-day suppression');
 const due=scenario({oldDismissal:now-2592100});assert.strictEqual(due.root.hidden,false,'guest returns after 30 days');
 const crossSite=scenario({oldDismissal:now-90,foreignRootCookie:true});
@@ -52,4 +52,9 @@ const member=scenario({loggedIn:true});member.listeners.control2();assert.strict
 assert.strictEqual(member.cookie,'','authenticated dismissal must not set shared guest cookie');
 assert.deepStrictEqual(member.localData,{},'authenticated dismissal must not write shared guest localStorage');assert.strictEqual(member.calls[0].opts.headers['X-WP-Nonce'],'nonce','authenticated nonce');
 assert.strictEqual(scenario({loggedIn:true,sessionSeen:true}).root.hidden,true,'member session dedup');
+assert.strictEqual(scenario({loggedIn:false,sessionSeen:true}).root.hidden,true,'guest fresh session dedup');
+assert.strictEqual(scenario({loggedIn:true,sessionSeen:true,sessionAgeSeconds:2592001}).root.hidden,false,'30-day-old member tab session must not permanently suppress welcome');
+assert.strictEqual(scenario({loggedIn:false,sessionSeen:true,sessionAgeSeconds:2592001}).root.hidden,false,'30-day-old guest tab session must not permanently suppress welcome');
+assert.strictEqual(scenario({loggedIn:true,sessionSeen:true,sessionAgeSeconds:-120}).root.hidden,false,'future-dated session marker must fail open');
+assert.strictEqual(scenario({loggedIn:false,sessionSeen:true,sessionAgeSeconds:2591999}).root.hidden,true,'29-day guest tab session must remain suppressed');
 console.log('File20 welcome JavaScript first visit, 30d, session, storage denial, escape, account POST PASS');
