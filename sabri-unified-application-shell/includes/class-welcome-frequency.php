@@ -57,9 +57,12 @@ final class WelcomeFrequency {
         self::$eligible = false;
         if ( ! self::eligible_route() ) { return; }
         $now = time();
-        $last = is_user_logged_in()
-            ? get_user_meta( get_current_user_id(), self::USER_META, true )
-            : ( isset( $_COOKIE[ self::GUEST_COOKIE ] ) ? wp_unslash( $_COOKIE[ self::GUEST_COOKIE ] ) : 0 );
+        // Account state is authoritative; an absent/invalid row falls back to a
+        // first-party preference cookie if the authenticated REST save failed.
+        $last = is_user_logged_in() ? get_user_meta( get_current_user_id(), self::USER_META, true ) : 0;
+        if ( ! ( is_int( $last ) || ( is_string( $last ) && ctype_digit( $last ) ) ) || (int) $last <= 0 ) {
+            $last = isset( $_COOKIE[ self::GUEST_COOKIE ] ) ? wp_unslash( $_COOKIE[ self::GUEST_COOKIE ] ) : 0;
+        }
         if ( ! ( is_int( $last ) || ( is_string( $last ) && ctype_digit( $last ) ) ) ) { $last = 0; }
         self::$eligible = self::due( $now, $last );
     }
