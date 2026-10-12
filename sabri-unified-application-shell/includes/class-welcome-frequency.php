@@ -57,14 +57,19 @@ final class WelcomeFrequency {
         self::$eligible = false;
         if ( ! self::eligible_route() ) { return; }
         $now = time();
-        // Account state is authoritative; an absent/invalid row falls back to a
-        // first-party preference cookie if the authenticated REST save failed.
-        $last = is_user_logged_in() ? get_user_meta( get_current_user_id(), self::USER_META, true ) : 0;
-        if ( ! ( is_int( $last ) || ( is_string( $last ) && ctype_digit( $last ) ) ) || (int) $last <= 0 ) {
-            $last = isset( $_COOKIE[ self::GUEST_COOKIE ] ) ? wp_unslash( $_COOKIE[ self::GUEST_COOKIE ] ) : 0;
-        }
+        // An account never inherits a different account's or a guest's
+        // browser-wide dismissal. Guest fallback is for guests ONLY.
+        $last = is_user_logged_in()
+            ? get_user_meta( get_current_user_id(), self::USER_META, true )
+            : ( isset( $_COOKIE[ self::GUEST_COOKIE ] ) ? wp_unslash( $_COOKIE[ self::GUEST_COOKIE ] ) : 0 );
         if ( ! ( is_int( $last ) || ( is_string( $last ) && ctype_digit( $last ) ) ) ) { $last = 0; }
         self::$eligible = self::due( $now, $last );
+    }
+
+    /** Restrict guest cookies to this WordPress site's base directory. */
+    public static function cookie_path() {
+        $path = wp_parse_url( home_url( '/' ), PHP_URL_PATH );
+        return is_string( $path ) ? '/' . trim( $path, '/' ) . ( '/' === $path ? '' : '/' ) : '/';
     }
 
     public static function enqueue() {
@@ -73,7 +78,9 @@ final class WelcomeFrequency {
         wp_enqueue_script( 'sabri-shell-welcome-owner', SABRI_SHELL_URL . 'assets/js/welcome-frequency.js', array(), SABRI_SHELL_VERSION, true );
         wp_localize_script( 'sabri-shell-welcome-owner', 'sabriWelcomeFrequency', array(
             'loggedIn' => is_user_logged_in(),
-            'scope' => is_user_logged_in() ? 'user-' . absint( get_current_user_id() ) : 'guest',
+            'scope' => is_user_logged_in() ? 'member' : 'guest',
+            'siteScope' => md5( home_url( '/' ) ),
+            'cookiePath' => self::cookie_path(),
             'seconds' => self::PERIOD_SECONDS,
             'cookieName' => self::GUEST_COOKIE,
             'endpoint' => esc_url_raw( rest_url( 'sabri-shell/v1/welcome-dismiss' ) ),
