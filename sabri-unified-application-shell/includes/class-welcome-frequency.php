@@ -78,7 +78,7 @@ final class WelcomeFrequency {
         wp_enqueue_script( 'sabri-shell-welcome-owner', SABRI_SHELL_URL . 'assets/js/welcome-frequency.js', array(), SABRI_SHELL_VERSION, true );
         wp_localize_script( 'sabri-shell-welcome-owner', 'sabriWelcomeFrequency', array(
             'loggedIn' => is_user_logged_in(),
-            'scope' => is_user_logged_in() ? 'member' : 'guest',
+            'scope' => is_user_logged_in() ? 'user-' . absint( get_current_user_id() ) : 'guest',
             'siteScope' => md5( home_url( '/' ) ),
             'cookiePath' => self::cookie_path(),
             'seconds' => self::PERIOD_SECONDS,
