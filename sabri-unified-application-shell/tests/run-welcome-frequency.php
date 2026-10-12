@@ -1,14 +1,14 @@
 <?php
 namespace {
 define('ABSPATH',__DIR__);define('SABRI_SHELL_URL','https://example.test/wp-content/plugins/shell/');define('SABRI_SHELL_VERSION','1.4.17');
-$GLOBALS['logged_in']=false;$GLOBALS['user_id']=7;$GLOBALS['user_meta']=[];$GLOBALS['authorized']=true;$GLOBALS['route_ok']=true;$GLOBALS['safe_mode']=false;$GLOBALS['styles']=[];
+$GLOBALS['logged_in']=false;$GLOBALS['user_id']=7;$GLOBALS['login_session_token']='session-7a';$GLOBALS['user_meta']=[];$GLOBALS['authorized']=true;$GLOBALS['route_ok']=true;$GLOBALS['safe_mode']=false;$GLOBALS['styles']=[];
 function __($s,$domain=''){return $s;}function add_action($hook,$callback,$priority=10){$GLOBALS['wp_actions'][$hook][$priority][]=$callback;}function add_filter(...$args){}function apply_filters($n,$value){if($n==='sabri_shell_file25_visual_contract'){return $GLOBALS['file25_ready']??true?['owner'=>'file-25','tokens'=>['primary_color'=>'#087a4e']]:[];}return $value;}
 function is_user_logged_in(){return $GLOBALS['logged_in'];}function current_user_can($x){return $GLOBALS['authorized'];}function get_current_user_id(){return $GLOBALS['user_id'];}
 function get_user_meta($user,$key,$single=true){return $GLOBALS['user_meta'][$user][$key]??'';}function update_user_meta($user,$key,$value){$GLOBALS['writes']=($GLOBALS['writes']??0)+1;$GLOBALS['user_meta'][$user][$key]=$value;return true;}
 function wp_verify_nonce($nonce,$action){return $nonce==='valid'&&$action==='wp_rest';}function wp_unslash($x){return $x;}
 function wp_parse_url($x,$part=-1){return parse_url($x,$part);}function home_url($p='/'){return 'https://example.test'.($GLOBALS['wp_install_prefix']??'/subsite').$p;}
 function esc_url_raw($x){return $x;}function esc_attr__($x,$domain=''){return $x;}function rest_url($p){return 'https://example.test/wp-json/'.$p;}
-function wp_create_nonce($x){return 'valid';}function absint($x){return abs((int)$x);}function wp_enqueue_style(...$args){$GLOBALS['styles'][]=$args[0];}
+function wp_create_nonce($x){return $x==='wp_rest'?'valid':'scope-nonce';}function wp_get_session_token(){return $GLOBALS['login_session_token'];}function wp_hash($data,$scheme='auth'){return hash_hmac('sha256',$data,'fixture-wordpress-secret-'.$scheme);}function absint($x){return abs((int)$x);}function wp_enqueue_style(...$args){$GLOBALS['styles'][]=$args[0];}
 function wp_enqueue_script(...$args){}function wp_localize_script($h,$n,$data){$GLOBALS['localized']=$data;}
 function register_rest_route($n,$p,$args){$GLOBALS['rest']=$args;}function rest_ensure_response($v){return $v;}
 function sabri_visual_experience_render_welcome($args){return !empty($GLOBALS['file25_renderer_empty'])||empty($args['invoked_by_file_20'])?'':'<section data-sabri-welcome-skip>Welcome</section>';}
@@ -68,6 +68,13 @@ ob_start();call_user_func($GLOBALS['wp_actions']['wp_footer'][2][0]);$recovered_
 $assert($empty_render==='' && strpos($recovered_render,'sabri-shell-welcome-host')!==false,'An empty File25 response must not permanently consume fallback');
 WelcomeFrequency::enqueue();$assert(in_array('sabri-shell-welcome-owner',$GLOBALS['styles'],true),'Structural CSS enqueued');
 $assert(($GLOBALS['localized']['loggedIn']??null)===true,'Member context');
+$opaqueScope=$GLOBALS['localized']['scope']??'';
+$assert(strpos($opaqueScope,'member-')===0 && strpos($opaqueScope,'user-7')===false && strpos($opaqueScope,'session-7a')===false,'Member browser scope is opaque and contains no raw actor ID/session token');
+$assert($opaqueScope===WelcomeFrequency::member_session_scope(),'Same actor and login session must have stable welcome scope');
+$GLOBALS['user_id']=8;$scopeOtherActor=WelcomeFrequency::member_session_scope();$GLOBALS['user_id']=7;
+$assert($scopeOtherActor!==$opaqueScope,'Different logged-in accounts must not share a welcome session marker');
+$GLOBALS['login_session_token']='session-7b';$scopeNewLogin=WelcomeFrequency::member_session_scope();$GLOBALS['login_session_token']='session-7a';
+$assert($scopeNewLogin!==$opaqueScope,'New login session must have separate welcome suppression');
 $assert(($GLOBALS['localized']['homeUrl']??null)==='https://example.test/subsite/','Continue target remains exact canonical home URL');
 class Req{private $nonce;public function __construct($nonce){$this->nonce=$nonce;}public function get_header($key){return $this->nonce;}}
 $bad=WelcomeFrequency::dismiss(new Req('invalid'));$assert($bad instanceof \WP_Error&&$bad->get_error_code()==='sabri_welcome_forbidden','Invalid CSRF rejected');
