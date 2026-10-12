@@ -8,6 +8,11 @@ final class WelcomeFrequency {
     const PERIOD_SECONDS = 2592000;
     const USER_META = 'sabri_shell_welcome_dismissed_at';
     const GUEST_COOKIE = 'sabri_welcome_dismissed_at';
+    /** Namespace first-party guest state to one WordPress installation. */
+    public static function guest_cookie_name() {
+        return self::GUEST_COOKIE . '_' . substr( md5( home_url( '/' ) ), 0, 12 );
+    }
+
     private static $prepared = false;
     private static $eligible = false;
 
@@ -66,9 +71,10 @@ final class WelcomeFrequency {
         $now = time();
         // An account never inherits a different account's or a guest's
         // browser-wide dismissal. Guest fallback is for guests ONLY.
+        $cookie_name = self::guest_cookie_name();
         $last = is_user_logged_in()
             ? get_user_meta( get_current_user_id(), self::USER_META, true )
-            : ( isset( $_COOKIE[ self::GUEST_COOKIE ] ) ? wp_unslash( $_COOKIE[ self::GUEST_COOKIE ] ) : 0 );
+            : ( isset( $_COOKIE[ $cookie_name ] ) ? wp_unslash( $_COOKIE[ $cookie_name ] ) : 0 );
         if ( ! ( is_int( $last ) || ( is_string( $last ) && ctype_digit( $last ) ) ) ) { $last = 0; }
         self::$eligible = self::due( $now, $last );
     }
@@ -89,7 +95,7 @@ final class WelcomeFrequency {
             'siteScope' => md5( home_url( '/' ) ),
             'cookiePath' => self::cookie_path(),
             'seconds' => self::PERIOD_SECONDS,
-            'cookieName' => self::GUEST_COOKIE,
+            'cookieName' => self::guest_cookie_name(),
             'endpoint' => esc_url_raw( rest_url( 'sabri-shell/v1/welcome-dismiss' ) ),
             'nonce' => is_user_logged_in() ? wp_create_nonce( 'wp_rest' ) : '',
         ) );
