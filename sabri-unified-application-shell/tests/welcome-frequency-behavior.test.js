@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 const source = fs.readFileSync(path.join(__dirname,'../assets/js/welcome-frequency.js'),'utf8');
-function scenario({ loggedIn=false, blockedStorage=false, oldDismissal=0, sessionSeen=false, sessionAgeSeconds=15, foreignRootCookie=false, alternateContinueHref=false }={}) {
+function scenario({ loggedIn=false, blockedStorage=false, oldDismissal=0, sessionSeen=false, sessionAgeSeconds=15, foreignRootCookie=false, alternateContinueHref=false, memberScope='member-opaque-a', storedMemberScope='member-opaque-a' }={}) {
   const listeners = {};
   const attrs = [];
   const controls = Array.from({length:3}, () => ({addEventListener(type,fn){listeners['control'+attrs.length]=fn;attrs.push(type);}}));
@@ -16,11 +16,11 @@ function scenario({ loggedIn=false, blockedStorage=false, oldDismissal=0, sessio
   let cookie=oldDismissal?((foreignRootCookie?'sabri_welcome_dismissed_at':'sabri_welcome_dismissed_at_sitea')+'='+oldDismissal):'';
   const doc={activeElement:previous,getElementById(){return root;},get cookie(){return cookie;},set cookie(value){cookie=value;},addEventListener(name,fn){listeners[name]=fn;}};
   const sessionData={};
-  if(sessionSeen)sessionData['sabri-shell-welcome:v1:site-a:'+(loggedIn?'user-7':'guest')]=String(Math.floor(Date.now()/1000)-sessionAgeSeconds);
+  if(sessionSeen)sessionData['sabri-shell-welcome:v1:site-a:'+(loggedIn?storedMemberScope:'guest')]=String(Math.floor(Date.now()/1000)-sessionAgeSeconds);
   const localData={};
   function store(data){return {getItem(k){return data[k]||null;},setItem(k,v){data[k]=String(v);}};}
   const calls=[];
-  const win={sabriWelcomeFrequency:{loggedIn,seconds:2592000,scope:loggedIn?'user-7':'guest',siteScope:'site-a',cookiePath:'/subsite/',cookieName:'sabri_welcome_dismissed_at_sitea',homeUrl:'https://example.test/subsite/',endpoint:'/wp-json/sabri-shell/v1/welcome-dismiss',nonce:'nonce'},location:{protocol:'https:'},fetch(url,opts){calls.push({url,opts});return Promise.resolve({ok:true});}};
+  const win={sabriWelcomeFrequency:{loggedIn,seconds:2592000,scope:loggedIn?memberScope:'guest',siteScope:'site-a',cookiePath:'/subsite/',cookieName:'sabri_welcome_dismissed_at_sitea',homeUrl:'https://example.test/subsite/',endpoint:'/wp-json/sabri-shell/v1/welcome-dismiss',nonce:'nonce'},location:{protocol:'https:'},fetch(url,opts){calls.push({url,opts});return Promise.resolve({ok:true});}};
   Object.defineProperty(win,'sessionStorage',{get(){if(blockedStorage)throw new Error('storage blocked');return store(sessionData);}});
   Object.defineProperty(win,'localStorage',{get(){if(blockedStorage)throw new Error('storage blocked');return store(localData);}});
   vm.runInNewContext(source,{window:win,document:doc,Date,Number,Array,console});
@@ -52,6 +52,8 @@ const member=scenario({loggedIn:true});member.listeners.control2();assert.strict
 assert.strictEqual(member.cookie,'','authenticated dismissal must not set shared guest cookie');
 assert.deepStrictEqual(member.localData,{},'authenticated dismissal must not write shared guest localStorage');assert.strictEqual(member.calls[0].opts.headers['X-WP-Nonce'],'nonce','authenticated nonce');
 assert.strictEqual(scenario({loggedIn:true,sessionSeen:true}).root.hidden,true,'member session dedup');
+assert.strictEqual(scenario({loggedIn:true,sessionSeen:true,memberScope:'member-opaque-b'}).root.hidden,false,'a second logged-in session cannot inherit another account suppression');
+assert.strictEqual(Object.keys(scenario({loggedIn:true}).sessionData).every(k=>k.indexOf('user-7')===-1),true,'browser session keys must not contain raw WordPress user IDs');
 assert.strictEqual(scenario({loggedIn:false,sessionSeen:true}).root.hidden,true,'guest fresh session dedup');
 assert.strictEqual(scenario({loggedIn:true,sessionSeen:true,sessionAgeSeconds:2592001}).root.hidden,false,'30-day-old member tab session must not permanently suppress welcome');
 assert.strictEqual(scenario({loggedIn:false,sessionSeen:true,sessionAgeSeconds:2592001}).root.hidden,false,'30-day-old guest tab session must not permanently suppress welcome');
