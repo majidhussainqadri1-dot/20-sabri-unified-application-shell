@@ -5,8 +5,10 @@
   if (!host || !cfg.seconds || !cfg.cookieName) { return; }
   var now = Math.floor(Date.now() / 1000);
   var period = Math.max(30 * 86400, Number(cfg.seconds) || 0);
-  var key = 'sabri-shell-welcome:v1:' + String(cfg.scope || 'guest');
-  var localKey = 'sabri-shell-welcome-dismissed:v1';
+  var siteScope = String(cfg.siteScope || 'default');
+  var key = 'sabri-shell-welcome:v1:' + siteScope + ':' + String(cfg.scope || 'guest');
+  var localKey = 'sabri-shell-welcome-dismissed:v1:' + siteScope;
+  var cookiePath = typeof cfg.cookiePath === 'string' && /^\/[a-zA-Z0-9/_~.%+-]*\/$/.test(cfg.cookiePath) ? cfg.cookiePath : '/';
   function storage(name) { try { return window[name]; } catch (_) { return null; } }
   var session = storage('sessionStorage');
   var local = storage('localStorage');
@@ -27,15 +29,27 @@
   if (get(session, key) === '1') { return; }
   if (cfg.loggedIn !== true && (stillSuppressed(cookieTime()) || stillSuppressed(get(local, localKey)))) { return; }
   put(session, key, '1');
+  var previousFocus = document.activeElement || null;
   host.hidden = false;
+  var heading = host.querySelector && host.querySelector('h2');
+  if (heading && typeof heading.focus === 'function') {
+    if (typeof heading.setAttribute === 'function') { heading.setAttribute('tabindex', '-1'); }
+    try { heading.focus({ preventScroll: true }); } catch (_) { heading.focus(); }
+  }
   var closed = false;
   function dismiss() {
     if (closed) { return; }
     closed = true;
+    var restoreFocus = previousFocus && typeof previousFocus.focus === 'function' &&
+      (!host.contains || host.contains(document.activeElement));
     host.hidden = true;
-    put(local, localKey, now);
-    document.cookie = cfg.cookieName + '=' + now + '; Path=/; Max-Age=' + period + '; SameSite=Lax' +
-      (window.location.protocol === 'https:' ? '; Secure' : '');
+    if (restoreFocus) { try { previousFocus.focus({ preventScroll: true }); } catch (_) { previousFocus.focus(); } }
+    // Do not leak an authenticated account dismissal into shared guest storage.
+    if (cfg.loggedIn !== true) {
+      put(local, localKey, now);
+      document.cookie = cfg.cookieName + '=' + now + '; Path=' + cookiePath + '; Max-Age=' + period + '; SameSite=Lax' +
+        (window.location.protocol === 'https:' ? '; Secure' : '');
+    }
     if (cfg.loggedIn !== true || !cfg.endpoint || !cfg.nonce || typeof window.fetch !== 'function') { return; }
     try {
       window.fetch(cfg.endpoint, {
