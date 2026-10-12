@@ -7,7 +7,10 @@
   var period = Math.max(30 * 86400, Number(cfg.seconds) || 0);
   var key = 'sabri-shell-welcome:v1:' + String(cfg.scope || 'guest');
   var localKey = 'sabri-shell-welcome-dismissed:v1';
-  function get(storage, name) { try { return storage && storage.getItem(name); } catch (_) { return null; } }
+  function storage(name) { try { return window[name]; } catch (_) { return null; } }
+  var session = storage('sessionStorage');
+  var local = storage('localStorage');
+  function get(store, name) { try { return store && store.getItem(name); } catch (_) { return null; } }
   function put(storage, name, value) { try { if (storage) { storage.setItem(name, String(value)); } } catch (_) {} }
   function cookieTime() {
     var parts = String(document.cookie || '').split(';');
@@ -21,16 +24,16 @@
     last = Number(last);
     return Number.isFinite(last) && last > 0 && last <= now && (now - last) < period;
   }
-  if (get(window.sessionStorage, key) === '1') { return; }
-  if (cfg.loggedIn !== true && (stillSuppressed(cookieTime()) || stillSuppressed(get(window.localStorage, localKey)))) { return; }
-  put(window.sessionStorage, key, '1');
+  if (get(session, key) === '1') { return; }
+  if (cfg.loggedIn !== true && (stillSuppressed(cookieTime()) || stillSuppressed(get(local, localKey)))) { return; }
+  put(session, key, '1');
   host.hidden = false;
   var closed = false;
   function dismiss() {
     if (closed) { return; }
     closed = true;
     host.hidden = true;
-    put(window.localStorage, localKey, now);
+    put(local, localKey, now);
     document.cookie = cfg.cookieName + '=' + now + '; Path=/; Max-Age=' + period + '; SameSite=Lax' +
       (window.location.protocol === 'https:' ? '; Secure' : '');
     if (cfg.loggedIn !== true || !cfg.endpoint || !cfg.nonce || typeof window.fetch !== 'function') { return; }
