@@ -17,28 +17,25 @@ $client        = $read( 'assets/js/four-plan-harmonization.js' );
 $central       = $read( 'includes/class-central-plan-contract.php' );
 $uninstall     = $read( 'uninstall.php' );
 
-foreach ( array(
-    'WELCOME_USER_META', 'WELCOME_COOKIE', 'WELCOME_SESSION_COOKIE',
-    'WELCOME_STORAGE_KEY', 'WELCOME_SESSION_KEY', 'sabri_shell_welcome_dismiss',
-    'update_user_meta(', 'get_user_meta(', 'setcookie(',
-) as $forbidden ) {
-    if ( false !== strpos( $harmonization, $forbidden ) ) {
-        $fail( 'File 20 still owns Welcome Intro preference/session state: ' . $forbidden );
-    }
+$welcome = $read( 'includes/class-welcome-frequency.php' );
+$welcome_js = $read( 'assets/js/welcome-frequency.js' );
+if ( false !== strpos( $harmonization, 'sabri_shell_welcome_intro_invoke' ) ) {
+    $fail( 'Retired File13 public renderer hook must not be invoked from File20.' );
 }
-foreach ( array( 'localStorage', 'sessionStorage', 'data-sabri-welcome-dismiss', 'sabri:welcome-dismissed' ) as $forbidden ) {
-    if ( false !== strpos( $client, $forbidden ) ) {
-        $fail( 'File 20 client still persists or consumes File 13 Welcome state: ' . $forbidden );
-    }
-}
-if ( false === strpos( $harmonization, "'preference_state_owner' => 'file-13'" ) ) {
-    $fail( 'File 13 preference-state ownership is not explicit in the shell invocation contract.' );
+if ( false === strpos( $harmonization, 'WelcomeFrequency::register()' )
+    || false === strpos( $welcome, "'owner' => 'file-20'" )
+    || false === strpos( $welcome, 'PERIOD_SECONDS = 2592000' )
+    || false === strpos( $welcome, 'get_user_meta(' )
+    || false === strpos( $welcome, 'update_user_meta(' )
+    || false === strpos( $welcome_js, 'localStorage' )
+    || false === strpos( $welcome_js, 'sessionStorage' ) ) {
+    $fail( 'File20 canonical frequency, account/guest/session ownership contract is incomplete.' );
 }
 if ( false === strpos( $harmonization, "apply_filters( 'sabri_shell_welcome_request_eligible'" ) ) {
     $fail( 'Shell-owned route/layout eligibility extension point is missing.' );
 }
-if ( false !== strpos( $uninstall, 'sabri_shell_welcome_dismissed_at' ) ) {
-    $fail( 'File 20 uninstall still deletes File 13-owned welcome state.' );
+if ( false !== strpos( $uninstall, 'delete_user_meta(' ) ) {
+    $fail( 'Uninstall must not destroy File20 welcome preference state without explicit purge.' );
 }
 if ( false === strpos( $central, "'bootstrap-registry-contracts-activation-shared-conventions'" )
     || false === strpos( $central, "'consume-foundation-registry-no-shell-or-search-truth'" ) ) {
