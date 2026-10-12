@@ -30,6 +30,12 @@ $assert(!WelcomeFrequency::eligible_route(),'Safe mode suppression');$GLOBALS['s
 $GLOBALS['logged_in']=true;$GLOBALS['user_meta'][7][WelcomeFrequency::USER_META]=time()-120;
 WelcomeFrequency::prepare();ob_start();WelcomeFrequency::render();$out=ob_get_clean();$assert(''===$out,'Recent member dismissal suppressed');
 $prop=new \ReflectionProperty(WelcomeFrequency::class,'prepared');$prop->setAccessible(true);$prop->setValue(null,false);
+// A guest cookie must never suppress an independent logged-in account.
+$GLOBALS['user_id']=8;$_COOKIE[WelcomeFrequency::GUEST_COOKIE]=(string)time();
+WelcomeFrequency::prepare();ob_start();WelcomeFrequency::render();$account8=ob_get_clean();
+$assert(strpos($account8,'sabri-shell-welcome-host')!==false,'Account must not inherit guest or another account dismissal');
+$prop->setValue(null,false);$GLOBALS['user_id']=7;unset($_COOKIE[WelcomeFrequency::GUEST_COOKIE]);
+$assert(WelcomeFrequency::cookie_path()==='/subsite/','Guest cookie must use site-local WordPress path');
 $GLOBALS['user_meta'][7][WelcomeFrequency::USER_META]=time()-2592100;WelcomeFrequency::prepare();
 ob_start();WelcomeFrequency::render();$out=ob_get_clean();$assert(strpos($out,'sabri-shell-welcome-host')!==false,'Due welcome supplied by File25');
 WelcomeFrequency::enqueue();$assert(in_array('sabri-shell-welcome-owner',$GLOBALS['styles'],true),'Structural CSS enqueued');
