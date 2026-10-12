@@ -26,9 +26,11 @@
     last = Number(last);
     return Number.isFinite(last) && last > 0 && last <= now && (now - last) < period;
   }
-  if (get(session, key) === '1') { return; }
+  // A surviving/restored tab must not extend a one-session suppression
+  // beyond the canonical 30-day recurrence deadline.
+  if (stillSuppressed(get(session, key))) { return; }
   if (cfg.loggedIn !== true && (stillSuppressed(cookieTime()) || stillSuppressed(get(local, localKey)))) { return; }
-  put(session, key, '1');
+  put(session, key, now);
   var previousFocus = document.activeElement || null;
   host.hidden = false;
   var heading = host.querySelector && host.querySelector('h2');
