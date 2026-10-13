@@ -33,6 +33,16 @@
   put(session, key, now);
   var previousFocus = document.activeElement || null;
   host.hidden = false;
+  // File25 owns the nonfocusable live status markup. Announce the existing
+  // heading once AFTER the region becomes visible, without moving focus.
+  var notice = host.querySelector && host.querySelector('[data-sabri-welcome-announcement]');
+  var heading = host.querySelector && host.querySelector('#sabri-welcome-title');
+  function announceOnce() {
+    if (host.hidden || !notice || !heading || notice.textContent) { return; }
+    notice.textContent = String(heading.textContent || '').trim();
+  }
+  if (typeof window.setTimeout === 'function') { window.setTimeout(announceOnce, 0); }
+  else { announceOnce(); }
   // This is a non-modal region, not a dialog. Do not steal keyboard or
   // screen-reader focus as the user reads/interacts with the underlying page.
   var closed = false;
