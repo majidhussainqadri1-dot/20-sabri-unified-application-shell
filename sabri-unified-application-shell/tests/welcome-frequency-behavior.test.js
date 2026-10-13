@@ -10,9 +10,10 @@ function scenario({ loggedIn=false, blockedStorage=false, oldDismissal=0, sessio
   const controls = Array.from({length:3}, () => ({addEventListener(type,fn){listeners['control'+attrs.length]=fn;attrs.push(type);},focus(){doc.activeElement=this;}}));
   controls[0].tagName='A';
   controls[0].getAttribute=function(k){return k==='href'?(alternateContinueHref?'https://example.test/other/':'https://example.test/subsite/'):null;};
-  const heading={tabindex:null,setAttribute(k,v){this[k]=v;},focus(){doc.activeElement=this;}};
+  const heading={textContent:'Welcome to Sabri Social Homeopathy Platform',tabindex:null,setAttribute(k,v){this[k]=v;},focus(){doc.activeElement=this;}};
+  const announcement={textContent:''};
   const previous={focus(){doc.activeElement=this;}};
-  const root={hidden:true,querySelectorAll(){return controls;},querySelector(sel){return sel==='h2'?heading:null;},contains(item){return item===heading||controls.includes(item);}};
+  const root={hidden:true,querySelectorAll(){return controls;},querySelector(sel){return sel==='h2'||sel==='#sabri-welcome-title'?heading:sel==='[data-sabri-welcome-announcement]'?announcement:null;},contains(item){return item===heading||controls.includes(item);}};
   let cookie=oldDismissal?((foreignRootCookie?'sabri_welcome_dismissed_at':'sabri_welcome_dismissed_at_sitea')+'='+oldDismissal):'';
   const doc={activeElement:previous,getElementById(){return root;},get cookie(){return cookie;},set cookie(value){cookie=value;},addEventListener(name,fn){listeners[name]=fn;}};
   const sessionData={};
@@ -20,18 +21,30 @@ function scenario({ loggedIn=false, blockedStorage=false, oldDismissal=0, sessio
   const localData={};
   function store(data){return {getItem(k){return data[k]||null;},setItem(k,v){data[k]=String(v);}};}
   const calls=[];
-  const win={sabriWelcomeFrequency:{loggedIn,seconds:2592000,scope:loggedIn?memberScope:'guest',siteScope:'site-a',cookiePath:'/subsite/',cookieName:'sabri_welcome_dismissed_at_sitea',homeUrl:'https://example.test/subsite/',endpoint:'/wp-json/sabri-shell/v1/welcome-dismiss',nonce:'nonce'},location:{protocol:'https:'},fetch(url,opts){calls.push({url,opts});return Promise.resolve({ok:true});}};
+  const scheduled=[];
+  const win={sabriWelcomeFrequency:{loggedIn,seconds:2592000,scope:loggedIn?memberScope:'guest',siteScope:'site-a',cookiePath:'/subsite/',cookieName:'sabri_welcome_dismissed_at_sitea',homeUrl:'https://example.test/subsite/',endpoint:'/wp-json/sabri-shell/v1/welcome-dismiss',nonce:'nonce'},location:{protocol:'https:'},setTimeout(fn){scheduled.push(fn);return scheduled.length;},fetch(url,opts){calls.push({url,opts});return Promise.resolve({ok:true});}};
   Object.defineProperty(win,'sessionStorage',{get(){if(blockedStorage)throw new Error('storage blocked');return store(sessionData);}});
   Object.defineProperty(win,'localStorage',{get(){if(blockedStorage)throw new Error('storage blocked');return store(localData);}});
   let fakeTime=Date.now();
   class TestDate extends Date { static now(){return fakeTime;} }
   vm.runInNewContext(source,{window:win,document:doc,Date:TestDate,Number,Array,console});
-  return {root,listeners,controls,sessionData,localData,calls,doc,heading,previous,advance(seconds){fakeTime+=seconds*1000;},get cookie(){return cookie;}};
+  return {root,listeners,controls,sessionData,localData,calls,doc,heading,announcement,previous,flushAnnouncements(){while(scheduled.length){scheduled.shift()();}},advance(seconds){fakeTime+=seconds*1000;},get cookie(){return cookie;}};
 }
 const now=Math.floor(Date.now()/1000);
 const guest=scenario();assert.strictEqual(guest.root.hidden,false,'first guest visit visible');
 assert.strictEqual(guest.doc.activeElement,guest.previous,'Nonmodal welcome must not steal existing keyboard/screen-reader focus');
 assert.strictEqual(guest.heading.tabindex,null,'Nonmodal region must not turn heading into a programmatic focus target');
+const spoken=scenario();
+assert.strictEqual(spoken.announcement.textContent,'','Accessibility announcement should not occur while the region is being prepared');
+spoken.flushAnnouncements();
+assert.strictEqual(spoken.announcement.textContent,spoken.heading.textContent,'Visible welcome should produce exactly one meaningful polite announcement');
+spoken.flushAnnouncements();
+assert.strictEqual(spoken.announcement.textContent,spoken.heading.textContent,'Repeated flush cannot duplicate announcement');
+assert.strictEqual(spoken.doc.activeElement,spoken.previous,'Polite announcement must not steal focus');
+const hiddenBeforeAnnouncement=scenario();
+hiddenBeforeAnnouncement.listeners.control1();
+hiddenBeforeAnnouncement.flushAnnouncements();
+assert.strictEqual(hiddenBeforeAnnouncement.announcement.textContent,'','Dismissed welcome must not announce after becoming hidden');
 let suppressedNavigation=0;
 guest.controls[0].focus();
 guest.listeners.control0({preventDefault(){suppressedNavigation++;}});
