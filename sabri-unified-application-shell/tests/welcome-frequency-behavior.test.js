@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 const source = fs.readFileSync(path.join(__dirname,'../assets/js/welcome-frequency.js'),'utf8');
-function scenario({ loggedIn=false, blockedStorage=false, oldDismissal=0, sessionSeen=false, sessionAgeSeconds=15, foreignRootCookie=false, alternateContinueHref=false, memberScope='member-opaque-a', storedMemberScope='member-opaque-a' }={}) {
+function scenario({ loggedIn=false, blockedStorage=false, oldDismissal=0, oldLocalDismissal=0, invalidLocal=false, otherSiteKey=false, denyRemoval=false, sessionSeen=false, sessionAgeSeconds=15, foreignRootCookie=false, alternateContinueHref=false, memberScope='member-opaque-a', storedMemberScope='member-opaque-a' }={}) {
   const listeners = {};
   const attrs = [];
   const controls = Array.from({length:3}, () => ({addEventListener(type,fn){listeners['control'+attrs.length]=fn;attrs.push(type);},focus(){doc.activeElement=this;}}));
@@ -19,7 +19,10 @@ function scenario({ loggedIn=false, blockedStorage=false, oldDismissal=0, sessio
   const sessionData={};
   if(sessionSeen)sessionData['sabri-shell-welcome:v1:site-a:'+(loggedIn?storedMemberScope:'guest')]=String(Math.floor(Date.now()/1000)-sessionAgeSeconds);
   const localData={};
-  function store(data){return {getItem(k){return data[k]||null;},setItem(k,v){data[k]=String(v);}};}
+  if (oldLocalDismissal) localData['sabri-shell-welcome-dismissed:v1:site-a']=String(oldLocalDismissal);
+  if (invalidLocal) localData['sabri-shell-welcome-dismissed:v1:site-a']='corrupted';
+  if (otherSiteKey) localData['sabri-shell-welcome-dismissed:v1:other-site']='preserve';
+  function store(data){return {getItem(k){return Object.prototype.hasOwnProperty.call(data,k)?data[k]:null;},setItem(k,v){data[k]=String(v);},removeItem(k){if(denyRemoval)throw new Error('browser removal denied');delete data[k];}};}
   const calls=[];
   const scheduled=[];
   const win={sabriWelcomeFrequency:{loggedIn,seconds:2592000,scope:loggedIn?memberScope:'guest',siteScope:'site-a',cookiePath:'/subsite/',cookieName:'sabri_welcome_dismissed_at_sitea',homeUrl:'https://example.test/subsite/',endpoint:'/wp-json/sabri-shell/v1/welcome-dismiss',nonce:'nonce'},location:{protocol:'https:'},setTimeout(fn){scheduled.push(fn);return scheduled.length;},fetch(url,opts){calls.push({url,opts});return Promise.resolve({ok:true});}};
@@ -67,6 +70,24 @@ assert(delayed.cookie.includes('='+dismissalTime+';'),'Guest cookie timestamp mu
 assert.strictEqual(delayed.doc.activeElement,delayed.previous,'Focus must return to pre-welcome location after manually focused close');
 const notDue=scenario({oldDismissal:now-90});assert.strictEqual(notDue.root.hidden,true,'guest 30-day suppression');
 const due=scenario({oldDismissal:now-2592100});assert.strictEqual(due.root.hidden,false,'guest returns after 30 days');
+// Retention: first-party local/session timestamps must not outlive their useful
+// 30-day suppression window when the site can inspect browser storage.
+const oldLocal=scenario({oldLocalDismissal:now-2592100,otherSiteKey:true});
+assert.strictEqual(oldLocal.root.hidden,false,'Expired guest preference must not suppress return visit');
+assert.strictEqual(oldLocal.localData['sabri-shell-welcome-dismissed:v1:site-a'],undefined,'Expired own-site localStorage timestamp is erased on next visit');
+assert.strictEqual(oldLocal.localData['sabri-shell-welcome-dismissed:v1:other-site'],'preserve','Other WordPress installations must never be erased');
+const invalidLocal=scenario({invalidLocal:true});
+assert.strictEqual(invalidLocal.root.hidden,false,'Malformed local preference must fail open');
+assert.strictEqual(invalidLocal.localData['sabri-shell-welcome-dismissed:v1:site-a'],undefined,'Malformed local preference should be removed');
+const validLocal=scenario({oldLocalDismissal:now-60});
+assert.strictEqual(validLocal.root.hidden,true,'Fresh local guest preference still enforces 30-day suppression');
+assert.strictEqual(validLocal.localData['sabri-shell-welcome-dismissed:v1:site-a'],String(now-60),'Unexpired preference is never erased');
+const freshCookieOldLocal=scenario({oldDismissal:now-60,oldLocalDismissal:now-2592100});
+assert.strictEqual(freshCookieOldLocal.root.hidden,true,'Fresh first-party cookie still suppresses eligible visit');
+assert.strictEqual(freshCookieOldLocal.localData['sabri-shell-welcome-dismissed:v1:site-a'],undefined,'Stale local timestamp cleaned even when fresh cookie suppresses');
+const removalDenied=scenario({oldLocalDismissal:now-2592100,denyRemoval:true});
+assert.strictEqual(removalDenied.root.hidden,false,'Browser denying removal must never block site content');
+assert.strictEqual(removalDenied.localData['sabri-shell-welcome-dismissed:v1:site-a'],String(now-2592100),'Removal failure remains nonfatal and truthful');
 const crossSite=scenario({oldDismissal:now-90,foreignRootCookie:true});
 assert.strictEqual(crossSite.root.hidden,false,'unrelated root installation cookie must not suppress current subsite welcome');
 const noStorage=scenario({blockedStorage:true});assert.strictEqual(noStorage.root.hidden,false,'storage denial must not hide eligible welcome');
@@ -82,7 +103,12 @@ assert.strictEqual(scenario({loggedIn:true,sessionSeen:true}).root.hidden,true,'
 assert.strictEqual(scenario({loggedIn:true,sessionSeen:true,memberScope:'member-opaque-b'}).root.hidden,false,'a second logged-in session cannot inherit another account suppression');
 assert.strictEqual(Object.keys(scenario({loggedIn:true}).sessionData).every(k=>k.indexOf('user-7')===-1),true,'browser session keys must not contain raw WordPress user IDs');
 assert.strictEqual(scenario({loggedIn:false,sessionSeen:true}).root.hidden,true,'guest fresh session dedup');
-assert.strictEqual(scenario({loggedIn:true,sessionSeen:true,sessionAgeSeconds:2592001}).root.hidden,false,'30-day-old member tab session must not permanently suppress welcome');
+const staleMember=scenario({loggedIn:true,sessionSeen:true,sessionAgeSeconds:2592001});
+assert.strictEqual(staleMember.root.hidden,false,'30-day-old member tab session must not permanently suppress welcome');
+assert.strictEqual(staleMember.sessionData['sabri-shell-welcome:v1:site-a:member-opaque-a']!==undefined,true,'Fresh member page-show guard should be set after stale marker was evicted');
+const expiredSessionWithOwnLocal=scenario({sessionSeen:true,sessionAgeSeconds:60,oldLocalDismissal:now-2592100});
+assert.strictEqual(expiredSessionWithOwnLocal.root.hidden,true,'Fresh session still prevents replay');
+assert.strictEqual(expiredSessionWithOwnLocal.localData['sabri-shell-welcome-dismissed:v1:site-a'],undefined,'Expired guest local state is cleaned even if current session suppresses view');
 assert.strictEqual(scenario({loggedIn:false,sessionSeen:true,sessionAgeSeconds:2592001}).root.hidden,false,'30-day-old guest tab session must not permanently suppress welcome');
 assert.strictEqual(scenario({loggedIn:true,sessionSeen:true,sessionAgeSeconds:-120}).root.hidden,false,'future-dated session marker must fail open');
 assert.strictEqual(scenario({loggedIn:false,sessionSeen:true,sessionAgeSeconds:2591999}).root.hidden,true,'29-day guest tab session must remain suppressed');
