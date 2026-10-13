@@ -14,6 +14,15 @@
   var local = storage('localStorage');
   function get(store, name) { try { return store && store.getItem(name); } catch (_) { return null; } }
   function put(storage, name, value) { try { if (storage) { storage.setItem(name, String(value)); } } catch (_) {} }
+  function removeExpired(store, name) {
+    var value = get(store, name);
+    if (value === null || value === undefined) { return false; }
+    if (stillSuppressed(value)) { return true; }
+    // Browser storage has no built-in Max-Age. Expire only this File20/site
+    // preference and never delete another plugin's or site's browser state.
+    try { if (store && typeof store.removeItem === 'function') { store.removeItem(name); } } catch (_) {}
+    return false;
+  }
   function cookieTime() {
     var parts = String(document.cookie || '').split(';');
     for (var i = 0; i < parts.length; i++) {
@@ -28,8 +37,12 @@
   }
   // A surviving/restored tab must not extend a one-session suppression
   // beyond the canonical 30-day recurrence deadline.
-  if (stillSuppressed(get(session, key))) { return; }
-  if (cfg.loggedIn !== true && (stillSuppressed(cookieTime()) || stillSuppressed(get(local, localKey)))) { return; }
+  // Inspect both stores even when one suppression is valid, so stale
+  // local preference data is not retained forever behind a fresh cookie.
+  var sessionSuppressed = removeExpired(session, key);
+  var cookieSuppressed = cfg.loggedIn !== true && stillSuppressed(cookieTime());
+  var localSuppressed = cfg.loggedIn !== true && removeExpired(local, localKey);
+  if (sessionSuppressed || cookieSuppressed || localSuppressed) { return; }
   put(session, key, now);
   var previousFocus = document.activeElement || null;
   host.hidden = false;
