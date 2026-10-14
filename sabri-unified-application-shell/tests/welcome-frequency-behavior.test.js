@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 const source = fs.readFileSync(path.join(__dirname,'../assets/js/welcome-frequency.js'),'utf8');
-function scenario({ loggedIn=false, blockedStorage=false, oldDismissal=0, oldLocalDismissal=0, invalidLocal=false, otherSiteKey=false, denyRemoval=false, sessionSeen=false, sessionAgeSeconds=15, foreignRootCookie=false, alternateContinueHref=false, memberScope='member-opaque-a', storedMemberScope='member-opaque-a' }={}) {
+function scenario({ loggedIn=false, blockedStorage=false, oldDismissal=0, oldLocalDismissal=0, invalidLocal=false, otherSiteKey=false, denyRemoval=false, sessionSeen=false, sessionAgeSeconds=15, foreignRootCookie=false, alternateContinueHref=false, memberScope='member-opaque-a', storedMemberScope='member-opaque-a', postResponses=[] }={}) {
   const listeners = {};
   const attrs = [];
   const controls = Array.from({length:3}, () => ({addEventListener(type,fn){listeners['control'+attrs.length]=fn;attrs.push(type);},focus(){doc.activeElement=this;}}));
@@ -25,7 +25,7 @@ function scenario({ loggedIn=false, blockedStorage=false, oldDismissal=0, oldLoc
   function store(data){return {getItem(k){return Object.prototype.hasOwnProperty.call(data,k)?data[k]:null;},setItem(k,v){data[k]=String(v);},removeItem(k){if(denyRemoval)throw new Error('browser removal denied');delete data[k];}};}
   const calls=[];
   const scheduled=[];
-  const win={sabriWelcomeFrequency:{loggedIn,seconds:2592000,scope:loggedIn?memberScope:'guest',siteScope:'site-a',cookiePath:'/subsite/',cookieName:'sabri_welcome_dismissed_at_sitea',homeUrl:'https://example.test/subsite/',endpoint:'/wp-json/sabri-shell/v1/welcome-dismiss',nonce:'nonce'},location:{protocol:'https:'},setTimeout(fn){scheduled.push(fn);return scheduled.length;},fetch(url,opts){calls.push({url,opts});return Promise.resolve({ok:true});}};
+  const win={sabriWelcomeFrequency:{loggedIn,seconds:2592000,scope:loggedIn?memberScope:'guest',siteScope:'site-a',cookiePath:'/subsite/',cookieName:'sabri_welcome_dismissed_at_sitea',homeUrl:'https://example.test/subsite/',endpoint:'/wp-json/sabri-shell/v1/welcome-dismiss',nonce:'nonce'},location:{protocol:'https:'},setTimeout(fn){scheduled.push(fn);return scheduled.length;},fetch(url,opts){calls.push({url,opts});const reply=postResponses[calls.length-1];return reply==='network'?Promise.reject(new Error('network')):Promise.resolve(reply===undefined?{ok:true}:reply);}};
   Object.defineProperty(win,'sessionStorage',{get(){if(blockedStorage)throw new Error('storage blocked');return store(sessionData);}});
   Object.defineProperty(win,'localStorage',{get(){if(blockedStorage)throw new Error('storage blocked');return store(localData);}});
   let fakeTime=Date.now();
@@ -112,4 +112,29 @@ assert.strictEqual(expiredSessionWithOwnLocal.localData['sabri-shell-welcome-dis
 assert.strictEqual(scenario({loggedIn:false,sessionSeen:true,sessionAgeSeconds:2592001}).root.hidden,false,'30-day-old guest tab session must not permanently suppress welcome');
 assert.strictEqual(scenario({loggedIn:true,sessionSeen:true,sessionAgeSeconds:-120}).root.hidden,false,'future-dated session marker must fail open');
 assert.strictEqual(scenario({loggedIn:false,sessionSeen:true,sessionAgeSeconds:2591999}).root.hidden,true,'29-day guest tab session must remain suppressed');
+async function verifyPostRetries() {
+  const transient=scenario({loggedIn:true,postResponses:[{ok:false,status:503},{ok:true,status:200}]});
+  transient.listeners.control1();
+  await Promise.resolve(); await Promise.resolve();
+  assert.strictEqual(transient.calls.length,1,'First authenticated dismissal makes one POST');
+  transient.flushAnnouncements();
+  await Promise.resolve(); await Promise.resolve();
+  assert.strictEqual(transient.calls.length,2,'Transient 503 retries authenticated preference exactly once');
+  const unauthorized=scenario({loggedIn:true,postResponses:[{ok:false,status:403}]});
+  unauthorized.listeners.control1();
+  await Promise.resolve();await Promise.resolve();
+  unauthorized.flushAnnouncements();
+  assert.strictEqual(unauthorized.calls.length,1,'Authorization 403 is never retried');
+  const unavailable=scenario({loggedIn:true,postResponses:['network','network']});
+  unavailable.listeners.control1();
+  await Promise.resolve();await Promise.resolve();
+  unavailable.flushAnnouncements();
+  await Promise.resolve();await Promise.resolve();
+  unavailable.flushAnnouncements();
+  assert.strictEqual(unavailable.calls.length,2,'Network errors retry no more than once');
+  const guestNetwork=scenario({loggedIn:false});
+  guestNetwork.listeners.control1();
+  assert.strictEqual(guestNetwork.calls.length,0,'Guest never attempts authenticated persistence');
+}
+verifyPostRetries().catch(error=>{console.error(error);process.exitCode=1;});
 console.log('File20 welcome JavaScript first visit, 30d, session, storage denial, escape, account POST PASS');
