@@ -77,13 +77,32 @@
         (window.location.protocol === 'https:' ? '; Secure' : '');
     }
     if (cfg.loggedIn !== true || !cfg.endpoint || !cfg.nonce || typeof window.fetch !== 'function') { return; }
-    try {
-      window.fetch(cfg.endpoint, {
-        method: 'POST', credentials: 'same-origin', keepalive: true,
-        headers: { 'X-WP-Nonce': cfg.nonce, 'Content-Type': 'application/json' },
-        body: '{}'
-      }).catch(function () {});
-    } catch (_) {}
+    // Server user-meta is authoritative across devices. A transient network
+    // failure must not be silently treated as a persisted 30-day preference.
+    // Retry at most once; 4xx authorization failures must never be replayed.
+    function savePreference(attempt) {
+      try {
+        window.fetch(cfg.endpoint, {
+          method: 'POST', credentials: 'same-origin', keepalive: true,
+          headers: { 'X-WP-Nonce': cfg.nonce, 'Content-Type': 'application/json' },
+          body: '{}'
+        }).then(function (response) {
+          if (response && response.ok) { return; }
+          if (attempt === 0 && response && Number(response.status) >= 500 && typeof window.setTimeout === 'function') {
+            window.setTimeout(function () { savePreference(1); }, 1000);
+          }
+        }).catch(function () {
+          if (attempt === 0 && typeof window.setTimeout === 'function') {
+            window.setTimeout(function () { savePreference(1); }, 1000);
+          }
+        });
+      } catch (_) {
+        if (attempt === 0 && typeof window.setTimeout === 'function') {
+          window.setTimeout(function () { savePreference(1); }, 1000);
+        }
+      }
+    }
+    savePreference(0);
   }
   var controls = host.querySelectorAll('[data-sabri-welcome-dismiss], [data-sabri-welcome-skip], .sabri-ui-welcome-panel__actions a');
   Array.prototype.forEach.call(controls, function (element) {
