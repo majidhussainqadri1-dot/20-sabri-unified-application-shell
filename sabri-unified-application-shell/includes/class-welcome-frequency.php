@@ -52,9 +52,23 @@ final class WelcomeFrequency {
         // File25 may be installed but fail-closed in its own Safe Mode.
         // Never show a raw/un-styled overlay without its registered contract.
         $visual = apply_filters( 'sabri_shell_file25_visual_contract', array() );
+        // Accept only File25's currently reviewed visual-contract major and
+        // required CSS color tokens. A nonempty arbitrary array is not proof
+        // of a compatible/styled welcome; fail open to underlying site content.
         if ( ! is_array( $visual ) || ( $visual['owner'] ?? '' ) !== 'file-25'
+            || ! isset( $visual['version'] ) || ! is_string( $visual['version'] )
+            || ! preg_match( '/^\\d+\\.\\d+\\.\\d+(?:[-+][0-9A-Za-z.-]+)?$/', $visual['version'] )
+            || version_compare( $visual['version'], '1.9.0', '<' )
+            || version_compare( $visual['version'], '2.0.0', '>=' )
             || empty( $visual['tokens'] ) || ! is_array( $visual['tokens'] ) ) {
             return false;
+        }
+        foreach ( array( 'primary_color', 'text', 'surface_strong' ) as $token_name ) {
+            if ( ! isset( $visual['tokens'][ $token_name ] )
+                || ! is_string( $visual['tokens'][ $token_name ] )
+                || ! preg_match( '/^#[0-9a-fA-F]{6}$/', $visual['tokens'][ $token_name ] ) ) {
+                return false;
+            }
         }
         $uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
         // Query URLs can be search, REST fallback, appointment or other deep links
