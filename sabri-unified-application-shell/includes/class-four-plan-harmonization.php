@@ -18,11 +18,6 @@ final class FourPlanHarmonization {
 	const CONTRACT_VERSION       = '1.0.0';
 	const FILE26_MIN_VERSION     = '1.0.0';
 
-	/** @var bool Whether the current request has evaluated welcome eligibility. */
-	private static $welcome_prepared = false;
-
-	/** @var bool Whether File 13 may be invoked on this exact request. */
-	private static $welcome_invoke = false;
 	const MIGRATION_OPTION       = 'sabri_shell_four_plan_migration';
 
 	/** Register current governing integrations. */
@@ -33,8 +28,7 @@ final class FourPlanHarmonization {
 		add_filter( 'pre_update_option_' . Defaults::OPTION_NAME, array( __CLASS__, 'enforce_settings' ), 50, 2 );
 		add_action( 'init', array( __CLASS__, 'migrate_settings' ), 3 );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue' ), 120 );
-		add_action( 'wp', array( __CLASS__, 'prepare_welcome_invocation' ), 98 );
-		add_action( 'wp_body_open', array( __CLASS__, 'invoke_welcome_intro' ), 2 );
+		WelcomeFrequency::register(); // File20-owned 30-day recurrence and File25-only renderer.
 	}
 
 	/**
@@ -176,7 +170,7 @@ final class FourPlanHarmonization {
 		echo '</form>';
 	}
 
-	/** Enqueue structural guardrails only; File 13 owns welcome preference/session state. */
+	/** Enqueue structural guardrails; File20 independently owns welcome preference/session state. */
 	public static function enqueue() {
 		if ( ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) ) {
 			return;
@@ -194,42 +188,6 @@ final class FourPlanHarmonization {
 			SABRI_SHELL_VERSION,
 			true
 		);
-	}
-
-	/**
-	 * Prepare File 13 invocation from shell-owned route/layout eligibility only.
-	 * File 13 remains the canonical owner of once-per-session/frequency state.
-	 */
-	public static function prepare_welcome_invocation() {
-		if ( self::$welcome_prepared ) {
-			return;
-		}
-		self::$welcome_prepared = true;
-		self::$welcome_invoke   = false;
-
-		if ( ! self::welcome_eligible() || ! has_action( 'sabri_shell_welcome_intro_invoke' ) ) {
-			return;
-		}
-
-		self::$welcome_invoke = true;
-	}
-
-	/**
-	 * Invoke File 13 only when this exact request was prepared as eligible.
-	 * File 13 remains visual/content owner; File 20 fabricates no substitute.
-	 */
-	public static function invoke_welcome_intro() {
-		if ( ! self::$welcome_invoke || ! has_action( 'sabri_shell_welcome_intro_invoke' ) ) {
-			return;
-		}
-		$context = array(
-			'contract_version'       => self::CONTRACT_VERSION,
-			'owner'                  => 'file-20-shell-placement',
-			'preference_state_owner' => 'file-13',
-			'route_eligible'         => true,
-			'layout_mode'            => Layout::current_mode(),
-		);
-		do_action( 'sabri_shell_welcome_intro_invoke', $context );
 	}
 
 	/** Whether the current request is eligible for the welcome invocation. */
