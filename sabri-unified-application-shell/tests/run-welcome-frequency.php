@@ -2,7 +2,7 @@
 namespace {
 define('ABSPATH',__DIR__);define('SABRI_SHELL_URL','https://example.test/wp-content/plugins/shell/');define('SABRI_SHELL_VERSION','1.4.17');
 $GLOBALS['logged_in']=false;$GLOBALS['user_id']=7;$GLOBALS['login_session_token']='session-7a';$GLOBALS['user_meta']=[];$GLOBALS['authorized']=true;$GLOBALS['erasure_hold']=false;$GLOBALS['erase_fail']=false;$GLOBALS['route_ok']=true;$GLOBALS['safe_mode']=false;$GLOBALS['styles']=[];
-function __($s,$domain=''){return $s;}function add_action($hook,$callback,$priority=10){$GLOBALS['wp_actions'][$hook][$priority][]=$callback;}function add_filter($hook,$callback){$GLOBALS['wp_filters'][$hook]=$callback;}function apply_filters($n,$value){if($n==='sabri_shell_welcome_erasure_hold'){return $GLOBALS['erasure_hold'];}if($n==='sabri_shell_file25_visual_contract'){return $GLOBALS['file25_ready']??true?['owner'=>'file-25','tokens'=>['primary_color'=>'#087a4e']]:[];}return $value;}
+function __($s,$domain=''){return $s;}function add_action($hook,$callback,$priority=10){$GLOBALS['wp_actions'][$hook][$priority][]=$callback;}function add_filter($hook,$callback){$GLOBALS['wp_filters'][$hook]=$callback;}function apply_filters($n,$value){if($n==='sabri_shell_welcome_erasure_hold'){return $GLOBALS['erasure_hold'];}if($n==='sabri_shell_file25_visual_contract'){if(array_key_exists('file25_contract_override',$GLOBALS)){return $GLOBALS['file25_contract_override'];}return ($GLOBALS['file25_ready']??true)?['owner'=>'file-25','version'=>'1.9.0','tokens'=>['primary_color'=>'#087A4E','text'=>'#171717','surface_strong'=>'#E7F5EE']]:[];}return $value;}
 function is_user_logged_in(){return $GLOBALS['logged_in'];}function current_user_can($x){return $GLOBALS['authorized'];}function get_current_user_id(){return $GLOBALS['user_id'];}
 function get_user_meta($user,$key,$single=true){return $GLOBALS['user_meta'][$user][$key]??'';}function update_user_meta($user,$key,$value){$GLOBALS['writes']=($GLOBALS['writes']??0)+1;$GLOBALS['user_meta'][$user][$key]=$value;return true;}function delete_user_meta($user,$key){if($GLOBALS['erase_fail'])return false;unset($GLOBALS['user_meta'][$user][$key]);return true;}function get_user_by($type,$value){return $type==='email'&&$value==='person@example.test'?(object)['ID'=>7]:false;}
 function wp_verify_nonce($nonce,$action){return $nonce==='valid'&&$action==='wp_rest';}function wp_unslash($x){return $x;}
@@ -38,6 +38,28 @@ $GLOBALS['wp_install_prefix']='/subsite';
 $assert($subsite_cookie!==$root_cookie,'Distinct WordPress installations must have distinct guest cookie names');
 $assert(strpos($subsite_cookie,WelcomeFrequency::GUEST_COOKIE.'_')===0,'Guest cookie must be correctly namespaced');
 $GLOBALS['file25_ready']=false;$assert(!WelcomeFrequency::eligible_route(),'Missing or safe-mode File25 contract suppresses welcome');$GLOBALS['file25_ready']=true;
+$good_visual = ['owner'=>'file-25','version'=>'1.9.0','tokens'=>['primary_color'=>'#087A4E','text'=>'#171717','surface_strong'=>'#E7F5EE']];
+$GLOBALS['file25_contract_override'] = $good_visual;
+$assert(WelcomeFrequency::eligible_route(),'Exact File25 1.9.0 visual contract must be eligible');
+$good_visual['version'] = '1.10.0';$GLOBALS['file25_contract_override'] = $good_visual;
+$assert(WelcomeFrequency::eligible_route(),'Compatible File25 1.x minor version must be eligible');
+foreach ([
+    ['owner'=>'file-25','tokens'=>['primary_color'=>'#087a4e']],
+    ['owner'=>'not-file-25','version'=>'1.9.0','tokens'=>['primary_color'=>'#087A4E','text'=>'#171717','surface_strong'=>'#E7F5EE']],
+    ['owner'=>'file-25','version'=>'1.8.0','tokens'=>['primary_color'=>'#087A4E','text'=>'#171717','surface_strong'=>'#E7F5EE']],
+    ['owner'=>'file-25','version'=>'2.0.0','tokens'=>['primary_color'=>'#087A4E','text'=>'#171717','surface_strong'=>'#E7F5EE']],
+    ['owner'=>'file-25','version'=>'v1.9.0','tokens'=>['primary_color'=>'#087A4E','text'=>'#171717','surface_strong'=>'#E7F5EE']],
+    ['owner'=>'file-25','version'=>['1.9.0'],'tokens'=>['primary_color'=>'#087A4E','text'=>'#171717','surface_strong'=>'#E7F5EE']],
+    ['owner'=>'file-25','version'=>'1.9.0','tokens'=>['primary_color'=>'not-a-color','text'=>'#171717','surface_strong'=>'#E7F5EE']],
+    ['owner'=>'file-25','version'=>'1.9.0','tokens'=>['primary_color'=>'#087A4E','text'=>'#171717']],
+    ['owner'=>'file-25','version'=>'1.9.0','tokens'=>['primary_color'=>'#087A4E','text'=>['bad'],'surface_strong'=>'#E7F5EE']],
+    [],
+] as $malformed_visual) {
+    $GLOBALS['file25_contract_override'] = $malformed_visual;
+    $assert(!WelcomeFrequency::eligible_route(),'Malformed or incompatible File25 visual contract must suppress Welcome');
+}
+unset($GLOBALS['file25_contract_override']);
+$assert(WelcomeFrequency::eligible_route(),'Restored canonical File25 contract must be eligible');
 foreach(['/subsite/account','/subsite/login','/subsite/appointment','/subsite/clinical','/subsite/emergency','/subsite/news/post']as$path){$_SERVER['REQUEST_URI']=$path;$assert(!WelcomeFrequency::eligible_route(),'Task route excluded '.$path);}
 $_SERVER['REQUEST_URI']='/subsite/';$GLOBALS['safe_mode']=true;
 $assert(!WelcomeFrequency::eligible_route(),'Safe mode suppression');$GLOBALS['safe_mode']=false;
