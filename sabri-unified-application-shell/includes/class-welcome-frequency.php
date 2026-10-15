@@ -131,6 +131,8 @@ final class WelcomeFrequency {
         $html = sabri_visual_experience_render_welcome( array(
             'invoked_by_file_20' => true,
             'title' => __( 'Welcome to Sabri Social Homeopathy Platform', 'sabri-unified-application-shell' ),
+            // Central governing identity, NOT the separately review-gated medical cure hero claim.
+            'message' => __( 'The Tridimensional Healing System of Soul, Vital Force, and Matter', 'sabri-unified-application-shell' ),
             'continue_url' => home_url( '/' ),
             'continue_label' => __( 'Continue', 'sabri-unified-application-shell' ),
             'close_label' => __( 'Close', 'sabri-unified-application-shell' ),
