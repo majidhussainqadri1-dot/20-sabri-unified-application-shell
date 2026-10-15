@@ -11,7 +11,7 @@ function esc_url_raw($x){return $x;}function esc_attr__($x,$domain=''){return $x
 function wp_create_nonce($x){return $x==='wp_rest'?'valid':'scope-nonce';}function wp_get_session_token(){return $GLOBALS['login_session_token'];}function wp_hash($data,$scheme='auth'){return hash_hmac('sha256',$data,'fixture-wordpress-secret-'.$scheme);}function absint($x){return abs((int)$x);}function wp_enqueue_style(...$args){$GLOBALS['styles'][]=$args[0];}
 function wp_enqueue_script(...$args){}function wp_localize_script($h,$n,$data){$GLOBALS['localized']=$data;}
 function register_rest_route($n,$p,$args){$GLOBALS['rest']=$args;}function rest_ensure_response($v){return $v;}
-function sabri_visual_experience_render_welcome($args){return !empty($GLOBALS['file25_renderer_empty'])||empty($args['invoked_by_file_20'])?'':'<section data-sabri-welcome-skip>Welcome</section>';}
+function sabri_visual_experience_render_welcome($args){$GLOBALS['last_file25_welcome_args']=$args;return !empty($GLOBALS['file25_renderer_empty'])||empty($args['invoked_by_file_20'])?'':'<section data-sabri-welcome-skip>Welcome</section>';}
 class WP_Error{private $code;public function __construct($code,$message='',$data=[]){$this->code=$code;}public function get_error_code(){return $this->code;}}
 }
 namespace Sabri\UnifiedShell {
@@ -52,6 +52,7 @@ $prop->setValue(null,false);$GLOBALS['user_id']=7;unset($_COOKIE[WelcomeFrequenc
 $assert(WelcomeFrequency::cookie_path()==='/subsite/','Guest cookie must use site-local WordPress path');
 $GLOBALS['user_meta'][7][WelcomeFrequency::USER_META]=time()-2592100;WelcomeFrequency::prepare();
 ob_start();WelcomeFrequency::render();$out=ob_get_clean();$assert(strpos($out,'sabri-shell-welcome-host')!==false,'Due welcome supplied by File25');
+$assert(($GLOBALS['last_file25_welcome_args']['message']??null)==='The Tridimensional Healing System of Soul, Vital Force, and Matter','File20 must pass the central approved healing-identity claim to File25 renderer');
 // Both theme hooks must not duplicate the canonical host/ID.
 ob_start();call_user_func($GLOBALS['wp_actions']['wp_footer'][2][0]);$repeat=ob_get_clean();
 $assert($repeat==='','Footer must not duplicate a Welcome already emitted in wp_body_open');
