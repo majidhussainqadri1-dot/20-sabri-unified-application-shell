@@ -40,6 +40,8 @@ jobs:
               exit 1
             fi
           done < <(find sabri-unified-application-shell -type f -name '*.php' -print0)
+      - name: Welcome guest/member JavaScript behavioral regression
+        run: node sabri-unified-application-shell/tests/welcome-frequency-behavior.test.js
       - name: Run every File 20 regression/adversarial suite
         run: |
           set -euo pipefail
