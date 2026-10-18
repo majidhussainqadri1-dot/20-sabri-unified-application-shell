@@ -2,7 +2,12 @@
 namespace {
 define('ABSPATH',__DIR__);define('SABRI_SHELL_URL','https://example.test/wp-content/plugins/shell/');define('SABRI_SHELL_VERSION','1.4.17');
 $GLOBALS['logged_in']=false;$GLOBALS['user_id']=7;$GLOBALS['login_session_token']='session-7a';$GLOBALS['user_meta']=[];$GLOBALS['authorized']=true;$GLOBALS['erasure_hold']=false;$GLOBALS['erase_fail']=false;$GLOBALS['route_ok']=true;$GLOBALS['safe_mode']=false;$GLOBALS['styles']=[];
-function __($s,$domain=''){return $s;}function add_action($hook,$callback,$priority=10){$GLOBALS['wp_actions'][$hook][$priority][]=$callback;}function add_filter($hook,$callback){$GLOBALS['wp_filters'][$hook]=$callback;}function apply_filters($n,$value){if($n==='sabri_shell_welcome_erasure_hold'){return $GLOBALS['erasure_hold'];}if($n==='sabri_shell_file25_visual_contract'){if(array_key_exists('file25_contract_override',$GLOBALS)){return $GLOBALS['file25_contract_override'];}return ($GLOBALS['file25_ready']??true)?['owner'=>'file-25','version'=>'1.9.0','tokens'=>['primary_color'=>'#087A4E','text'=>'#171717','surface_strong'=>'#E7F5EE']]:[];}return $value;}
+function __($s,$domain=''){return $s;}function add_action($hook,$callback,$priority=10){$GLOBALS['wp_actions'][$hook][$priority][]=$callback;}function add_filter($hook,$callback){$GLOBALS['wp_filters'][$hook]=$callback;}
+function has_filter($hook,$callback=false){
+    return $hook==='sabri_shell_file25_visual_contract'
+        && $callback===['Sabri\\PublicExperience\\Design_System','filter_shell_visual_contract']
+        && !empty($GLOBALS['native_file25_registered']) ? 20 : false;
+}function apply_filters($n,$value){if($n==='sabri_shell_welcome_erasure_hold'){return $GLOBALS['erasure_hold'];}if($n==='sabri_shell_file25_visual_contract'){if(array_key_exists('file25_contract_override',$GLOBALS)){return $GLOBALS['file25_contract_override'];}return ($GLOBALS['file25_ready']??true)?['owner'=>'file-25','version'=>'1.9.0','tokens'=>['primary_color'=>'#087A4E','text'=>'#171717','surface_strong'=>'#E7F5EE']]:[];}return $value;}
 function is_user_logged_in(){return $GLOBALS['logged_in'];}function current_user_can($x){return $GLOBALS['authorized'];}function get_current_user_id(){return $GLOBALS['user_id'];}
 function get_user_meta($user,$key,$single=true){return $GLOBALS['user_meta'][$user][$key]??'';}function update_user_meta($user,$key,$value){$GLOBALS['writes']=($GLOBALS['writes']??0)+1;$GLOBALS['user_meta'][$user][$key]=$value;return true;}function delete_user_meta($user,$key){if($GLOBALS['erase_fail'])return false;unset($GLOBALS['user_meta'][$user][$key]);return true;}function get_user_by($type,$value){return $type==='email'&&$value==='person@example.test'?(object)['ID'=>7]:false;}
 function wp_verify_nonce($nonce,$action){return $nonce==='valid'&&$action==='wp_rest';}function wp_unslash($x){return $x;}
@@ -11,6 +16,9 @@ function esc_url_raw($x){return $x;}function esc_attr__($x,$domain=''){return $x
 function wp_create_nonce($x){return $x==='wp_rest'?'valid':'scope-nonce';}function wp_get_session_token(){return $GLOBALS['login_session_token'];}function wp_hash($data,$scheme='auth'){return hash_hmac('sha256',$data,'fixture-wordpress-secret-'.$scheme);}function absint($x){return abs((int)$x);}function wp_enqueue_style(...$args){$GLOBALS['styles'][]=$args[0];}
 function wp_enqueue_script(...$args){}function wp_localize_script($h,$n,$data){$GLOBALS['localized']=$data;}
 function register_rest_route($n,$p,$args){$GLOBALS['rest']=$args;}function rest_ensure_response($v){return $v;}
+class File25NativeProviderTestDouble {
+    public static function filter_shell_visual_contract($contract){return $contract;}
+}
 function sabri_visual_experience_render_welcome($args){$GLOBALS['last_file25_welcome_args']=$args;return !empty($GLOBALS['file25_renderer_empty'])||empty($args['invoked_by_file_20'])?'':'<section data-sabri-welcome-skip>Welcome</section>';}
 class WP_Error{private $code;public function __construct($code,$message='',$data=[]){$this->code=$code;}public function get_error_code(){return $this->code;}}
 }
@@ -26,6 +34,13 @@ $assert(!WelcomeFrequency::due(3000000,3000000-2591999),'No early recurrence');
 $assert(WelcomeFrequency::due(3000000,3000000-2592000),'Exact 30-day recurrence');
 $assert(WelcomeFrequency::due(3000000,3000100),'Future timestamp not permanent');
 $_SERVER['REQUEST_URI']='/subsite/';
+// A forged valid-looking filter and globally named renderer without File25
+// must NOT be authorized as an installed canonical visual provider.
+$assert(!WelcomeFrequency::eligible_route(),'Forged File25 filter without native provider class cannot render welcome');
+class_alias('File25NativeProviderTestDouble','Sabri\\PublicExperience\\Design_System');
+$assert(!WelcomeFrequency::eligible_route(),'File25 native class without registered callback cannot render welcome');
+$GLOBALS['native_file25_registered']=true;
+$assert(WelcomeFrequency::eligible_route(),'Registered native File25 class/callback and valid contract must allow eligible home');
 $assert(WelcomeFrequency::eligible_route(),'Canonical home eligibility');
 foreach(['/subsite/?s=doctor','/subsite/?rest_route=/wp/v2','/subsite/?appointment=1','/subsite/?utm_source=campaign'] as $query_url) {
     $_SERVER['REQUEST_URI']=$query_url;
