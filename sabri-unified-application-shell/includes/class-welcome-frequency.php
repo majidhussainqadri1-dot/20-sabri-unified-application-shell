@@ -49,6 +49,14 @@ final class WelcomeFrequency {
             || ! function_exists( 'sabri_visual_experience_render_welcome' ) ) {
             return false;
         }
+        // A plausible filter response is not evidence of the real File25
+        // design-system provider. Reject a forged shape even when a third-party
+        // global renderer function exists; only File25 owns public visuals.
+        $native_visual_owner = 'Sabri\\PublicExperience\\Design_System';
+        if ( ! class_exists( $native_visual_owner, false )
+            || false === has_filter( 'sabri_shell_file25_visual_contract', array( $native_visual_owner, 'filter_shell_visual_contract' ) ) ) {
+            return false;
+        }
         // File25 may be installed but fail-closed in its own Safe Mode.
         // Never show a raw/un-styled overlay without its registered contract.
         $visual = apply_filters( 'sabri_shell_file25_visual_contract', array() );
