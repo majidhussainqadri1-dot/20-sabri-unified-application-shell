@@ -33,7 +33,11 @@ final class File14RestorationPreflightV1 {
         if ( ! is_string( $place ) || ! preg_match( '/^[a-z][a-z0-9_]{0,80}$/D', $place ) ) { return $closed; }
         $before = $request['baseline'];
         $current = $request['current'];
-        $names = array( 'placement_key','row_version','status','block_key','route_key','slot_key','public_id' );
+        // Mirror the complete File14 approved placement shape, not a seven-column
+        // truncation. A future signed DTO adapter must separately prove its
+        // normalized integer versions and original immutable snapshot.
+        $names = array( 'public_id','placement_key','block_key','route_key',
+            'slot_key','audience','priority','status','starts_at','ends_at','row_version' );
         foreach ( array( $before, $current ) as $row ) {
             if ( ! is_array( $row ) ) { return $closed; }
             $keys = array_keys( $row );
@@ -41,10 +45,21 @@ final class File14RestorationPreflightV1 {
             $expected = $names;
             sort( $expected, SORT_STRING );
             if ( $keys !== $expected ) { return $closed; }
-            foreach ( array( 'placement_key','status','block_key','route_key','slot_key','public_id' ) as $n ) {
+            foreach ( array( 'placement_key','status','block_key','route_key','slot_key','public_id','audience' ) as $n ) {
                 if ( ! is_string( $row[$n] ) || '' === $row[$n] ) { return $closed; }
             }
             if ( ! is_int( $row['row_version'] ) || $row['row_version'] < 1 ) { return $closed; }
+            if ( ! is_int( $row['priority'] ) || $row['priority'] < -2147483648
+                || $row['priority'] > 2147483647 ) { return $closed; }
+            foreach ( array( 'starts_at','ends_at' ) as $schedule ) {
+                if ( null === $row[$schedule] ) { continue; }
+                if ( ! is_string( $row[$schedule] )
+                    || ! preg_match( '/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/D', $row[$schedule] ) ) { return $closed; }
+                $date = \DateTimeImmutable::createFromFormat( '!Y-m-d H:i:s', $row[$schedule], new \DateTimeZone( 'UTC' ) );
+                if ( false === $date || $date->format( 'Y-m-d H:i:s' ) !== $row[$schedule] ) { return $closed; }
+            }
+            if ( null !== $row['starts_at'] && null !== $row['ends_at']
+                && strcmp( $row['starts_at'], $row['ends_at'] ) > 0 ) { return $closed; }
             if ( $row['placement_key'] !== $place ) { $closed['reason'] = 'placement_identity_drift'; return $closed; }
         }
         if ( $before['public_id'] !== $current['public_id']
