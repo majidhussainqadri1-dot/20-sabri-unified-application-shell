@@ -3,6 +3,8 @@
  * File20 external owner contract preflight for File14 F14-FUT-17.
  * No WordPress boot hook, SQL statement, write or experiment activation.
  * A structurally valid dry run is NOT a Founder signature or CAS restoration.
+ * Request context names the File14 experiment asking for review; it NEVER
+ * claims File14 ownership of File20/25 canonical placement or mutation evidence.
  */
 namespace Sabri\UnifiedShell;
 if ( ! defined( 'ABSPATH' ) ) { exit; }
@@ -15,7 +17,7 @@ final class File14RestorationPreflightV1 {
             'reason' => 'invalid_restore_request' );
         if ( ! is_array( $request ) ) { return $closed; }
         $fields = array( 'contract','experiment','approved_by','placement','baseline',
-            'current','snapshot_hash','mutation_origin' );
+            'current','snapshot_hash','request_context' );
         $actual = array_keys( $request );
         sort( $actual, SORT_STRING );
         sort( $fields, SORT_STRING );
@@ -24,7 +26,7 @@ final class File14RestorationPreflightV1 {
             || ! is_string( $request['experiment'] )
             || ! preg_match( '/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/D', $request['experiment'] )
             || ! is_int( $request['approved_by'] ) || $request['approved_by'] <= 0
-            || 'file14-owned-placement' !== $request['mutation_origin'] ) {
+            || 'file14-experiment-restore-review' !== $request['request_context'] ) {
             $closed['reason'] = 'experiment_or_approval_unverified'; return $closed;
         }
         $place = $request['placement'];
