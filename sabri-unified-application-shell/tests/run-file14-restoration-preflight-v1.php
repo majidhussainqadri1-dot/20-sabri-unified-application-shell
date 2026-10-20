@@ -6,6 +6,7 @@ use Sabri\UnifiedShell\File14RestorationPreflightV1 as Contract;
 $baseline = array(
     'placement_key'=>'global_clinic_primary', 'row_version'=>3, 'status'=>'active',
     'block_key'=>'trust_copy_a', 'route_key'=>'global_clinic',
+    'audience'=>'public', 'priority'=>0, 'starts_at'=>null, 'ends_at'=>null,
     'slot_key'=>'global_clinic_primary',
     'public_id'=>'12345678-1234-4123-8123-123456789abc'
 );
@@ -30,7 +31,7 @@ for($i=0;$i<37;$i++){
     $p=$canonical;
     // Make all 37 adversarial payloads independently distinguishable.
     $p['current']['block_key']='varying_preview_'.$i;
-    switch($i%17){
+    switch($i%21){
         case 0:$p['approved_by']=0;break;
         case 1:$p['approved_by']='7';break;
         case 2:$p['experiment']='not-uuid';break;
@@ -48,10 +49,14 @@ for($i=0;$i<37;$i++){
         case 14:$p['current']['placement_key']='other';break;
         case 15:$p['current']['medical_notes']='sensitive';break;
         case 16:unset($p['approved_by']);break;
+        case 17:$p['baseline']['audience']='';break;
+        case 18:$p['current']['priority']='1';break;
+        case 19:$p['current']['starts_at']='tomorrow';break;
+        case 20:$p['current']['starts_at']='2026-10-20 00:00:00';$p['current']['ends_at']='2020-10-20 00:00:00';break;
     }
     // Where version metadata is the fault, recompute the snapshot hash so
     // invalid versions cannot pass solely through an unrelated bad digest.
-    if(in_array($i%17,array(6,7),true)){
+    if(in_array($i%21,array(6,7,17),true)){
         $p['snapshot_hash']=hash('sha256',json_encode($p['baseline']));
     }
     $cases[]=array($p,false);
