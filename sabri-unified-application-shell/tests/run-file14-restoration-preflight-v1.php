@@ -18,7 +18,7 @@ $canonical = array(
     'approved_by'=>7, 'placement'=>'global_clinic_primary',
     'baseline'=>$baseline,'current'=>$current,
     'snapshot_hash'=>hash('sha256',json_encode($baseline)),
-    'mutation_origin'=>'file14-owned-placement'
+    'request_context'=>'file14-experiment-restore-review'
 );
 $cases=array();
 for($i=0;$i<3;$i++){
@@ -28,6 +28,8 @@ for($i=0;$i<3;$i++){
 }
 for($i=0;$i<37;$i++){
     $p=$canonical;
+    // Make all 37 adversarial payloads independently distinguishable.
+    $p['current']['block_key']='varying_preview_'.$i;
     switch($i%17){
         case 0:$p['approved_by']=0;break;
         case 1:$p['approved_by']='7';break;
@@ -42,10 +44,15 @@ for($i=0;$i<37;$i++){
         case 10:$p['current']['public_id']='different-owner-id';break;
         case 11:$p['current']['route_key']='other';break;
         case 12:$p['current']['slot_key']='other';break;
-        case 13:$p['mutation_origin']='file20-shell';break;
+        case 13:$p['request_context']='file20-shell';break;
         case 14:$p['current']['placement_key']='other';break;
         case 15:$p['current']['medical_notes']='sensitive';break;
         case 16:unset($p['approved_by']);break;
+    }
+    // Where version metadata is the fault, recompute the snapshot hash so
+    // invalid versions cannot pass solely through an unrelated bad digest.
+    if(in_array($i%17,array(6,7),true)){
+        $p['snapshot_hash']=hash('sha256',json_encode($p['baseline']));
     }
     $cases[]=array($p,false);
 }
