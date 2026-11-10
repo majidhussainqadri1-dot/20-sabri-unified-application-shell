@@ -41,6 +41,8 @@ $assert( false !== strpos( $css, '.sabri-context-navigation__forward[hidden]' ),
 $assert( false !== strpos( $css, "html[dir='ltr'] .sabri-context-navigation__forward-icon" ), 'LTR must reverse Forward arrow.' );
 $assert( false !== strpos( $css, '#087A4E' ), 'Continuity fallback color must use Sabri Green.' );
 $assert( false === strpos( $js, 'window.history.back' ), 'Back must not risk crossing to an unverifiable external history entry.' );
+$assert( false !== strpos( $js, 'nav.canGoBack !== true' ) && false !== strpos( $js, 'safeSameOriginUrl(entries[i - 1].url)' ), 'Native Back must verify same-origin real history.' );
+$assert( false !== strpos( $js, 'nativeBack.back()' ) && false !== strpos( $js, 'navigateBackFallback(link)' ), 'Native Back must preserve original validated fallback.' );
 $assert( false === strpos( $js, 'innerHTML' ), 'Context navigation JavaScript must not inject HTML.' );
 $assert( false !== strpos( $css, 'min-block-size: 44px' ), 'Controls must satisfy the minimum touch target.' );
 $assert( false !== strpos( $css, ':focus-visible' ), 'Visible keyboard focus is required.' );

@@ -91,7 +91,33 @@
 		window.location.assign(target);
 	}
 
-	function navigateBack(link) {
+
+	// Prefer an actual, same-origin native Back transition so the user may
+	// subsequently move Forward through real browser history. Older browsers
+	// retain the validated URL-based fallback below.
+	function trustedBackController() {
+		var nav = window.navigation;
+		if (!nav || nav.canGoBack !== true || typeof nav.back !== 'function' ||
+			typeof nav.entries !== 'function' || !nav.currentEntry) {
+			return null;
+		}
+		try {
+			var entries = nav.entries();
+			if (!Array.isArray(entries)) {
+				return null;
+			}
+			for (var i = 1; i < entries.length; i++) {
+				if (entries[i] && entries[i].key === nav.currentEntry.key) {
+					return entries[i - 1] && safeSameOriginUrl(entries[i - 1].url) ? nav : null;
+				}
+			}
+		} catch (error) {
+			return null;
+		}
+		return null;
+	}
+
+	function navigateBackFallback(link) {
 		var current = safeSameOriginUrl(window.location.href) || (window.location.origin + window.location.pathname);
 		var previous = previousStackUrl();
 		if (previous && previous !== current) {
@@ -170,6 +196,24 @@
 			window.navigation.addEventListener('currententrychange', updateForwardControl);
 		}
 		updateForwardControl();
+	}
+
+	function navigateBack(link) {
+		var nativeBack = trustedBackController();
+		if (nativeBack) {
+			try {
+				var transition = nativeBack.back();
+				if (transition && transition.finished && typeof transition.finished.catch === 'function') {
+					transition.finished.catch(function () {
+						navigateBackFallback(link);
+					});
+				}
+				return;
+			} catch (error) {
+				// A rejected native traversal must still retain the original safe fallback.
+			}
+		}
+		navigateBackFallback(link);
 	}
 
 	function initialize() {
