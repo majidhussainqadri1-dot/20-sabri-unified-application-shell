@@ -96,7 +96,7 @@ jobs:
           assert '* Version: 1.4.18' in main
           assert "define( 'SABRI_SHELL_VERSION', '1.4.18' );" in main
           assert 'Stable tag: 1.4.18' in readmetxt
-          assert '## Upgrade to 1.4.18' in migration
+          assert '## Candidate upgrade to 1.4.18' in migration
           assert '20-sabri-unified-application-shell-1.4.18-V12-1-CONTEXTUAL-SHELL.zip' in migration
           assert 'Record File 20 `1.4.18`' in staging
           assert '## 1.4.18 ' in changelog and '## 1.4.16 ' in changelog and '## 1.4.15 ' in changelog

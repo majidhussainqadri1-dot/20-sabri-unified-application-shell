@@ -40,20 +40,20 @@ $assert = static function ( bool $condition, string $label ) use ( &$fail ): voi
 	if ( ! $condition ) { $fail[] = $label; }
 };
 
-$current  = '1.4.17';
-$artifact = '20-sabri-unified-application-shell-1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER.zip';
+$current  = '1.4.18';
+$artifact = '20-sabri-unified-application-shell-1.4.18-V12-1-CONTEXTUAL-SHELL.zip';
 
 $assert( false !== strpos( $main, '* Version: ' . $current ), 'plugin header current version' );
 $assert( false !== strpos( $main, "define( 'SABRI_SHELL_VERSION', '" . $current . "' );" ), 'runtime constant current version' );
 $assert( false !== strpos( $readme, 'Stable tag: ' . $current ), 'readme stable tag current version' );
 $assert( false !== strpos( $readme, $artifact ), 'WordPress readme current artifact' );
 $assert( false !== strpos( $readmemd, '- Version: `' . $current . '`' ), 'plugin README current version' );
-$assert( false !== strpos( $readmemd, 'exact deterministic **1.4.17** production artifact' ), 'plugin README current deployment target' );
-$assert( false !== strpos( $migration, '## Upgrade to ' . $current ), 'migration current upgrade heading' );
+$assert( false !== strpos( $readmemd, '**1.4.18** source is a draft candidate' ), 'plugin README current deployment target' );
+$assert( false !== strpos( $migration, '## Candidate upgrade to ' . $current ), 'migration current upgrade heading' );
 $assert( false !== strpos( $migration, $artifact ), 'migration exact current artifact' );
 $assert( false !== strpos( $staging, 'Record File 20 `' . $current . '`' ), 'staging current candidate version' );
 $assert( false !== strpos( $staging, $artifact ), 'staging exact current artifact' );
-$assert( false !== strpos( $changelog, '## 1.4.17 ' ), 'changelog current release' );
+$assert( false !== strpos( $changelog, '## 1.4.18 ' ), 'changelog current release' );
 $assert( false !== strpos( $changelog, '## 1.4.16 ' ), 'changelog prior sanitizer release' );
 $assert( false !== strpos( $changelog, '## 1.4.15 ' ), 'changelog prior adapter release' );
 $assert( false !== strpos( $changelog, '## 1.4.14 ' ), 'changelog prior docs release' );
@@ -67,18 +67,18 @@ $assert( false === strpos( $migration, 'Upgrade directly to the exact approved 1
 $assert( false === strpos( $staging, 'Before any File01 write, deploy the exact 1.4.16 candidate' ), 'staging does not direct obsolete 1.4.16 candidate' );
 
 /* Root repository lifecycle documents must not silently lag behind runtime. */
-$assert( false !== strpos( $repo_readme, 'Current reviewed source baseline: **Version `1.4.17`**' ), 'root README identifies current source truth' );
-$assert( false !== strpos( $repo_status, 'File 20 is **Sabri Unified Application Shell 1.4.17**' ), 'root STATUS identifies current source truth' );
+$assert( false !== strpos( $repo_readme, 'Current reviewed source baseline: **Version `1.4.18`**' ), 'root README identifies current source truth' );
+$assert( false !== strpos( $repo_status, 'File 20 Draft V12.1 source candidate is **Sabri Unified Application Shell 1.4.18**' ), 'root STATUS identifies current source truth' );
 $assert( false !== strpos( $repo_status, 'Scoped evidence only' ), 'root STATUS preserves scoped Live evidence boundary' );
 $assert( false !== strpos( $repo_status, 'Operational | **Not established' ), 'root STATUS does not overclaim operational acceptance' );
-$assert( false !== strpos( $repo_manifest, 'Current runtime/source version: **1.4.17**' ), 'root MANIFEST identifies current source line' );
-$assert( false !== strpos( $repo_manifest, '1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER' ), 'root MANIFEST identifies current package constitution' );
+$assert( false !== strpos( $repo_manifest, 'Draft source/runtime candidate: **1.4.18**' ), 'root MANIFEST identifies current source line' );
+$assert( false !== strpos( $repo_manifest, '1.4.18-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER' ), 'root MANIFEST identifies current package constitution' );
 $assert( false !== strpos( $incident, 'Status: **LIVE VERIFIED / RESOLVED**' ), 'scoped live incident closure remains explicit' );
 $assert( false !== strpos( $incident, 'Do not infer broader platform-production acceptance' ), 'incident preserves closure boundary' );
 
 /* Current central governing amendments must be represented in machine/runtime continuity truth. */
 $decoded = json_decode( $contract_json, true );
-$assert( is_array( $decoded ) && '1.4.17' === ( $decoded['runtime_target'] ?? '' ), 'machine contract runtime target current' );
+$assert( is_array( $decoded ) && '1.4.18' === ( $decoded['runtime_target'] ?? '' ), 'machine contract runtime target current' );
 $assert( is_array( $decoded ) && false !== strpos( (string) ( $decoded['file_plan'] ?? '' ), 'v4.1' ), 'machine contract final v4.1 plan' );
 $assert( is_array( $decoded ) && false !== strpos( (string) ( $decoded['file_plan'] ?? '' ), 'v5.0 Future Shell 18 Enhancements' ), 'machine contract v5 addendum' );
 $assert( false !== strpos( strtolower( $contract ), "'primary_color' => '#087a4e'" ), 'continuity fallback current Sabri Green' );
@@ -117,4 +117,4 @@ if ( $fail ) {
 	exit( 1 );
 }
 
-echo "File 20 1.4.17 release/operator/repository documentation truth PASS\n";
+echo "File 20 1.4.18 release/operator/repository documentation truth PASS\n";
