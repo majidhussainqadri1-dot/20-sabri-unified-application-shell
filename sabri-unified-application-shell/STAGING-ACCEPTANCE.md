@@ -55,6 +55,13 @@ Hostinger-equivalent staging acceptance is the normal production-promotion gate.
 - Query Safe Mode must be administrator-authenticated and nonce-bound; raw query state alone must not enable it.
 - Default uninstall must be non-destructive; explicit purge may delete only File20-owned state.
 
+## V12.1 native-owner contextual Help acceptance
+
+- File20 supplies only a semantic native HTML details/summary slot. File02/05/06/08/CF02 or other approved native owners provide public-safe explanation, example, glossary and valid support destination through `sabri_shell_context_help_contract` v1.0.0.
+- The native owner must separately authorize each current route through `sabri_shell_context_help_owner_approved`. With missing owner/route/version/approval, the slot is absent, not misleading placeholder help.
+- Reject external/downgraded/query/fragment/support URLs, unknown owner, wrong current route, sensitive/private content, excessive glossary and unbounded text. Test no HTML/script rendering, native keyboard access, no-JS usability, RTL/LTR, zoom and role boundaries.
+- File20 does not create case tickets, publish native content, capture screen/form values or store any private help context. Exact owner/provider integration remains an independent staging gate.
+
 ## V12.1 genuine contextual Forward acceptance
 
 - Forward is hidden by default; it may appear only when native Navigation API canGoForward is true AND the current/next native entries match a valid same-origin history path. No fake history.length, referrer, session shortcut or button that manufactures a new visit.

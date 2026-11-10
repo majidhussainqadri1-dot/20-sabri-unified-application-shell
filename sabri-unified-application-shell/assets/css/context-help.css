@@ -1,0 +1,10 @@
+/* CV-033: only one native-owner public-safe assistance slot, no theme ownership. */
+.sabri-shell-context-help{box-sizing:border-box;direction:inherit;inline-size:min(100%,90rem);margin:.75rem auto;padding-inline:clamp(.75rem,4vw,3rem);color:var(--sabri-shell-text,currentColor)}
+.sabri-shell-context-help details{border:1px solid var(--sabri-shell-border,#adb5bd);border-radius:.75rem;background:var(--sabri-shell-surface,#fff)}
+.sabri-shell-context-help summary{cursor:pointer;font-weight:700;padding:.75rem 1rem;min-block-size:44px}
+.sabri-shell-context-help summary:focus-visible,.sabri-shell-context-help a:focus-visible{outline:3px solid var(--sabri-shell-focus,#087A4E);outline-offset:3px}
+.sabri-shell-context-help__body{padding:0 1rem 1rem;max-inline-size:80ch;overflow-wrap:anywhere}
+.sabri-shell-context-help dt{font-weight:700;margin-block-start:.5rem}
+.sabri-shell-context-help dd{margin-inline-start:1rem}
+@media(forced-colors:active){.sabri-shell-context-help details{border:1px solid CanvasText}}
+@media(prefers-reduced-motion:reduce){.sabri-shell-context-help *{scroll-behavior:auto}}
