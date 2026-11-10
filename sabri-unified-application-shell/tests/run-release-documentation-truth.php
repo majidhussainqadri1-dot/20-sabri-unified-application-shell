@@ -72,7 +72,7 @@ $assert( false !== strpos( $repo_status, 'File 20 Draft V12.1 source candidate i
 $assert( false !== strpos( $repo_status, 'Scoped evidence only' ), 'root STATUS preserves scoped Live evidence boundary' );
 $assert( false !== strpos( $repo_status, 'Operational | **Not established' ), 'root STATUS does not overclaim operational acceptance' );
 $assert( false !== strpos( $repo_manifest, 'Draft source/runtime candidate: **1.4.18**' ), 'root MANIFEST identifies current source line' );
-$assert( false !== strpos( $repo_manifest, '1.4.18-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER' ), 'root MANIFEST identifies current package constitution' );
+$assert( false !== strpos( $repo_manifest, '1.4.18-V12-1-CONTEXTUAL-SHELL' ), 'root MANIFEST identifies current package constitution' );
 $assert( false !== strpos( $incident, 'Status: **LIVE VERIFIED / RESOLVED**' ), 'scoped live incident closure remains explicit' );
 $assert( false !== strpos( $incident, 'Do not infer broader platform-production acceptance' ), 'incident preserves closure boundary' );
 
