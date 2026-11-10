@@ -53,7 +53,7 @@ function get_locale() { return 'en_US'; }
 function get_post_status( $id ) { return $GLOBALS['test_post_status'][ $id ] ?? false; }
 function get_permalink( $id = 0 ) { $id = is_object( $id ) ? $id->ID : $id; return $GLOBALS['test_permalinks'][ $id ] ?? ''; }
 function home_url( $path = '/' ) { return 'https://example.test' . ( '/' === $path ? '/' : $path ); }
-function get_posts() { return array(); }
+function get_posts( $args = array() ) { return isset( $GLOBALS['test_posts'] ) ? $GLOBALS['test_posts'] : array(); }
 function has_shortcode( $content, $shortcode ) { return false !== strpos( (string) $content, '[' . $shortcode ); }
 function shortcode_exists( $shortcode ) { return in_array( $shortcode, $GLOBALS['test_shortcodes'], true ); }
 function post_type_exists() { return false; }
@@ -139,5 +139,6 @@ require_once dirname( __DIR__ ) . '/includes/class-defaults.php';
 require_once dirname( __DIR__ ) . '/includes/class-settings.php';
 require_once dirname( __DIR__ ) . '/includes/class-integrations.php';
 require_once dirname( __DIR__ ) . '/includes/class-navigation.php';
+require_once dirname( __DIR__ ) . '/includes/class-security-navigation.php';
 require_once dirname( __DIR__ ) . '/includes/class-safe-mode.php';
 require_once dirname( __DIR__ ) . '/includes/class-layout.php';

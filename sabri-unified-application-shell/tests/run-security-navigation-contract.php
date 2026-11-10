@@ -7,15 +7,9 @@
 namespace Sabri\Platform\Security\Guidance {
 	class SecurityGuidance { public function renderPublic() { return ''; } }
 }
-namespace Sabri\UnifiedShell {
-	class Integrations {
-		public static function find_page_by_shortcodes( $codes ) {
-			return isset( $GLOBALS['mock_file24_guidance'] ) ? $GLOBALS['mock_file24_guidance'] : '';
-		}
-	}
-}
 namespace {
 	require_once __DIR__ . '/bootstrap.php';
+	if ( ! defined( 'MINUTE_IN_SECONDS' ) ) { define( 'MINUTE_IN_SECONDS', 60 ); }
 	class SAUTH_Canonical_Routes {
 		public static function render_safety() {}
 		public static function route_url( $url, $key ) {
@@ -63,17 +57,21 @@ namespace {
 	$GLOBALS['test_options']['sauth_rewrite_version'] = SAUTH_VERSION;
 	$GLOBALS['shortcode_tags']['sabri_security_guidance'] = array( new \Sabri\Platform\Security\Guidance\SecurityGuidance(), 'renderPublic' );
 	$GLOBALS['test_shortcodes'][] = 'sabri_security_guidance';
-	$GLOBALS['mock_file24_guidance'] = 'https://example.test/security-guidance/';
+	$GLOBALS['test_posts'] = array( (object) array( 'ID' => 123, 'post_content' => '[sabri_security_guidance]' ) );
+	$GLOBALS['test_post_status'][123] = 'publish';
+	$GLOBALS['test_permalinks'][123] = 'https://example.test/security-guidance/';
 	$got = \Sabri\UnifiedShell\SecurityNavigation::augment( $base );
 	$assert( isset( $got['account_safety'], $got['security_guidance'] ), 'Verified File02 and File24 must share only the existing More destination set.' );
 	$GLOBALS['shortcode_tags']['sabri_security_guidance'] = array( new \Sabri\Platform\Security\Guidance\SecurityGuidance(), 'notTheOwnerMethod' );
 	$got = \Sabri\UnifiedShell\SecurityNavigation::augment( $base );
 	$assert( ! isset( $got['security_guidance'] ), 'Replaced shortcode handler must immediately withdraw File24 link.' );
 	$GLOBALS['shortcode_tags']['sabri_security_guidance'] = array( new \Sabri\Platform\Security\Guidance\SecurityGuidance(), 'renderPublic' );
-	$GLOBALS['mock_file24_guidance'] = 'https://example.test/account/safety/';
+	$GLOBALS['test_permalinks'][123] = 'https://example.test/account/safety/';
+	\Sabri\UnifiedShell\Integrations::invalidate_cache();
 	$got = \Sabri\UnifiedShell\SecurityNavigation::augment( $base );
 	$assert( ! isset( $got['account_safety'] ) && ! isset( $got['security_guidance'] ), 'Route collision between owners must hide both new claims.' );
-	$GLOBALS['mock_file24_guidance'] = 'https://example.test/security-guidance/';
+	$GLOBALS['test_permalinks'][123] = 'https://example.test/security-guidance/';
+	\Sabri\UnifiedShell\Integrations::invalidate_cache();
 	$collision = $base;
 	$collision['support'] = array( 'url' => 'https://example.test/security-guidance/', 'key' => 'support' );
 	$got = \Sabri\UnifiedShell\SecurityNavigation::augment( $collision );
