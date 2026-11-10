@@ -140,7 +140,8 @@ final class ContextHelp {
 	}
 
 	public static function enqueue() {
-		if ( ! self::current() ) {
+		// Styles must be available even if an owner registers its help contract late in a dynamic template.
+		if ( ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) ) {
 			return;
 		}
 		wp_enqueue_style( 'sabri-shell-context-help', SABRI_SHELL_URL . 'assets/css/context-help.css', array(), SABRI_SHELL_VERSION );
