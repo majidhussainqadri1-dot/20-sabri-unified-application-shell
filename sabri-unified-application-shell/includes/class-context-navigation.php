@@ -73,6 +73,7 @@ final class ContextNavigation {
 		$fallback_url = self::fallback_url( $home_url );
 		$back_label   = __( 'Back', 'sabri-unified-application-shell' );
 		$home_label   = __( 'Home', 'sabri-unified-application-shell' );
+		$forward_label = __( 'Forward', 'sabri-unified-application-shell' );
 
 		echo '<nav class="sabri-context-navigation" data-sabri-context-navigation aria-label="' . esc_attr__( 'Page navigation', 'sabri-unified-application-shell' ) . '">';
 		echo '<div class="sabri-context-navigation__inner">';
@@ -84,6 +85,11 @@ final class ContextNavigation {
 		echo '<span class="sabri-context-navigation__icon" aria-hidden="true">&#8962;</span>';
 		echo '<span class="sabri-context-navigation__label">' . esc_html( $home_label ) . '</span>';
 		echo '</a>';
+		// Visible only after native Navigation API confirms an actual same-origin forward entry.
+		echo '<button type="button" class="sabri-context-navigation__control sabri-context-navigation__forward" data-sabri-context-forward aria-label="' . esc_attr( $forward_label ) . '" hidden disabled>';
+		echo '<span class="sabri-context-navigation__icon sabri-context-navigation__forward-icon" aria-hidden="true">&#8592;</span>';
+		echo '<span class="sabri-context-navigation__label">' . esc_html( $forward_label ) . '</span>';
+		echo '</button>';
 		echo '</div>';
 		echo '</nav>';
 	}

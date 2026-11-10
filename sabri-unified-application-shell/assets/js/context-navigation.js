@@ -91,7 +91,33 @@
 		window.location.assign(target);
 	}
 
-	function navigateBack(link) {
+
+	// Prefer an actual, same-origin native Back transition so the user may
+	// subsequently move Forward through real browser history. Older browsers
+	// retain the validated URL-based fallback below.
+	function trustedBackController() {
+		var nav = window.navigation;
+		if (!nav || nav.canGoBack !== true || typeof nav.back !== 'function' ||
+			typeof nav.entries !== 'function' || !nav.currentEntry) {
+			return null;
+		}
+		try {
+			var entries = nav.entries();
+			if (!Array.isArray(entries)) {
+				return null;
+			}
+			for (var i = 1; i < entries.length; i++) {
+				if (entries[i] && entries[i].key === nav.currentEntry.key) {
+					return entries[i - 1] && safeSameOriginUrl(entries[i - 1].url) ? nav : null;
+				}
+			}
+		} catch (error) {
+			return null;
+		}
+		return null;
+	}
+
+	function navigateBackFallback(link) {
 		var current = safeSameOriginUrl(window.location.href) || (window.location.origin + window.location.pathname);
 		var previous = previousStackUrl();
 		if (previous && previous !== current) {
@@ -110,8 +136,89 @@
 		managedNavigate(fallback || home || window.location.origin + '/');
 	}
 
+	// Real same-origin browser history only. Never infer Forward from history.length,
+	// referrer or the synthetic, same-origin Back convenience stack.
+	function trustedForwardController() {
+		var nav = window.navigation;
+		if (!nav || nav.canGoForward !== true || typeof nav.forward !== 'function' ||
+			typeof nav.entries !== 'function' || !nav.currentEntry) {
+			return null;
+		}
+		try {
+			var entries = nav.entries();
+			if (!Array.isArray(entries)) {
+				return null;
+			}
+			for (var i = 0; i < entries.length - 1; i++) {
+				if (entries[i] && entries[i].key === nav.currentEntry.key) {
+					var next = entries[i + 1];
+					return next && safeSameOriginUrl(next.url) ? nav : null;
+				}
+			}
+		} catch (error) {
+			return null;
+		}
+		return null;
+	}
+
+	function updateForwardControl() {
+		var button = document.querySelector('[data-sabri-context-forward]');
+		if (!button) {
+			return;
+		}
+		var available = !!trustedForwardController();
+		button.hidden = !available;
+		button.disabled = !available;
+	}
+
+	function registerForwardControl() {
+		var button = document.querySelector('[data-sabri-context-forward]');
+		if (!button) {
+			return;
+		}
+		button.addEventListener('click', function () {
+			var nav = trustedForwardController();
+			if (!nav) {
+				updateForwardControl();
+				return;
+			}
+			button.disabled = true;
+			try {
+				var transition = nav.forward();
+				if (transition && transition.finished && typeof transition.finished.catch === 'function') {
+					transition.finished.catch(updateForwardControl);
+				}
+			} catch (error) {
+				updateForwardControl();
+			}
+		});
+		if (window.navigation && typeof window.navigation.addEventListener === 'function') {
+			window.navigation.addEventListener('currententrychange', updateForwardControl);
+		}
+		updateForwardControl();
+	}
+
+	function navigateBack(link) {
+		var nativeBack = trustedBackController();
+		if (nativeBack) {
+			try {
+				var transition = nativeBack.back();
+				if (transition && transition.finished && typeof transition.finished.catch === 'function') {
+					transition.finished.catch(function () {
+						navigateBackFallback(link);
+					});
+				}
+				return;
+			} catch (error) {
+				// A rejected native traversal must still retain the original safe fallback.
+			}
+		}
+		navigateBackFallback(link);
+	}
+
 	function initialize() {
 		rememberCurrentPage();
+		registerForwardControl();
 
 		var links = document.querySelectorAll('[data-sabri-context-back]');
 		links.forEach(function (link) {
@@ -128,5 +235,8 @@
 		initialize();
 	}
 
-	window.addEventListener('pageshow', rememberCurrentPage);
+	window.addEventListener('pageshow', function () {
+		rememberCurrentPage();
+		updateForwardControl();
+	});
 })();

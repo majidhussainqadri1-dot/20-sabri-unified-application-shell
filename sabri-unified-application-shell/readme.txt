@@ -4,13 +4,15 @@ Tags: application shell, navigation, layout, accessibility, pwa, offline
 Requires at least: 6.0
 Tested up to: 7.0.1
 Requires PHP: 7.4
-Stable tag: 1.4.17
+Stable tag: 1.4.18
 License: GPLv2 or later
 Text Domain: sabri-unified-application-shell
 
 Responsive canonical application shell and integration layer for the Sabri Social Homeopathy Platform.
 
 == Description ==
+
+Version 1.4.18 is a V12.1 source-review candidate for verified same-origin Back/Forward, public-safe contextual help and owner-verified generic private-workspace links. It is not staging/live accepted and has no new native domain backend. The 1.4.17 production incident remains separate dated evidence.
 
 Version 1.4.17 centralizes trusted full `sabri_shell_settings` persistence in `Settings::update_programmatically()`. File01 reconciliation, PlanV4 repair/rollback, Emergency persistence, activation-snapshot rollback, defaults normalization and retired-state migration use that canonical path. The tab-oriented `Settings::sanitize` callback is suspended only for the bounded trusted mutation and restored in `finally`; all other security/concurrency/pre-update filters remain active.
 
@@ -21,9 +23,9 @@ The dated 2026-08-29 incident record separately proves that File20 1.4.17 was de
 == Installation ==
 
 1. Back up files and database and prove restore.
-2. Use the exact deterministic `20-sabri-unified-application-shell-1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER.zip` artifact generated from the approved exact-head source.
+2. Use the exact deterministic `20-sabri-unified-application-shell-1.4.18-V12-1-CONTEXTUAL-SHELL.zip` artifact generated from the approved exact-head source.
 3. Verify one canonical ZIP root, no tests/development material, embedded/external manifest equality and exact source/stage/extracted SHA-256 parity.
-4. Confirm the deployed File20 runtime reports `1.4.17` and prove deployed package/runtime parity before any File01 reconciliation write.
+4. Confirm the approved candidate runtime reports `1.4.18` and prove deployed package/runtime parity before any File01 reconciliation write.
 5. Re-run File01 reconciliation dry-run. `home` and `news` must remain File21-owned; the twelve File20 mappings must receive accepted `file-20` owner plans with command version `1.0.1`; blockers must be exactly zero before apply.
 6. Verify each File20 plan remains `shell_navigation_reference_only`; File20 must not claim or mutate native companion content/domain truth.
 7. Apply only through File01's controlled reconciliation action after current plan-hash, receipt/snapshot and backup evidence is verified.
@@ -32,6 +34,10 @@ The dated 2026-08-29 incident record separately proves that File20 1.4.17 was de
 10. Do not use the obsolete 1.4.16 package as the current installation candidate; 1.4.16 remains historical root-cause evidence.
 
 == Changelog ==
+
+= 1.4.18 =
+* Candidate only: V12.1 genuine native conditional Back/Forward, public-safe owner-approved contextual Help and principal-bound generic workspace hub entry links.
+* Added source adversarial tests, RTL/LTR fallback, immutable current build identity; no live deployment or native-owner private data backend claimed.
 
 = 1.4.17 =
 * Centralized trusted File20 programmatic `sabri_shell_settings` persistence in `Settings::update_programmatically()`.

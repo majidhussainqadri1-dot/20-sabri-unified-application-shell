@@ -4,7 +4,7 @@ Hostinger-equivalent staging acceptance is the normal production-promotion gate.
 
 ## Exact candidate and backup
 
-- Record File 20 `1.4.17`, exact GitHub head, deterministic `20-sabri-unified-application-shell-1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER.zip` package, SHA-256 and source manifest.
+- Record File 20 `1.4.18` draft candidate, exact GitHub head, deterministic `20-sabri-unified-application-shell-1.4.18-V12-1-CONTEXTUAL-SHELL.zip` package, SHA-256 and source manifest.
 - Confirm one canonical plugin ZIP root, no development tests, safe paths/no duplicates, embedded/external manifest equality and source/stage/extracted SHA-256 parity.
 - Prove a restorable files/database backup; test fresh install and the real upgrade path from the actually deployed File20 version.
 - Record actual WordPress/PHP/database/cache/theme and companion-module versions before acceptance.
@@ -18,7 +18,7 @@ Hostinger-equivalent staging acceptance is the normal production-promotion gate.
 
 ## File01 reconciliation gate
 
-- Before any File01 reconciliation write, deploy the exact approved **1.4.17** candidate to the selected environment and prove File20 runtime/package parity.
+- Before any File01 reconciliation write, deploy the exact approved **1.4.18** candidate after Staging approval to the selected environment and prove File20 runtime/package parity.
 - Run File01 reconciliation dry-run only. `home` and `news` must remain accepted by `file-21`.
 - The twelve File20 handoffs must each return an accepted `file-20` owner plan with command version `1.0.1`.
 - File01 blocker count must be exactly zero before Apply Reconciliation is permitted.
@@ -54,6 +54,35 @@ Hostinger-equivalent staging acceptance is the normal production-promotion gate.
 - Route precedence and same-origin override validation must remain fail-closed; unauthorized/stale/deleted objects must not leak through route/cache behavior.
 - Query Safe Mode must be administrator-authenticated and nonce-bound; raw query state alone must not enable it.
 - Default uninstall must be non-destructive; explicit purge may delete only File20-owned state.
+
+## V12.1 File02 and File24 public safety routes in one existing More menu
+
+- File02 owns the canonical `/account/safety/` rewrite, not necessarily a WordPress Page. The File20 Account Safety link is derived only from native `SAUTH_Canonical_Routes` and `SAUTH_Account_Safety`, the registered owner shortcode and render hook, the owner route filter and exact version-bound rewrite-ready options.
+- File24 owns its public `[sabri_security_guidance]` shortcode. File20 requires the actual `SecurityGuidance::renderPublic` callback registered on that shortcode, plus a unique published WordPress Page found by the existing collision-aware scanner. No auto-creation or publication is performed.
+- Both links appear as entries inside the existing More menu only when native evidence is available on the same request. They are never cached as owner-health truth; no second navigation bar.
+- Reject other hosts, scheme downgrades, query/fragment/credential URLs, encoded or doubly encoded separators, dot traversal, route collisions and invalid/native-disabled owner hooks. Links disappear when owners are unavailable.
+- File02 PR #27 and File24 PR #32 remain draft. Stage-test actual rewrite rules, published Page ID/shortcode, public/private content, no-store headers, mobile menu, keyboard, RTL/LTR, 404 and rollback. Green source tests do not mean a Live page was published.
+
+## V12.1 native-owner private workspace entry acceptance
+
+- File20 may mount only owner-verified generic hub links for Recent or Saved. Source filters are `sabri_shell_workspace_entries_contract` v1.0.0 and `sabri_shell_workspace_entry_owner_approved`; no owner approval means no link.
+- Private hub contract must be bound to the authenticated current principal (`principal_id` is an integer), every item must use intent `entry-only`, and the URL must be same-origin/approved, query-free and fragment-free. Owner must recheck current ACL and actual object visibility on destination.
+- File20 must discard every provider-supplied entry label and substitute fixed generic owner labels. No user-specific titles, chat excerpts, draft IDs, patient metadata, entity copies, generic global saved database, private localStorage, shared-session transient or cross-user cache may be introduced. Generic entry-links are NOT evidence that per-object private Recent or unified collections are fully working.
+- Test logout/session changes, guest access, different principal, stale authorization, missing provider, duplicate route, external URL, page cache, repeated shortcode, mobile/RTL and real owner-private hub navigation before acceptance.
+
+## V12.1 native-owner contextual Help acceptance
+
+- File20 supplies only a semantic native HTML details/summary slot. File02/05/06/08/CF02 or other approved native owners provide public-safe explanation, example, glossary and valid support destination through `sabri_shell_context_help_contract` v1.0.0.
+- The native owner must separately authorize each current route through `sabri_shell_context_help_owner_approved`. With missing owner/route/version/approval, the slot is absent, not misleading placeholder help.
+- Reject external/downgraded/query/fragment/support URLs, unknown owner, wrong current route, sensitive/private content, excessive glossary and unbounded text. Test no HTML/script rendering, native keyboard access, no-JS usability, RTL/LTR, zoom and role boundaries.
+- File20 does not create case tickets, publish native content, capture screen/form values or store any private help context. Exact owner/provider integration remains an independent staging gate.
+
+## V12.1 genuine contextual Forward acceptance
+
+- Forward is hidden by default; it may appear only when native Navigation API canGoForward is true AND the current/next native entries match a valid same-origin history path. No fake history.length, referrer, session shortcut or button that manufactures a new visit.
+- Test genuine browser Back then Forward, unsupported browsers, same-origin versus external history, page restore (pageshow), touch/keyboard/focus, and Urdu RTL / English LTR arrows.
+- File02 public /account/safety/ and File24 public security-guidance shortcode are separate native-owner destinations. Only publish File24 navigation after explicit approval, a genuine published Page and verified route ownership.
+- File20 Recent is intentionally public-only. Private cross-domain Recent and Saved collections require native owner permission/revocation contracts before shell mounting; no File20 private-data store.
 
 ## Future Shell, responsive and accessibility gates
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.4.18 — 2026-11-11 — V12.1 Contextual Shell (Draft Source Candidate)
+
+- Added conditional native same-origin Back/Forward (Navigation API only), with safe Back fallback, no invented Forward and directional RTL/LTR controls.
+- Added owner-approved, public-safe contextual Help explanations, examples, glossary and same-origin Support URL, hidden without a genuine owner route/contract.
+- Added per-principal, owner-approved generic Recent/Saved hub entry links, no actual private record names, no private localStorage or duplicate domain backend.
+- Corrected Sabri Green continuity fallback; added PHP/Node adversarial regressions and staging acceptance handoff.
+- This is a **Draft PR source version**, not yet approved/merged/deployed. The 1.4.17 Live evidence is historical and scoped.
+
 ## 1.4.17 — 2026-08-29 — Canonical Programmatic Settings Writer
 
 - Fresh post-merge review of 1.4.16 found the live-proven tab-oriented Settings API sanitizer hazard was still duplicated as a repository/source-level risk across trusted File20 repair, rollback, Emergency, activation-snapshot rollback and retired-state migration writes.
