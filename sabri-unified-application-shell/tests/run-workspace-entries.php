@@ -43,6 +43,7 @@ $bad_entries = array(
 	array( 'kind' => 'recent', 'owner' => 'file-05', 'intent' => 'entry-only', 'label' => 'other', 'url' => 'https://outside.test/steal' ),
 	array( 'kind' => 'recent', 'owner' => 'file-05', 'intent' => 'entry-only', 'label' => 'other', 'url' => 'https://example.test/learn/?token=abc' ),
 	array( 'kind' => 'recent', 'owner' => 'file-05', 'intent' => 'entry-only', 'label' => 'other', 'url' => 'https://example.test/%2flearn/' ),
+	array( 'kind' => 'recent', 'owner' => 'file-05', 'intent' => 'entry-only', 'label' => 'other', 'url' => 'https://example.test/%252flearn/' ),
 );
 $mutated = $valid;
 $mutated['items'] = $bad_entries;

@@ -31,6 +31,7 @@ foreach ( array(
 	array( 'route_url' => 'https://example.test/learn/?token=private' ),
 	array( 'route_url' => 'https://example.test/learn/#fragment' ),
 	array( 'route_url' => 'https://example.test/%2flearn/' ),
+	array( 'route_url' => 'https://example.test/%252flearn/' ),
 	array( 'route_url' => 'https://example.test/other/' ),
 	array( 'visibility' => 'private-patient-data' ),
 	array( 'explanation' => '' ),

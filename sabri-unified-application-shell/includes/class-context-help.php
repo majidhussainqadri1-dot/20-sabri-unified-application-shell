@@ -116,7 +116,7 @@ final class ContextHelp {
 		$path = isset( $parts['path'] ) ? $parts['path'] : '/';
 		if ( ! in_array( $scheme, array( 'https', 'http' ), true ) || $scheme !== $home_scheme ||
 			! hash_equals( strtolower( $home['host'] ), strtolower( $parts['host'] ) ) || $port !== $home_port ||
-			preg_match( '/%(?:2f|5c|00)/i', $path ) || false !== strpos( $path, '\\' ) ||
+			preg_match( '/%(?:2f|5c|00|25)/i', $path ) || false !== strpos( $path, '\\' ) ||
 			preg_match( '#(?:^|/)\.{1,2}(?:/|$)#', rawurldecode( $path ) ) ) {
 			return '';
 		}

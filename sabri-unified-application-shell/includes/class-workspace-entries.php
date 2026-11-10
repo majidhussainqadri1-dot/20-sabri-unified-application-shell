@@ -102,7 +102,7 @@ final class WorkspaceEntries {
 		$decoded = rawurldecode( $path );
 		if ( ! in_array( $s, array( 'http', 'https' ), true ) || $hs !== $s ||
 			! hash_equals( strtolower( $home['host'] ), strtolower( $target['host'] ) ) ||
-			$hp !== $port || preg_match( '/%(?:2f|5c|00)/i', $path ) ||
+			$hp !== $port || preg_match( '/%(?:2f|5c|00|25)/i', $path ) ||
 			false !== strpos( $decoded, '\\' ) ||
 			preg_match( '#(?:^|/)\.{1,2}(?:/|$)#', $decoded ) ) {
 			return '';
