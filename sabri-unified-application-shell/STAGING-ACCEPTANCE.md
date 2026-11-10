@@ -55,6 +55,14 @@ Hostinger-equivalent staging acceptance is the normal production-promotion gate.
 - Query Safe Mode must be administrator-authenticated and nonce-bound; raw query state alone must not enable it.
 - Default uninstall must be non-destructive; explicit purge may delete only File20-owned state.
 
+## V12.1 File02 and File24 public safety routes in one existing More menu
+
+- File02 owns the canonical `/account/safety/` rewrite, not necessarily a WordPress Page. The File20 Account Safety link is derived only from native `SAUTH_Canonical_Routes` and `SAUTH_Account_Safety`, the registered owner shortcode and render hook, the owner route filter and exact version-bound rewrite-ready options.
+- File24 owns its public `[sabri_security_guidance]` shortcode. File20 requires the actual `SecurityGuidance::renderPublic` callback registered on that shortcode, plus a unique published WordPress Page found by the existing collision-aware scanner. No auto-creation or publication is performed.
+- Both links appear as entries inside the existing More menu only when native evidence is available on the same request. They are never cached as owner-health truth; no second navigation bar.
+- Reject other hosts, scheme downgrades, query/fragment/credential URLs, encoded or doubly encoded separators, dot traversal, route collisions and invalid/native-disabled owner hooks. Links disappear when owners are unavailable.
+- File02 PR #27 and File24 PR #32 remain draft. Stage-test actual rewrite rules, published Page ID/shortcode, public/private content, no-store headers, mobile menu, keyboard, RTL/LTR, 404 and rollback. Green source tests do not mean a Live page was published.
+
 ## V12.1 native-owner private workspace entry acceptance
 
 - File20 may mount only owner-verified generic hub links for Recent or Saved. Source filters are `sabri_shell_workspace_entries_contract` v1.0.0 and `sabri_shell_workspace_entry_owner_approved`; no owner approval means no link.

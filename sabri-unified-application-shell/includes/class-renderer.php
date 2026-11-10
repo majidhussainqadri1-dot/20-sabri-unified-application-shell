@@ -293,7 +293,7 @@ final class Renderer {
 	 * @return void
 	 */
 	private static function render_primary_nav( array $nav ) {
-		$primary_keys = array( 'home', 'news', 'founder', 'learn', 'encyclopedia', 'doctors', 'clinic', 'video_wall', 'reels', 'pdf_library', 'radar', 'ai', 'network', 'marketplace' );
+		$primary_keys = array( 'home', 'news', 'founder', 'learn', 'encyclopedia', 'doctors', 'clinic', 'video_wall', 'reels', 'pdf_library', 'radar', 'ai', 'network', 'marketplace', 'account_safety', 'security_guidance' );
 		$visible = array();
 		foreach ( $primary_keys as $key ) {
 			if ( ! empty( $nav[ $key ] ) && self::item_visible_to_user( $nav[ $key ] ) ) {
