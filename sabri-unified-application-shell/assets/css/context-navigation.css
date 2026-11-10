@@ -1,5 +1,5 @@
 .sabri-context-navigation {
-	--sabri-context-nav-accent: var(--sabri-color-success, #2e7d32);
+	--sabri-context-nav-accent: var(--sabri-color-success, #087A4E);
 	--sabri-context-nav-surface: var(--sabri-color-surface, #ffffff);
 	--sabri-context-nav-text: var(--sabri-color-text, #132235);
 	box-sizing: border-box;
@@ -74,8 +74,13 @@
 	line-height: 1;
 }
 
-html[dir='ltr'] .sabri-context-navigation__back-icon {
+html[dir='ltr'] .sabri-context-navigation__back-icon,
+html[dir='ltr'] .sabri-context-navigation__forward-icon {
 	transform: rotate(180deg);
+}
+
+.sabri-context-navigation__forward[hidden] {
+	display: none !important;
 }
 
 /* Immersive owners keep the viewport; File 20 supplies only a small overlay

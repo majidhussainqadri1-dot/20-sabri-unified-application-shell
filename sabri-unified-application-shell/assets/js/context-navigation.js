@@ -110,8 +110,71 @@
 		managedNavigate(fallback || home || window.location.origin + '/');
 	}
 
+	// Real same-origin browser history only. Never infer Forward from history.length,
+	// referrer or the synthetic, same-origin Back convenience stack.
+	function trustedForwardController() {
+		var nav = window.navigation;
+		if (!nav || nav.canGoForward !== true || typeof nav.forward !== 'function' ||
+			typeof nav.entries !== 'function' || !nav.currentEntry) {
+			return null;
+		}
+		try {
+			var entries = nav.entries();
+			if (!Array.isArray(entries)) {
+				return null;
+			}
+			for (var i = 0; i < entries.length - 1; i++) {
+				if (entries[i] && entries[i].key === nav.currentEntry.key) {
+					var next = entries[i + 1];
+					return next && safeSameOriginUrl(next.url) ? nav : null;
+				}
+			}
+		} catch (error) {
+			return null;
+		}
+		return null;
+	}
+
+	function updateForwardControl() {
+		var button = document.querySelector('[data-sabri-context-forward]');
+		if (!button) {
+			return;
+		}
+		var available = !!trustedForwardController();
+		button.hidden = !available;
+		button.disabled = !available;
+	}
+
+	function registerForwardControl() {
+		var button = document.querySelector('[data-sabri-context-forward]');
+		if (!button) {
+			return;
+		}
+		button.addEventListener('click', function () {
+			var nav = trustedForwardController();
+			if (!nav) {
+				updateForwardControl();
+				return;
+			}
+			button.disabled = true;
+			try {
+				var transition = nav.forward();
+				if (transition && transition.finished && typeof transition.finished.catch === 'function') {
+					transition.finished.catch(updateForwardControl);
+				}
+			} catch (error) {
+				updateForwardControl();
+			}
+		});
+		if (window.navigation && typeof window.navigation.addEventListener === 'function') {
+			window.navigation.addEventListener('currententrychange', updateForwardControl);
+		}
+		updateForwardControl();
+	}
+
 	function initialize() {
 		rememberCurrentPage();
+		registerForwardControl();
 
 		var links = document.querySelectorAll('[data-sabri-context-back]');
 		links.forEach(function (link) {
@@ -128,5 +191,8 @@
 		initialize();
 	}
 
-	window.addEventListener('pageshow', rememberCurrentPage);
+	window.addEventListener('pageshow', function () {
+		rememberCurrentPage();
+		updateForwardControl();
+	});
 })();

@@ -55,6 +55,13 @@ Hostinger-equivalent staging acceptance is the normal production-promotion gate.
 - Query Safe Mode must be administrator-authenticated and nonce-bound; raw query state alone must not enable it.
 - Default uninstall must be non-destructive; explicit purge may delete only File20-owned state.
 
+## V12.1 genuine contextual Forward acceptance
+
+- Forward is hidden by default; it may appear only when native Navigation API canGoForward is true AND the current/next native entries match a valid same-origin history path. No fake history.length, referrer, session shortcut or button that manufactures a new visit.
+- Test genuine browser Back then Forward, unsupported browsers, same-origin versus external history, page restore (pageshow), touch/keyboard/focus, and Urdu RTL / English LTR arrows.
+- File02 public /account/safety/ and File24 public security-guidance shortcode are separate native-owner destinations. Only publish File24 navigation after explicit approval, a genuine published Page and verified route ownership.
+- File20 Recent is intentionally public-only. Private cross-domain Recent and Saved collections require native owner permission/revocation contracts before shell mounting; no File20 private-data store.
+
 ## Future Shell, responsive and accessibility gates
 
 - Test all four layout modes and all five release rings.
