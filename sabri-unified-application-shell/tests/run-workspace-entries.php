@@ -15,6 +15,9 @@ $valid = array(
 		array( 'kind' => 'saved', 'owner' => 'file-12', 'intent' => 'entry-only', 'label' => 'Library bookmarks', 'url' => 'https://example.test/pdf-library/' ),
 	),
 );
+$renderer_source = file_get_contents( dirname( __DIR__ ) . '/includes/class-workspace-entries.php' );
+$assert( false !== strpos( $renderer_source, "echo '<section class=\"sabri-shell-workspace-entries\"" ), 'Workspace must use a contextual section, not a second global navigation bar.' );
+$assert( false === strpos( $renderer_source, "echo '<nav class=\"sabri-shell-workspace-entries\"" ), 'Duplicate global navigation bar is forbidden.' );
 $assert( array() === WorkspaceEntries::validate_for_principal( $valid, 42, false ), 'Guest cannot see private links.' );
 $assert( array() === WorkspaceEntries::validate_for_principal( $valid, 43, true ), 'Other principal cannot see private links.' );
 $a = WorkspaceEntries::validate_for_principal( $valid, 42, true );

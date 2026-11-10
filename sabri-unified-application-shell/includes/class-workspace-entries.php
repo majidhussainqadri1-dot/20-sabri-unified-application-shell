@@ -134,7 +134,7 @@ final class WorkspaceEntries {
 			return;
 		}
 		$rendered = true;
-		echo '<nav class="sabri-shell-workspace-entries" data-sabri-shell-component="workspace-entries" aria-label="' . esc_attr__( 'Your workspaces', 'sabri-unified-application-shell' ) . '">';
+		echo '<section class="sabri-shell-workspace-entries" data-sabri-shell-component="workspace-entries" aria-label="' . esc_attr__( 'Your workspaces', 'sabri-unified-application-shell' ) . '">';
 		foreach ( array( 'recent' => __( 'Recent workspaces', 'sabri-unified-application-shell' ),
 			'saved' => __( 'Saved workspaces', 'sabri-unified-application-shell' ) ) as $kind => $caption ) {
 			if ( ! $entries[ $kind ] ) { continue; }
@@ -144,6 +144,6 @@ final class WorkspaceEntries {
 			}
 			echo '</ul></details>';
 		}
-		echo '</nav>';
+		echo '</section>';
 	}
 }
