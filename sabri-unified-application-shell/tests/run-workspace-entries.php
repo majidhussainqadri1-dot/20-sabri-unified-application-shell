@@ -23,6 +23,10 @@ $GLOBALS['test_filter_overrides']['sabri_shell_workspace_entry_owner_approved'] 
 $a = WorkspaceEntries::validate_for_principal( $valid, 42, true );
 $assert( 1 === count( $a['recent'] ) && 1 === count( $a['saved'] ), 'Two approved native hubs should mount.' );
 $assert( ! isset( $a['recent'][0]['entity_id'] ) && ! isset( $a['recent'][0]['content'] ), 'No native private object is copied.' );
+$private_label = $valid;
+$private_label['items'][0]['label'] = 'Private patient name - never copy';
+$a = WorkspaceEntries::validate_for_principal( $private_label, 42, true );
+$assert( 'Courses' === $a['recent'][0]['label'], 'Provider private labels must be ignored and replaced with fixed generic labels.' );
 foreach ( array(
 	array( 'version' => '9.9.9' ),
 	array( 'principal_id' => 43 ),

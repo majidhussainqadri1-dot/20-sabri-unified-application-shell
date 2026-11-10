@@ -59,7 +59,7 @@ Hostinger-equivalent staging acceptance is the normal production-promotion gate.
 
 - File20 may mount only owner-verified generic hub links for Recent or Saved. Source filters are `sabri_shell_workspace_entries_contract` v1.0.0 and `sabri_shell_workspace_entry_owner_approved`; no owner approval means no link.
 - Private hub contract must be bound to the authenticated current principal (`principal_id` is an integer), every item must use intent `entry-only`, and the URL must be same-origin/approved, query-free and fragment-free. Owner must recheck current ACL and actual object visibility on destination.
-- No user-specific titles, chat excerpts, draft IDs, patient metadata, entity copies, generic global saved database, private localStorage, shared-session transient or cross-user cache may be introduced. Generic entry-links are NOT evidence that per-object private Recent or unified collections are fully working.
+- File20 must discard every provider-supplied entry label and substitute fixed generic owner labels. No user-specific titles, chat excerpts, draft IDs, patient metadata, entity copies, generic global saved database, private localStorage, shared-session transient or cross-user cache may be introduced. Generic entry-links are NOT evidence that per-object private Recent or unified collections are fully working.
 - Test logout/session changes, guest access, different principal, stale authorization, missing provider, duplicate route, external URL, page cache, repeated shortcode, mobile/RTL and real owner-private hub navigation before acceptance.
 
 ## V12.1 native-owner contextual Help acceptance

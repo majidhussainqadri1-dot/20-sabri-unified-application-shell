@@ -41,21 +41,31 @@ final class WorkspaceEntries {
 			! is_array( $contract['items'] ) || count( $contract['items'] ) > self::MAX_ITEMS ) {
 			return array();
 		}
-		$allowed_owners = array( 'file-03', 'file-05', 'file-06', 'file-08', 'file-12',
-			'file-17', 'file-21', 'file-22', 'file-23', 'cf-01', 'cf-02' );
+		// Fixed generic labels: never print provider-supplied object titles, patient names or chat subjects.
+		$owner_labels = array(
+			'file-03' => __( 'Doctor directory', 'sabri-unified-application-shell' ),
+			'file-05' => __( 'Courses', 'sabri-unified-application-shell' ),
+			'file-06' => __( 'Encyclopedia', 'sabri-unified-application-shell' ),
+			'file-08' => __( 'Clinic', 'sabri-unified-application-shell' ),
+			'file-12' => __( 'PDF Library', 'sabri-unified-application-shell' ),
+			'file-17' => __( 'Messages', 'sabri-unified-application-shell' ),
+			'file-21' => __( 'Publications', 'sabri-unified-application-shell' ),
+			'file-22' => __( 'Publishing workspace', 'sabri-unified-application-shell' ),
+			'file-23' => __( 'Institution workspace', 'sabri-unified-application-shell' ),
+			'cf-01' => __( 'Clinical workspace', 'sabri-unified-application-shell' ),
+			'cf-02' => __( 'Support workspace', 'sabri-unified-application-shell' ),
+		);
 		$output = array( 'recent' => array(), 'saved' => array() );
 		$seen = array();
 		foreach ( $contract['items'] as $item ) {
-			if ( ! is_array( $item ) || ! isset( $item['kind'], $item['owner'], $item['label'], $item['url'], $item['intent'] ) ||
+			if ( ! is_array( $item ) || ! isset( $item['kind'], $item['owner'], $item['url'], $item['intent'] ) ||
 				! is_string( $item['kind'] ) || ! in_array( $item['kind'], array( 'recent', 'saved' ), true ) ||
-				'entry-only' !== $item['intent'] || ! is_string( $item['owner'] ) || ! is_string( $item['label'] ) ) {
+				'entry-only' !== $item['intent'] || ! is_string( $item['owner'] ) ) {
 				continue;
 			}
 			$kind = $item['kind'];
 			$owner = sanitize_key( $item['owner'] );
-			$label = sanitize_text_field( $item['label'] );
-			if ( ! in_array( $owner, $allowed_owners, true ) ||
-				'' === $label || strlen( $label ) > 180 ) {
+			if ( ! isset( $owner_labels[ $owner ] ) ) {
 				continue;
 			}
 			$url = self::safe_owner_hub_url( $item['url'] );
@@ -65,7 +75,7 @@ final class WorkspaceEntries {
 				continue;
 			}
 			$seen[ $key ] = true;
-			$output[ $kind ][] = array( 'owner' => $owner, 'label' => $label, 'url' => $url );
+			$output[ $kind ][] = array( 'owner' => $owner, 'label' => $owner_labels[ $owner ], 'url' => $url );
 		}
 		return $output;
 	}
