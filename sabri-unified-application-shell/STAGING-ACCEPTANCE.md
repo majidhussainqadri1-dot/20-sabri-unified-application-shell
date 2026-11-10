@@ -4,7 +4,7 @@ Hostinger-equivalent staging acceptance is the normal production-promotion gate.
 
 ## Exact candidate and backup
 
-- Record File 20 `1.4.17`, exact GitHub head, deterministic `20-sabri-unified-application-shell-1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER.zip` package, SHA-256 and source manifest.
+- Record File 20 `1.4.18` draft candidate, exact GitHub head, deterministic `20-sabri-unified-application-shell-1.4.18-V12-1-CONTEXTUAL-SHELL.zip` package, SHA-256 and source manifest.
 - Confirm one canonical plugin ZIP root, no development tests, safe paths/no duplicates, embedded/external manifest equality and source/stage/extracted SHA-256 parity.
 - Prove a restorable files/database backup; test fresh install and the real upgrade path from the actually deployed File20 version.
 - Record actual WordPress/PHP/database/cache/theme and companion-module versions before acceptance.
@@ -18,7 +18,7 @@ Hostinger-equivalent staging acceptance is the normal production-promotion gate.
 
 ## File01 reconciliation gate
 
-- Before any File01 reconciliation write, deploy the exact approved **1.4.17** candidate to the selected environment and prove File20 runtime/package parity.
+- Before any File01 reconciliation write, deploy the exact approved **1.4.18** candidate after Staging approval to the selected environment and prove File20 runtime/package parity.
 - Run File01 reconciliation dry-run only. `home` and `news` must remain accepted by `file-21`.
 - The twelve File20 handoffs must each return an accepted `file-20` owner plan with command version `1.0.1`.
 - File01 blocker count must be exactly zero before Apply Reconciliation is permitted.

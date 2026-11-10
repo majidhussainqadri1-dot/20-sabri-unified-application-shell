@@ -1,4 +1,4 @@
-name: File 20 Version 1.4.17 Canonical Programmatic Settings Writer Quality
+name: File 20 Version 1.4.18 V12.1 Contextual Shell Quality
 
 on:
   pull_request:
@@ -93,13 +93,13 @@ jobs:
           staging=read('STAGING-ACCEPTANCE.md')
           rollback=read('ROLLBACK.md')
           changelog=read('CHANGELOG.md')
-          assert '* Version: 1.4.17' in main
-          assert "define( 'SABRI_SHELL_VERSION', '1.4.17' );" in main
-          assert 'Stable tag: 1.4.17' in readmetxt
-          assert '## Upgrade to 1.4.17' in migration
-          assert '20-sabri-unified-application-shell-1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER.zip' in migration
-          assert 'Record File 20 `1.4.17`' in staging
-          assert '## 1.4.17 ' in changelog and '## 1.4.16 ' in changelog and '## 1.4.15 ' in changelog
+          assert '* Version: 1.4.18' in main
+          assert "define( 'SABRI_SHELL_VERSION', '1.4.18' );" in main
+          assert 'Stable tag: 1.4.18' in readmetxt
+          assert '## Upgrade to 1.4.18' in migration
+          assert '20-sabri-unified-application-shell-1.4.18-V12-1-CONTEXTUAL-SHELL.zip' in migration
+          assert 'Record File 20 `1.4.18`' in staging
+          assert '## 1.4.18 ' in changelog and '## 1.4.16 ' in changelog and '## 1.4.15 ' in changelog
           assert 'Automatic rollback **does not restore shared WordPress front-page options**' in rollback
           assert 'Do **not** rely on a raw URL containing only:' in rollback
           assert '`SafeMode::query_safe_mode_url()`' in rollback
@@ -158,7 +158,7 @@ jobs:
           assert 'CREATE TABLE' not in '\n'.join([route,adapter,eleventh,resth,system,safe,concurrency,control,future])
           for p in sorted((root/'assets/css').glob('*.css')):
               css=p.read_text(encoding='utf-8'); assert css.count('{')==css.count('}'),p.name
-          print('Static File 20 v1.4.17 canonical programmatic settings writer and preserved release-truth checks PASS')
+          print('Static File 20 v1.4.18 V12.1 contextual shell, canonical settings and release-truth checks PASS')
           PY
 
       - name: Build deterministic production-only package and prove parity
@@ -184,7 +184,7 @@ jobs:
               lines.append(f"{hashlib.sha256(src.read_bytes()).hexdigest()}  {rel.as_posix()}")
           manifest='\n'.join(lines)+'\n'; (stage/'MANIFEST.sha256').write_text(manifest,encoding='utf-8')
           assert sorted(p.relative_to(stage).as_posix() for p in stage.rglob('*') if p.is_file() and p.name!='MANIFEST.sha256')==sorted(p.relative_to(root).as_posix() for p in source)
-          base='20-sabri-unified-application-shell-1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER'; archive=release/f'{base}.zip'
+          base='20-sabri-unified-application-shell-1.4.18-V12-1-CONTEXTUAL-SHELL'; archive=release/f'{base}.zip'
           fixed=(2026,8,29,7,15,0)
           with ZipFile(archive,'w') as zf:
               for p in sorted(stage.rglob('*')):
@@ -204,16 +204,16 @@ jobs:
           for rel,sha in expected.items(): assert hashlib.sha256((er/rel).read_bytes()).hexdigest()==sha
           assert not (er/'tests').exists() and not (er/'includes/class-home-feed.php').exists()
           assert (er/'includes/class-file01-reconciliation-adapter.php').exists()
-          print('Deterministic File20 1.4.17 canonical programmatic settings writer package PASS')
+          print('Deterministic File20 1.4.18 V12.1 contextual shell package PASS')
           PY
-          base='20-sabri-unified-application-shell-1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER'
+          base='20-sabri-unified-application-shell-1.4.18-V12-1-CONTEXTUAL-SHELL'
           (cd release && sha256sum -c "${base}.sha256")
           unzip -t "release/${base}.zip"
 
       - name: Write exact-head canonical settings writer report
         run: |
-          cat > release/FILE-20-1.4.17-CANONICAL-SETTINGS-WRITER-TEST-REPORT.md <<REPORT
-          # File 20 Version 1.4.17 Canonical Programmatic Settings Writer Evidence
+          cat > release/FILE-20-1.4.18-CANONICAL-SETTINGS-WRITER-TEST-REPORT.md <<REPORT
+          # File 20 Version 1.4.18 Canonical Programmatic Settings Writer Evidence
           - Exact candidate source SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           - Live-proven basis retained from 1.4.16: File01 reconciliation failed because registered tab-oriented Settings::sanitize swallowed a trusted no-tab programmatic settings write before pre-update filters.
           - Fresh post-merge repository finding: the same source-level hazard remained in other trusted File20 repair/rollback/Emergency/snapshot/migration settings writes; this is source evidence, not a claim those paths failed on Live.
@@ -227,11 +227,11 @@ jobs:
           REPORT
       - uses: actions/upload-artifact@v4
         with:
-          name: file20-1.4.17-canonical-programmatic-settings-writer-${{ github.event.pull_request.head.sha || github.sha }}
+          name: file20-1.4.18-v12-1-contextual-shell-${{ github.event.pull_request.head.sha || github.sha }}
           retention-days: 60
           if-no-files-found: error
           path: |
-            release/20-sabri-unified-application-shell-1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER.zip
-            release/20-sabri-unified-application-shell-1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER.sha256
-            release/20-sabri-unified-application-shell-1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER-SOURCE-MANIFEST.sha256
-            release/FILE-20-1.4.17-CANONICAL-SETTINGS-WRITER-TEST-REPORT.md
+            release/20-sabri-unified-application-shell-1.4.18-V12-1-CONTEXTUAL-SHELL.zip
+            release/20-sabri-unified-application-shell-1.4.18-V12-1-CONTEXTUAL-SHELL.sha256
+            release/20-sabri-unified-application-shell-1.4.18-V12-1-CONTEXTUAL-SHELL-SOURCE-MANIFEST.sha256
+            release/FILE-20-1.4.18-CANONICAL-SETTINGS-WRITER-TEST-REPORT.md
