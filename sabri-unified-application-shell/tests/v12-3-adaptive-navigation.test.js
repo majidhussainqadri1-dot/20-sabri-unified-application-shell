@@ -27,4 +27,8 @@ assert.equal(src.includes("nav.contains(document.activeElement)"), true, 'Focuse
 assert.equal(src.includes("moreMenu.appendChild(hidden)"), true, 'Original nodes moved without duplicate anchors');
 assert.equal(src.includes("summary.setAttribute('aria-current', 'page')"), true, 'More retains active state semantics');
 assert.equal(src.includes("summary.setAttribute('aria-label'"), true, 'Full active destination remains available to assistive navigation despite visual truncation');
+const css = fs.readFileSync(path.join(__dirname, '../assets/css/v12-3-adaptive-navigation.css'), 'utf8');
+assert.equal(css.includes('clip-path: inset(50%)'), true, 'Narrow-screen brand remains accessible when visually clipped.');
+assert.equal(css.includes('.sabri-shell-header-inner .sabri-shell-brand-text { display: none; }'), false, 'No display:none on brand accessible name.');
+assert.equal(css.includes('.sabri-shell-nav-more-menu'), true, 'Native More dropdown has a styled presentation for JS and no-JS.');
 console.log('V12.3 adaptive navigation policy PASS; real device a11y acceptance not claimed.');
