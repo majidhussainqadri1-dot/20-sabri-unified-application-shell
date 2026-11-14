@@ -10,13 +10,15 @@
    * Deterministic, no-data scheduling of existing same-page nav entries.
    * Real DOM measurements are separate from this pure/testable policy.
    */
-  function selectDirect(items, available, reservedMore, mobile) {
+  function selectDirect(items, available, reservedMore, mobile, gap) {
     var safeWidth = Math.max(0, Number(available) || 0);
+    var itemGap = typeof gap === 'number' && Number.isFinite(gap) ? Math.max(0, gap) : 4;
     var sum = items.reduce(function (v, item) { return v + Math.max(0, Number(item.width) || 0); }, 0);
+    sum += itemGap * Math.max(0, items.length - 1);
     if (!mobile && sum <= safeWidth) {
       return items.map(function (item) { return item.key; });
     }
-    var budget = Math.max(0, safeWidth - Math.max(44, reservedMore || 0) - 8);
+    var budget = Math.max(0, safeWidth - Math.max(44, reservedMore || 0) - itemGap - 8);
     var chosen = [];
     var used = 0;
     var candidates = mobile
@@ -24,9 +26,10 @@
       : items;
     candidates.forEach(function (item) {
       var width = Math.max(0, Number(item.width) || 0);
-      if (width && used + width <= budget) {
+      var required = width + (chosen.length ? itemGap : 0);
+      if (width && used + required <= budget) {
         chosen.push(item.key);
-        used += width;
+        used += required;
       }
     });
     return chosen;
@@ -88,7 +91,8 @@
       if (!Number.isFinite(padding)) { padding = 36; }
       var available = Math.max(0, width - padding - 4);
       var measured = measure();
-      var directKeys = selectDirect(measured.entries, available, measured.moreWidth, nav.clientWidth < 768);
+      var gap = parseFloat(styles.columnGap || styles.gap);
+      var directKeys = selectDirect(measured.entries, available, measured.moreWidth, nav.clientWidth < 768, Number.isFinite(gap) ? gap : 4);
       var desired = {};
       directKeys.forEach(function (key) { desired[key] = true; });
       var visible = document.createDocumentFragment();
@@ -110,6 +114,8 @@
       outer.appendChild(more);
       more.hidden = hiddenCount === 0;
       summary.textContent = hiddenActiveName ? defaultText + ' · ' + hiddenActiveName : defaultText;
+      summary.setAttribute('aria-label', hiddenActiveName ? defaultText + ' · ' + hiddenActiveName : defaultText);
+      summary.setAttribute('title', hiddenActiveName ? hiddenActiveName : defaultText);
       if (hiddenActiveName) { summary.setAttribute('aria-current', 'page'); }
       else { summary.removeAttribute('aria-current'); }
     }
