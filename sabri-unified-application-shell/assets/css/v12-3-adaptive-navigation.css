@@ -6,10 +6,15 @@
 }
 .sabri-shell-primary-nav .sabri-shell-nav-more[hidden] { display: none !important; }
 .sabri-shell-primary-nav .sabri-shell-nav-more summary {
-  display: flex; align-items: center; cursor: pointer; min-block-size: 44px;
-  padding: .6rem .75rem; border-radius: var(--sabri-shell-radius, 8px);
+  display: block; position: relative; line-height: 1.65;
+  cursor: pointer; min-block-size: 44px;
+  padding: .6rem .75rem; padding-inline-end: 1.8rem;
+  border-radius: var(--sabri-shell-radius, 8px);
   max-inline-size: min(12rem, 35vw); overflow: hidden;
   text-overflow: ellipsis; white-space: nowrap; color: var(--sabri-shell-text);
+}
+.sabri-shell-primary-nav .sabri-shell-nav-more summary::after {
+  content: '▾'; position: absolute; inset-inline-end: .5rem; inset-block-start: .65rem;
 }
 .sabri-shell-primary-nav .sabri-shell-nav-more summary:focus-visible,
 .sabri-shell-primary-nav a:focus-visible {
