@@ -148,6 +148,25 @@ final class SettingsHub {
 
     public static function register() {
         add_shortcode( self::SHORTCODE, array( __CLASS__, 'render' ) );
+        add_action( 'wp_enqueue_scripts', array( __CLASS__, 'maybe_enqueue_assets' ) );
+    }
+
+    /**
+     * Prevent late CSS injection for a confirmed ordinary Settings page.
+     * Dynamic widgets/page-builders still use the shortcode's lazy fallback.
+     */
+    public static function maybe_enqueue_assets() {
+        if ( ! function_exists( 'is_singular' ) || ! is_singular() || ! function_exists( 'get_post' ) ) { return; }
+        $post = get_post();
+        if ( is_object( $post ) && isset( $post->post_content ) &&
+            function_exists( 'has_shortcode' ) && has_shortcode( (string) $post->post_content, self::SHORTCODE ) ) {
+            self::enqueue_assets();
+        }
+    }
+
+    private static function enqueue_assets() {
+        wp_enqueue_style( 'sabri-v12-settings-hub', SABRI_SHELL_URL . 'assets/css/v12-3-settings-hub.css', array(), SABRI_SHELL_VERSION );
+        wp_enqueue_script( 'sabri-v12-settings-hub', SABRI_SHELL_URL . 'assets/js/v12-3-settings-hub.js', array(), SABRI_SHELL_VERSION, true );
     }
 
     public static function render() {
@@ -193,8 +212,7 @@ final class SettingsHub {
             $html .= '</ul></section>';
         }
         $html .= '</div></div></section>';
-        wp_enqueue_style( 'sabri-v12-settings-hub', SABRI_SHELL_URL . 'assets/css/v12-3-settings-hub.css', array(), SABRI_SHELL_VERSION );
-        wp_enqueue_script( 'sabri-v12-settings-hub', SABRI_SHELL_URL . 'assets/js/v12-3-settings-hub.js', array(), SABRI_SHELL_VERSION, true );
+        self::enqueue_assets();
         return $html;
     }
 }
