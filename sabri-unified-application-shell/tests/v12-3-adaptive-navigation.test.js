@@ -11,6 +11,8 @@ const originalKeys = [
 assert.deepEqual(PRIMARY_KEYS, originalKeys, 'Only V12.3 14 core nav destinations; no invented fifteenth');
 const items = PRIMARY_KEYS.map(key => ({key, width: 80}));
 assert.deepEqual(selectDirect(items, 1800, 72, false), originalKeys, 'Full-width desktop shows all available menu destinations');
+assert.ok(selectDirect(items, 1120, 72, false, 4).length < 14, '14×80 plus CSS gaps is NOT falsely considered to fit in 1120px');
+assert.deepEqual(selectDirect(items, 1172, 72, false, 4), originalKeys, 'Entire menu fits when exact item widths plus 13 gaps fit');
 const desktop = selectDirect(items, 430, 72, false);
 assert.equal(desktop.length, 4, 'Width-fit desktop moves rest into More without horizontal scroll');
 assert.deepEqual(desktop, originalKeys.slice(0, 4), 'Original registered navigation order remains stable');
@@ -24,4 +26,5 @@ assert.equal(/(?:localStorage|sessionStorage|XMLHttpRequest|sendBeacon|document\
 assert.equal(src.includes("nav.contains(document.activeElement)"), true, 'Focused destination protected against reparenting');
 assert.equal(src.includes("moreMenu.appendChild(hidden)"), true, 'Original nodes moved without duplicate anchors');
 assert.equal(src.includes("summary.setAttribute('aria-current', 'page')"), true, 'More retains active state semantics');
+assert.equal(src.includes("summary.setAttribute('aria-label'"), true, 'Full active destination remains available to assistive navigation despite visual truncation');
 console.log('V12.3 adaptive navigation policy PASS; real device a11y acceptance not claimed.');
