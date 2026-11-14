@@ -528,8 +528,8 @@
     {
       "id": "F20-B-007",
       "area": "File25 design token",
-      "state": "unverified",
-      "cause": "V12.3 #087A4E vs source #16803a for PWA theme; owner confirmation required"
+      "state": "source-confirmed-gap",
+      "cause": "File25 exact main source proves #087A4E; File20 PWA source currently #16803a; no source correction or Live parity yet"
     }
   ],
   "release_gates": [
@@ -549,5 +549,61 @@
     "No ownership of clinical/member/security data",
     "No merging PR41/42/43 on CI evidence alone",
     "No claim of Live resolution"
+  ],
+  "owner_source_evidence": [
+    {
+      "owner": "File25",
+      "main_sha": "347a4ff4d4c233c5ea6cd82c7786ee5398ea9d1e",
+      "observed": "canonical primary #087A4E in CSS and tokens",
+      "live_status": "unverified"
+    },
+    {
+      "owner": "File26",
+      "main_sha": "1b064c6ea9f81195611ed001d5457e8ced65460a",
+      "observed": "search REST contract exists; settings alias provider unverified",
+      "live_status": "unverified"
+    },
+    {
+      "owner": "File13",
+      "main_sha": "67418c0f9d0fb4cf77fc2c5d5d79e4caf2e3c316",
+      "observed": "historical ownership statement conflicts with later V12.3 direction; Founder decision required",
+      "live_status": "unverified"
+    },
+    {
+      "owner": "File02",
+      "main_sha": "224c39bcb8c28f77504c7348dbad41226753c7e8",
+      "observed": "session canonical route; Account Safety only PR27 candidate",
+      "live_status": "unverified"
+    },
+    {
+      "owner": "File24",
+      "main_sha": "a5b8d49968a7a5a7d6f3f4655bea541bf38a9acb",
+      "observed": "Security Guidance PR32 unmerged; live page unverified",
+      "live_status": "unverified"
+    },
+    {
+      "owner": "File19",
+      "main_sha": "66a4de6077e32c4c6cd692ae3d906afc4a5f3eb2",
+      "observed": "single notification bell and preferences contract described",
+      "live_status": "unverified"
+    },
+    {
+      "owner": "CF02",
+      "main_sha": "bd52b96af28ce775a18860142aec84a62fb9b803",
+      "observed": "requires signed owner readiness; Context Help provider not established",
+      "live_status": "unverified"
+    },
+    {
+      "owner": "File05",
+      "main_sha": "e2667d69d43d655e3d86b0a358dec5f28b61dd96",
+      "observed": "README-only main; recent provider not established",
+      "live_status": "unverified"
+    },
+    {
+      "owner": "File12",
+      "main_sha": "2b369ef2d609247896e1ab32118f1dc498407f51",
+      "observed": "README-only main; bookmarks provider not established",
+      "live_status": "unverified"
+    }
   ]
 }
