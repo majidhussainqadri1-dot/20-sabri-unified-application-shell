@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 final class SettingsHub {
     const CONTRACT_VERSION = '12.3.0';
     const SHORTCODE = 'sabri_shell_settings_hub';
+    private static $render_sequence = 0;
 
     /**
      * The 23 V12.3 keys, their public labels, approved source owners and
@@ -110,13 +111,13 @@ final class SettingsHub {
         $path = isset( $url['path'] ) ? (string) $url['path'] : '';
         if ( '' === $path || '/' !== substr( $path, 0, 1 ) ) { return ''; }
         for ( $i = 0; $i < 3; ++$i ) {
-            if ( false !== strpos( $path, '\\' ) || false !== strpos( $path, "\0" ) ||
+            if ( false !== strpos( $path, '//' ) || false !== strpos( $path, '\\' ) || false !== strpos( $path, "\0" ) ||
                 preg_match( '#(?:^|/)\.\.(?:/|$)#', $path ) ) { return ''; }
             $next = rawurldecode( $path );
             if ( $next === $path ) { break; }
             $path = $next;
         }
-        if ( false !== strpos( $path, '\\' ) || preg_match( '#(?:^|/)\.\.(?:/|$)#', $path ) ) { return ''; }
+        if ( false !== strpos( $path, '//' ) || false !== strpos( $path, '\\' ) || preg_match( '#(?:^|/)\.\.(?:/|$)#', $path ) ) { return ''; }
         return $candidate;
     }
 
@@ -151,11 +152,14 @@ final class SettingsHub {
 
     public static function render() {
         $user_id = is_user_logged_in() ? (int) get_current_user_id() : 0;
+        $unique = (string) ++self::$render_sequence;
+        $search_id = 'sabri-v12-settings-search-' . $unique;
+        $hint_id = 'sabri-v12-settings-hint-' . $unique;
         $html = '<section class="sabri-v12-settings" data-sabri-v12-settings aria-label="' . esc_attr__( 'Settings', 'sabri-unified-application-shell' ) . '">';
         $html .= '<h2>' . esc_html__( 'Settings', 'sabri-unified-application-shell' ) . '</h2>';
-        $html .= '<label for="sabri-v12-settings-search">' . esc_html( 'ترتیبات تلاش کریں' ) . '</label>';
-        $html .= '<input id="sabri-v12-settings-search" data-sabri-v12-settings-search type="search" autocomplete="off" spellcheck="false" aria-describedby="sabri-v12-settings-hint" />';
-        $html .= '<p id="sabri-v12-settings-hint">' . esc_html( 'صرف نظر آنے والے عنوانات تلاش ہوں گے؛ آپ کی تلاش محفوظ نہیں ہوتی۔' ) . '</p>';
+        $html .= '<label for="' . esc_attr( $search_id ) . '">' . esc_html( 'ترتیبات تلاش کریں' ) . '</label>';
+        $html .= '<input id="' . esc_attr( $search_id ) . '" data-sabri-v12-settings-search type="search" autocomplete="off" spellcheck="false" aria-describedby="' . esc_attr( $hint_id ) . '" />';
+        $html .= '<p id="' . esc_attr( $hint_id ) . '">' . esc_html( 'صرف نظر آنے والے عنوانات تلاش ہوں گے؛ آپ کی تلاش محفوظ نہیں ہوتی۔' ) . '</p>';
         $html .= '<p data-sabri-v12-search-status role="status" aria-live="polite"></p>';
         $html .= '<div class="sabri-v12-settings-layout"><nav aria-label="' . esc_attr( 'ترتیبات کے گروہ' ) . '"><ul>';
         $groups = array();
@@ -179,11 +183,11 @@ final class SettingsHub {
             if ( $rows ) { $groups[ $group ] = array( 'label' => $record['label'], 'rows' => $rows ); }
         }
         foreach ( $groups as $group => $record ) {
-            $html .= '<li><a href="#sabri-v12-group-' . esc_attr( $group ) . '" data-sabri-v12-group-link="' . esc_attr( $group ) . '">' . esc_html( $record['label'] ) . '</a></li>';
+            $html .= '<li><a href="#sabri-v12-group-' . esc_attr( $unique . '-' . $group ) . '" data-sabri-v12-group-link="' . esc_attr( $group ) . '">' . esc_html( $record['label'] ) . '</a></li>';
         }
         $html .= '</ul></nav><div class="sabri-v12-settings-detail">';
         foreach ( $groups as $group => $record ) {
-            $html .= '<section class="sabri-v12-settings-group" id="sabri-v12-group-' . esc_attr( $group ) . '" data-sabri-v12-group="' . esc_attr( $group ) . '">';
+            $html .= '<section class="sabri-v12-settings-group" id="sabri-v12-group-' . esc_attr( $unique . '-' . $group ) . '" data-sabri-v12-group="' . esc_attr( $group ) . '">';
             $html .= '<h3>' . esc_html( $record['label'] ) . '</h3><ul>';
             $html .= implode( '', $record['rows'] );
             $html .= '</ul></section>';
