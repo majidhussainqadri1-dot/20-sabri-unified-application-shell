@@ -19,6 +19,10 @@ $assert( false !== strpos( $js, "const prefix='/wp-content/plugins/sabri-unified
 $assert( false !== strpos( $js, "parts.length===2" ) && false !== strpos( $js, "parts[0]==='css'" ) && false !== strpos( $js, "parts[0]==='js'" ), 'Strict CSS/JS immediate child allowlist.' );
 $assert( false !== strpos( $js, "r.destination==='style'" ) && false !== strpos( $js, "r.destination==='script'" ), 'Only real stylesheet/script fetch destinations are cached.' );
 $assert( false !== strpos( $js, "q.has('ver')" ), 'Only safe WordPress asset version parameter is cache-eligible.' );
+$assert( false !== strpos( $js, "filename.indexOf('..')===-1" ), 'Hidden and ambiguous file names cannot qualify for public cache.' );
+$assert( false !== strpos( $js, "res.redirected" ) && false !== strpos( $js, "res.url===r.url" ), 'Redirected/substituted responses never populate asset cache.' );
+$assert( false !== strpos( $js, "res.headers.get('vary')" ), 'Vary Cookie and Authorization responses are rejected.' );
+$assert( false !== strpos( $js, "res.headers.get('content-type')" ), 'Only MIME-matched CSS and JavaScript are cache eligible.' );
 $assert( false !== strpos( $js, "no-store" ) && false !== strpos( $js, "private" ), 'Origin private/no-store caching vetoes exist.' );
 $assert( false === strpos( $js, "if(u.pathname.includes('/wp-content/plugins/sabri-unified-application-shell/'))" ), 'Old blanket plugin-folder caching removed.' );
 $assert( false !== strpos( $js, "fetch(r,{cache:'no-store'})" ), 'Navigations never cache full HTML/patient pages.' );
