@@ -52,6 +52,8 @@ final class Plugin {
 		 */
 		Renderer::register();
 		ContextNavigation::register();
+		/* V12.3 source-only additive Settings Hub shortcode, owner data untouched. */
+		SettingsHub::register();
 		ContextHelp::register();
 		WorkspaceEntries::register();
 		/* File 19 consumes these versioned shell-owned notification integration signals.

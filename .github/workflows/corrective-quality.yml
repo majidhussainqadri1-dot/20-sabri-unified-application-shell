@@ -58,11 +58,23 @@ jobs:
         uses: actions/checkout@v5
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: PHP for V12.3 exact generated service-worker VM tests
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+      - name: V12.3 generated SW syntax and privacy test
+        run: |
+          set -euo pipefail
+          php sabri-unified-application-shell/tests/dump-v12-3-sw-cache.php > /tmp/sabri-v12-3-sw.js
+          node --check /tmp/sabri-v12-3-sw.js
+          node sabri-unified-application-shell/tests/v12-3-sw-cache.test.js
       - name: JavaScript JSON CSS canonical-writer reconciliation and release-truth static checks
         run: |
           set -euo pipefail
           for js in sabri-unified-application-shell/assets/js/*.js; do node --check "$js"; done
           node sabri-unified-application-shell/tests/context-navigation-forward.test.js
+          node sabri-unified-application-shell/tests/v12-3-settings-search.test.js
+          node sabri-unified-application-shell/tests/v12-3-adaptive-navigation.test.js
           python -m json.tool sabri-unified-application-shell/contracts/file20-central-plan-v4.json >/dev/null
           python - <<'PY'
           from pathlib import Path
