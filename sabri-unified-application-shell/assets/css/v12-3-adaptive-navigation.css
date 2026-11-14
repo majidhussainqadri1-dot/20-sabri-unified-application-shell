@@ -62,7 +62,11 @@
   }
 }
 @media (max-width: 480px) {
-  .sabri-shell-header-inner .sabri-shell-brand-text { display: none; }
+  /* Keep the full brand link accessible while shortening its visual width. */
+  .sabri-shell-header-inner .sabri-shell-brand-text {
+    position: absolute; inline-size: 1px; block-size: 1px;
+    overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
   .sabri-shell-header-inner .sabri-shell-search { flex-basis: 6rem; inline-size: 6rem; }
   .sabri-shell-primary-nav .sabri-shell-nav-more summary { max-inline-size: 38vw; }
 }
