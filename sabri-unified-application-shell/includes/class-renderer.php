@@ -437,7 +437,7 @@ final class Renderer {
 	 */
 	private static function render_nav_item( array $item ) {
 		$active = Navigation::is_active_url( $item['url'] );
-		echo '<li>';
+		echo '<li data-sabri-destination="' . esc_attr( sanitize_key( isset( $item['key'] ) ? $item['key'] : '' ) ) . '">';
 		echo '<a href="' . esc_url( $item['url'] ) . '"' . ( $active ? ' aria-current="page"' : '' ) . '>';
 		echo esc_html( $item['label'] );
 		echo '</a>';
