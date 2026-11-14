@@ -62,6 +62,7 @@ jobs:
         run: |
           set -euo pipefail
           for js in sabri-unified-application-shell/assets/js/*.js; do node --check "$js"; done
+          node sabri-unified-application-shell/tests/v12-3-adaptive-navigation.test.js
           python -m json.tool sabri-unified-application-shell/contracts/file20-central-plan-v4.json >/dev/null
           python - <<'PY'
           from pathlib import Path
