@@ -58,11 +58,19 @@ jobs:
         uses: actions/checkout@v5
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: V12.3 S0 collector shell syntax and hermetic no-write WordPress mock
+        run: |
+          set -euo pipefail
+          bash -n tools/file20-readonly-live-freeze.sh
+          bash -n tools/test-file20-readonly-live-freeze.sh
+          bash tools/test-file20-readonly-live-freeze.sh
       - name: JavaScript JSON CSS canonical-writer reconciliation and release-truth static checks
         run: |
           set -euo pipefail
           for js in sabri-unified-application-shell/assets/js/*.js; do node --check "$js"; done
           python -m json.tool sabri-unified-application-shell/contracts/file20-central-plan-v4.json >/dev/null
+          python -m json.tool sabri-unified-application-shell/contracts/file20-v12-3-readiness.json >/dev/null
+          python -m json.tool sabri-unified-application-shell/contracts/file20-v12-3-acceptance.json >/dev/null
           python - <<'PY'
           from pathlib import Path
           root=Path('sabri-unified-application-shell')
