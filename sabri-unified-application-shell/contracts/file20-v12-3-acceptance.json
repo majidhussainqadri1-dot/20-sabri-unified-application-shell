@@ -1,0 +1,407 @@
+{
+  "contract_id": "file20.v12.3.acceptance-evidence.v1",
+  "contract_kind": "QA-PLANNING-ONLY",
+  "date": "2026-11-14",
+  "governing_plan": "Sabri-Website-Master-Plan-V12.3.docx",
+  "qa": [
+    {
+      "id": "QA-15",
+      "slug": "responsive-no-js-rtl",
+      "owners": [
+        "File20",
+        "File25",
+        "File24"
+      ],
+      "scenario": "320,390,768,1024,1440 CSS px; keyboard; RTL/LTR; no-JS; low data",
+      "pass_condition": "One canonical menu, visible focus, essential routes accessible; no critical horizontal overflow",
+      "source_status": "not-run",
+      "staging_status": "not-run",
+      "live_status": "not-run",
+      "evidence": []
+    },
+    {
+      "id": "QA-16",
+      "slug": "wcag-complete-task",
+      "owners": [
+        "File20",
+        "File25",
+        "File24"
+      ],
+      "scenario": "WCAG 2.2 AA representative tasks; 200% text; 400% zoom; forced colors; assistive tech",
+      "pass_condition": "All active controls reachable and meaningful; focus/status/error recognized",
+      "source_status": "not-run",
+      "staging_status": "not-run",
+      "live_status": "not-run",
+      "evidence": []
+    },
+    {
+      "id": "QA-17",
+      "slug": "cold-warm-and-field-performance",
+      "owners": [
+        "File20",
+        "File24",
+        "native-domain"
+      ],
+      "scenario": "Per-route cold/warm lab; field p75 device class URL/origin timeframe/sample",
+      "pass_condition": "Report LCP INP CLS with valid sample; unknown or missing remains unverified",
+      "source_status": "not-run",
+      "staging_status": "not-run",
+      "live_status": "not-run",
+      "evidence": []
+    },
+    {
+      "id": "QA-18",
+      "slug": "locale-translation-search-source",
+      "owners": [
+        "File26",
+        "CF06",
+        "native-content-owner"
+      ],
+      "scenario": "Canonical, hreflang, withdrawn translation, language alias, search",
+      "pass_condition": "No private or withdrawn source leak; approved version and links",
+      "source_status": "not-run",
+      "staging_status": "not-run",
+      "live_status": "not-run",
+      "evidence": []
+    },
+    {
+      "id": "QA-19",
+      "slug": "roles-sessions-and-authorization",
+      "owners": [
+        "File00",
+        "File02",
+        "File20"
+      ],
+      "scenario": "Current session/step-up; delegated role revocation; guardian requirements",
+      "pass_condition": "Per-request native authorization, no cross-user/context disclosure",
+      "source_status": "not-run",
+      "staging_status": "not-run",
+      "live_status": "not-run",
+      "evidence": []
+    },
+    {
+      "id": "QA-20",
+      "slug": "consent-export-delete",
+      "owners": [
+        "File00",
+        "CF02",
+        "data-owners"
+      ],
+      "scenario": "Consent revocation, export status, retention and deletion propagation",
+      "pass_condition": "Genuine owner receipt and justified retention; no fabricated completion",
+      "source_status": "not-run",
+      "staging_status": "not-run",
+      "live_status": "not-run",
+      "evidence": []
+    },
+    {
+      "id": "QA-21",
+      "slug": "medical-ai-authority",
+      "owners": [
+        "File16",
+        "clinical-owner",
+        "File24"
+      ],
+      "scenario": "Uncertain, incomplete source, red flags, human-review fallback",
+      "pass_condition": "No unapproved diagnosis/prescription authority; source limitations shown",
+      "source_status": "not-run",
+      "staging_status": "not-run",
+      "live_status": "not-run",
+      "evidence": []
+    },
+    {
+      "id": "QA-22",
+      "slug": "notification-media-offline",
+      "owners": [
+        "File19",
+        "File10/11",
+        "File20"
+      ],
+      "scenario": "Two devices, permission withdrawn, transfer interrupted, offline, logout",
+      "pass_condition": "No protected cached body/title; correct owner state and text fallback",
+      "source_status": "not-run",
+      "staging_status": "not-run",
+      "live_status": "not-run",
+      "evidence": []
+    },
+    {
+      "id": "QA-23",
+      "slug": "publishing-and-financial-integrity",
+      "owners": [
+        "File21/22",
+        "File18",
+        "File24"
+      ],
+      "scenario": "Editorial role hold, donation retry, zero platform commission",
+      "pass_condition": "Owner-only state; no charge for free access; exactly-once payments",
+      "source_status": "not-run",
+      "staging_status": "not-run",
+      "live_status": "not-run",
+      "evidence": []
+    },
+    {
+      "id": "QA-24",
+      "slug": "bounded-release-recovery-parity",
+      "owners": [
+        "File01-B",
+        "File20",
+        "File24"
+      ],
+      "scenario": "Exact source/ZIP sha256, installed schema, migration, backup/restore, canary, rollback",
+      "pass_condition": "Approved limited rollout, fresh Live journey checks and exact parity",
+      "source_status": "not-run",
+      "staging_status": "not-run",
+      "live_status": "not-run",
+      "evidence": []
+    }
+  ],
+  "ux": [
+    {
+      "id": "UX-01",
+      "scenario": "Home→search→lesson/book→back/source",
+      "source_status": "not-run",
+      "staging_status": "not-run",
+      "live_status": "not-run"
+    },
+    {
+      "id": "UX-02",
+      "scenario": "Urdu/Roman Urdu/Arabic search with aliases and partial results",
+      "source_status": "not-run",
+      "staging_status": "not-run",
+      "live_status": "not-run"
+    },
+    {
+      "id": "UX-03",
+      "scenario": "Lesson/book/video progress, captions, weak connection and resume",
+      "source_status": "not-run",
+      "staging_status": "not-run",
+      "live_status": "not-run"
+    },
+    {
+      "id": "UX-04",
+      "scenario": "Doctor appointment live owner availability with timezone and concurrency",
+      "source_status": "not-run",
+      "staging_status": "not-run",
+      "live_status": "not-run"
+    },
+    {
+      "id": "UX-05",
+      "scenario": "Settings theme/quiet hours/language/data saver two-device conflict and reset",
+      "source_status": "not-run",
+      "staging_status": "not-run",
+      "live_status": "not-run"
+    },
+    {
+      "id": "UX-06",
+      "scenario": "Guardian/minor/account protected action and session revocation",
+      "source_status": "not-run",
+      "staging_status": "not-run",
+      "live_status": "not-run"
+    },
+    {
+      "id": "UX-07",
+      "scenario": "Founder/doctor/editor draft permissions, role hold and stale edits",
+      "source_status": "not-run",
+      "staging_status": "not-run",
+      "live_status": "not-run"
+    },
+    {
+      "id": "UX-08",
+      "scenario": "Translation edit/withdrawal and canonical original links",
+      "source_status": "not-run",
+      "staging_status": "not-run",
+      "live_status": "not-run"
+    },
+    {
+      "id": "UX-09",
+      "scenario": "Message and 1GB file transfer resume and revoked receiver access",
+      "source_status": "not-run",
+      "staging_status": "not-run",
+      "live_status": "not-run"
+    },
+    {
+      "id": "UX-10",
+      "scenario": "Donation optionality and zero commission under retries",
+      "source_status": "not-run",
+      "staging_status": "not-run",
+      "live_status": "not-run"
+    },
+    {
+      "id": "UX-11",
+      "scenario": "Public offline content, authenticated logout and cache erase",
+      "source_status": "not-run",
+      "staging_status": "not-run",
+      "live_status": "not-run"
+    },
+    {
+      "id": "UX-12",
+      "scenario": "RTL/LTR keyboard screen-reader 200%/400% zoom and forced colors",
+      "source_status": "not-run",
+      "staging_status": "not-run",
+      "live_status": "not-run"
+    },
+    {
+      "id": "UX-13",
+      "scenario": "Staging migration interruption and bounded release rollback",
+      "source_status": "not-run",
+      "staging_status": "not-run",
+      "live_status": "not-run"
+    },
+    {
+      "id": "UX-14",
+      "scenario": "AI uncertainty/source failure with safe owner fallback",
+      "source_status": "not-run",
+      "staging_status": "not-run",
+      "live_status": "not-run"
+    }
+  ],
+  "gates": [
+    {
+      "id": "G0",
+      "state": "in-progress",
+      "exit_criterion": "Requirement IDs to source code, exact HEAD, owner matrix, scope frozen",
+      "evidence": []
+    },
+    {
+      "id": "G1",
+      "state": "blocked",
+      "exit_criterion": "Live read-only freeze: deployed code, DB, schema, migrations, wp_options, logs and checksums",
+      "evidence": []
+    },
+    {
+      "id": "G2",
+      "state": "partial",
+      "exit_criterion": "Versioned owner-provider evidence, File25 token, File13 ownership reconciliation",
+      "evidence": []
+    },
+    {
+      "id": "G3",
+      "state": "not-started",
+      "exit_criterion": "14 primary destinations, responsive More and truthful routing",
+      "evidence": []
+    },
+    {
+      "id": "G4",
+      "state": "not-started",
+      "exit_criterion": "Safe native history and focus/filter/scroll restoration",
+      "evidence": []
+    },
+    {
+      "id": "G5",
+      "state": "not-started",
+      "exit_criterion": "7-group 23-control actual settings UI; owner effect, save/reset/conflict",
+      "evidence": []
+    },
+    {
+      "id": "G6",
+      "state": "not-started",
+      "exit_criterion": "Urdu/Roman Urdu approved settings search without sensitive indexing",
+      "evidence": []
+    },
+    {
+      "id": "G7",
+      "state": "not-started",
+      "exit_criterion": "18-feature gates and offline/degraded PWA privacy",
+      "evidence": []
+    },
+    {
+      "id": "G8",
+      "state": "blocked",
+      "exit_criterion": "Help/Recent/Saved/File02/24/File19 providers, File13/14 decisions",
+      "evidence": []
+    },
+    {
+      "id": "G9",
+      "state": "not-started",
+      "exit_criterion": "Two complete corrective review cycles and exact-head regression",
+      "evidence": []
+    },
+    {
+      "id": "G10",
+      "state": "blocked",
+      "exit_criterion": "Verified installable ZIP and real WordPress staging matrix/backup/restore",
+      "evidence": []
+    },
+    {
+      "id": "G11",
+      "state": "blocked",
+      "exit_criterion": "Founder-approved bounded live deployment, retest/parity",
+      "evidence": []
+    },
+    {
+      "id": "G12",
+      "state": "not-started",
+      "exit_criterion": "Operations runbook and signed five-state closure",
+      "evidence": []
+    }
+  ],
+  "responsive_css_px": [
+    320,
+    390,
+    480,
+    768,
+    1024,
+    1440,
+    1920
+  ],
+  "device_browser_matrix": [
+    "Windows Chrome",
+    "Windows Edge",
+    "Windows Firefox",
+    "Android Chrome",
+    "iOS Safari",
+    "NVDA",
+    "TalkBack",
+    "VoiceOver"
+  ],
+  "locales": [
+    "ur-RTL",
+    "ar-RTL",
+    "en-US-LTR"
+  ],
+  "security_cases": [
+    "guest",
+    "authenticated-member",
+    "verified-doctor",
+    "editor",
+    "founder",
+    "suspended-account",
+    "expired-session",
+    "revoked-role",
+    "shared-device",
+    "direct-url"
+  ],
+  "core_web_vitals_proposed": {
+    "lcp_p75_max_ms": 2500,
+    "inp_p75_max_ms": 200,
+    "cls_p75_max": 0.1,
+    "needs_valid_field_sample": true,
+    "cold_warm_lab_separate": true
+  },
+  "visual_first_impression_pilot": {
+    "pilot_users": 5,
+    "postfix_test_users_range": [
+      12,
+      18
+    ],
+    "first_glance_seconds_range": [
+      5,
+      8
+    ],
+    "target_correct_understanding_rate": 0.8,
+    "target_unassisted_completion_rate": 0.9,
+    "measured": false
+  },
+  "live_evidence": {
+    "repository_head": "8a4dbcaf4fef8e926b9b834ecfde16c21a0f00ca",
+    "candidate_head": "not-frozen-for-release",
+    "deployed_version": "unverified",
+    "db_version": "unverified",
+    "migration_state": "unverified",
+    "live_verification_status": "not-run",
+    "artifact_checksum": "unverified",
+    "exact_release_head_note": "Record immutable approved source SHA only at R1/R2 release gate; this file is continuously edited source evidence."
+  },
+  "authorization": "NOT RELEASE-APPROVED",
+  "risk_rule": "Active scope must have zero known open defects and full independently verified dependencies; optional excluded features retain open records"
+}
