@@ -1,0 +1,553 @@
+{
+  "contract_id": "file20.v12.3.source-readiness.v1",
+  "schema_version": 1,
+  "classification": "NON-RUNTIME / SOURCE-READINESS ONLY",
+  "governing_plan": "Sabri-Website-Master-Plan-V12.3.docx",
+  "plan_date": "2026-11-13",
+  "snapshot_date": "2026-11-14",
+  "source_baseline": {
+    "repository": "majidhussainqadri1-dot/20-sabri-unified-application-shell",
+    "main_head": "8a4dbcaf4fef8e926b9b834ecfde16c21a0f00ca",
+    "source_version": "1.4.17",
+    "source_schema": 5,
+    "unmerged_candidate_pr": 43,
+    "unmerged_candidate_head": "a054094d5ad3de5916f160333749a76e909e16a1",
+    "candidate_source_version": "1.4.18"
+  },
+  "live": {
+    "deployed_version": "unverified",
+    "db_version": "unverified",
+    "migration_state": "unverified",
+    "live_verification": "unverified",
+    "wp_options": "unverified",
+    "runtime_logs": "unverified",
+    "package_checksum": "unverified",
+    "jetpack_site_access": "site_disconnected",
+    "wpvibe_direct": "HTTP 530, cause not determined"
+  },
+  "primary_destinations": [
+    "home",
+    "news",
+    "founder",
+    "learn",
+    "encyclopedia",
+    "doctors",
+    "clinic",
+    "video_wall",
+    "reels",
+    "pdf_library",
+    "radar",
+    "ai",
+    "network",
+    "marketplace"
+  ],
+  "requirements": [
+    {
+      "id": "CV-026",
+      "priority": "P0",
+      "state": "partial",
+      "work_packages": [
+        "WP-03",
+        "WP-04"
+      ],
+      "evidence": "Registry has 14 main destinations; mobile Home/Education/More not proven"
+    },
+    {
+      "id": "CV-027",
+      "priority": "P0",
+      "state": "partial",
+      "work_packages": [
+        "WP-03",
+        "WP-10"
+      ],
+      "evidence": "Logical RTL layout and screen reader matrix unverified"
+    },
+    {
+      "id": "CV-028",
+      "priority": "P0",
+      "state": "partial",
+      "work_packages": [
+        "WP-03"
+      ],
+      "evidence": "Current primary navigation uses fixed six direct destinations plus More"
+    },
+    {
+      "id": "CV-029",
+      "priority": "P1",
+      "state": "draft-source",
+      "work_packages": [
+        "WP-05"
+      ],
+      "evidence": "PR43 includes conditional native Forward; scroll/filter/focus restoration not proven"
+    },
+    {
+      "id": "CV-030",
+      "priority": "P1",
+      "state": "not-started",
+      "work_packages": [
+        "WP-06"
+      ],
+      "evidence": "No V12.3 owner-approved Urdu/Roman Urdu settings search demonstrated"
+    },
+    {
+      "id": "CV-031",
+      "priority": "P1",
+      "state": "partial",
+      "work_packages": [
+        "WP-07",
+        "WP-08"
+      ],
+      "evidence": "Old wp-admin settings exist; 7-group 23-control consumer hub absent"
+    },
+    {
+      "id": "CV-032",
+      "priority": "P0",
+      "state": "partial",
+      "work_packages": [
+        "WP-09"
+      ],
+      "evidence": "Connectivity/incident primitives exist; source-backed outage/degraded state unverified"
+    },
+    {
+      "id": "CV-033",
+      "priority": "P1",
+      "state": "draft-source",
+      "work_packages": [
+        "WP-11"
+      ],
+      "evidence": "PR43 Help consumer exists; native provider filter/permissions unverified"
+    },
+    {
+      "id": "CV-034",
+      "priority": "P2",
+      "state": "draft-source",
+      "work_packages": [
+        "WP-12",
+        "WP-13"
+      ],
+      "evidence": "PR43 generic Recent hub links; real per-item permission/withdrawal absent"
+    },
+    {
+      "id": "CV-035",
+      "priority": "P1",
+      "state": "draft-source",
+      "work_packages": [
+        "WP-12"
+      ],
+      "evidence": "PR43 generic Saved hub links; canonical owned collection projection absent"
+    },
+    {
+      "id": "CV-036",
+      "priority": "P0",
+      "state": "partial",
+      "work_packages": [
+        "WP-10"
+      ],
+      "evidence": "Static skip/focus code exists; real WCAG2.2 AA assistive tasks not tested"
+    }
+  ],
+  "settings_groups": [
+    {
+      "id": "account",
+      "title": "اکاؤنٹ اور شناخت",
+      "controls": [
+        {
+          "key": "account.profile",
+          "owner": "File03",
+          "state": "unverified-provider",
+          "storage": "native-owner-only"
+        },
+        {
+          "key": "account.membership",
+          "owner": "File00",
+          "state": "unverified-provider",
+          "storage": "native-owner-only"
+        },
+        {
+          "key": "account.credentials",
+          "owner": "File09",
+          "state": "unverified-provider",
+          "storage": "native-owner-only"
+        }
+      ]
+    },
+    {
+      "id": "security",
+      "title": "حفاظت اور نشستیں",
+      "controls": [
+        {
+          "key": "security.sessions",
+          "owner": "File02",
+          "state": "unverified-provider",
+          "storage": "native-owner-only"
+        },
+        {
+          "key": "security.passkeys",
+          "owner": "File02",
+          "state": "unverified-provider",
+          "storage": "native-owner-only"
+        },
+        {
+          "key": "security.recovery",
+          "owner": "File02",
+          "state": "unverified-provider",
+          "storage": "native-owner-only"
+        }
+      ]
+    },
+    {
+      "id": "privacy",
+      "title": "رازداری اور ڈیٹا",
+      "controls": [
+        {
+          "key": "privacy.consent",
+          "owner": "File00/native-owner",
+          "state": "unverified-provider",
+          "storage": "native-owner-only"
+        },
+        {
+          "key": "privacy.analytics",
+          "owner": "CF05/native-owner",
+          "state": "unverified-provider",
+          "storage": "native-owner-only"
+        },
+        {
+          "key": "privacy.requests",
+          "owner": "CF02/native-owner",
+          "state": "unverified-provider",
+          "storage": "native-owner-only"
+        }
+      ]
+    },
+    {
+      "id": "language",
+      "title": "زبان اور مطالعہ",
+      "controls": [
+        {
+          "key": "language.ui",
+          "owner": "File20/CF06",
+          "state": "unverified-provider",
+          "storage": "native-owner-only"
+        },
+        {
+          "key": "language.content",
+          "owner": "File20/CF06",
+          "state": "unverified-provider",
+          "storage": "native-owner-only"
+        },
+        {
+          "key": "language.edition",
+          "owner": "CF06/content-owner",
+          "state": "unverified-provider",
+          "storage": "native-owner-only"
+        },
+        {
+          "key": "language.reading",
+          "owner": "File05/File12",
+          "state": "unverified-provider",
+          "storage": "native-owner-only"
+        }
+      ]
+    },
+    {
+      "id": "display",
+      "title": "ظاہری صورت اور رسائی",
+      "controls": [
+        {
+          "key": "display.theme",
+          "owner": "File20/File25",
+          "state": "unverified-provider",
+          "storage": "native-owner-only"
+        },
+        {
+          "key": "display.text",
+          "owner": "File20/File25",
+          "state": "unverified-provider",
+          "storage": "native-owner-only"
+        },
+        {
+          "key": "display.motion",
+          "owner": "File20/File25",
+          "state": "unverified-provider",
+          "storage": "native-owner-only"
+        },
+        {
+          "key": "display.captions",
+          "owner": "File10/File11",
+          "state": "unverified-provider",
+          "storage": "native-owner-only"
+        }
+      ]
+    },
+    {
+      "id": "notifications",
+      "title": "اطلاعات اور فوکس",
+      "controls": [
+        {
+          "key": "notifications.quiet",
+          "owner": "File19",
+          "state": "unverified-provider",
+          "storage": "native-owner-only"
+        },
+        {
+          "key": "notifications.channels",
+          "owner": "File19",
+          "state": "unverified-provider",
+          "storage": "native-owner-only"
+        },
+        {
+          "key": "notifications.focus",
+          "owner": "File19/File20",
+          "state": "unverified-provider",
+          "storage": "native-owner-only"
+        }
+      ]
+    },
+    {
+      "id": "connection",
+      "title": "رابطہ اور نیٹ ورک",
+      "controls": [
+        {
+          "key": "connection.visibility",
+          "owner": "File17",
+          "state": "unverified-provider",
+          "storage": "native-owner-only"
+        },
+        {
+          "key": "connection.data",
+          "owner": "File20",
+          "state": "unverified-provider",
+          "storage": "native-owner-only"
+        },
+        {
+          "key": "connection.playback",
+          "owner": "File10/File11",
+          "state": "unverified-provider",
+          "storage": "native-owner-only"
+        }
+      ]
+    }
+  ],
+  "future_shell_features": [
+    "command_palette",
+    "pwa_shell",
+    "offline_mode",
+    "data_saver",
+    "recent_resume",
+    "module_circuit_breaker",
+    "last_known_good",
+    "performance_guardian",
+    "smart_navigation",
+    "keyboard_accessibility",
+    "focus_mode",
+    "split_workspace",
+    "adaptive_foldable",
+    "view_transitions",
+    "predictive_prefetch",
+    "language_direction",
+    "accessibility_center",
+    "release_rings"
+  ],
+  "work_packages": [
+    {
+      "id": "WP-01",
+      "title": "Requirement/source/HEAD trace",
+      "state": "in-progress"
+    },
+    {
+      "id": "WP-02",
+      "title": "Live read-only parity",
+      "state": "not-verified"
+    },
+    {
+      "id": "WP-03",
+      "title": "responsive single menu",
+      "state": "not-verified"
+    },
+    {
+      "id": "WP-04",
+      "title": "route fallback",
+      "state": "not-verified"
+    },
+    {
+      "id": "WP-05",
+      "title": "history focus restoration",
+      "state": "not-verified"
+    },
+    {
+      "id": "WP-06",
+      "title": "safe settings search",
+      "state": "not-verified"
+    },
+    {
+      "id": "WP-07",
+      "title": "7-group 23-control hub",
+      "state": "not-verified"
+    },
+    {
+      "id": "WP-08",
+      "title": "effective values save/reset/conflict",
+      "state": "not-verified"
+    },
+    {
+      "id": "WP-09",
+      "title": "truthful degraded states",
+      "state": "not-verified"
+    },
+    {
+      "id": "WP-10",
+      "title": "keyboard and assistive navigation",
+      "state": "not-verified"
+    },
+    {
+      "id": "WP-11",
+      "title": "context help owners",
+      "state": "not-verified"
+    },
+    {
+      "id": "WP-12",
+      "title": "recent/saved owner projections",
+      "state": "not-verified"
+    },
+    {
+      "id": "WP-13",
+      "title": "role/tenant shared-device protection",
+      "state": "not-verified"
+    },
+    {
+      "id": "WP-14",
+      "title": "File02/24 conditional security menu",
+      "state": "not-verified"
+    },
+    {
+      "id": "WP-15",
+      "title": "File13 welcome owner handoff",
+      "state": "not-verified"
+    },
+    {
+      "id": "WP-16",
+      "title": "File14 CAS decision",
+      "state": "not-verified"
+    },
+    {
+      "id": "WP-17",
+      "title": "PWA privacy allowlist",
+      "state": "not-verified"
+    },
+    {
+      "id": "WP-18",
+      "title": "18-feature gates",
+      "state": "not-verified"
+    },
+    {
+      "id": "WP-19",
+      "title": "approved File25 color token",
+      "state": "not-verified"
+    },
+    {
+      "id": "WP-20",
+      "title": "performance evidence",
+      "state": "not-verified"
+    },
+    {
+      "id": "WP-21",
+      "title": "two sequential review cycles",
+      "state": "not-verified"
+    },
+    {
+      "id": "WP-22",
+      "title": "immutable package SHA256",
+      "state": "not-verified"
+    },
+    {
+      "id": "WP-23",
+      "title": "staging owner/theme/a11y matrix",
+      "state": "not-verified"
+    },
+    {
+      "id": "WP-24",
+      "title": "backup restore rollback",
+      "state": "not-verified"
+    },
+    {
+      "id": "WP-25",
+      "title": "approved bounded live rollout",
+      "state": "not-verified"
+    },
+    {
+      "id": "WP-26",
+      "title": "five-state handoff",
+      "state": "not-verified"
+    }
+  ],
+  "review": {
+    "round_1": "not-started",
+    "round_2": "not-started",
+    "new_confirmed_runtime_defects": 0,
+    "source_gaps_under_review": 3,
+    "fixed_runtime_defects": 0,
+    "live_retests": 0
+  },
+  "dependencies": [
+    {
+      "id": "F20-B-001",
+      "area": "Actual deployed File20 parity",
+      "state": "blocked",
+      "cause": "No authenticated live code/DB/log access"
+    },
+    {
+      "id": "F20-B-002",
+      "area": "ContextHelp owner producers",
+      "state": "unverified",
+      "cause": "CF02 and complex-screen versioned providers not verified"
+    },
+    {
+      "id": "F20-B-003",
+      "area": "Recent/Saved per-entity providers",
+      "state": "blocked",
+      "cause": "File05/12/17/22 owner permission/withdrawal not verified"
+    },
+    {
+      "id": "F20-B-004",
+      "area": "File02 + File24 safety pages",
+      "state": "blocked",
+      "cause": "Owner draft PRs, published page and actual rewrite unverified"
+    },
+    {
+      "id": "F20-B-005",
+      "area": "Welcome ownership",
+      "state": "hold",
+      "cause": "File13 / File20 PR41 conflict requires Founder decision"
+    },
+    {
+      "id": "F20-B-006",
+      "area": "File14 CAS experiment",
+      "state": "hold",
+      "cause": "PR42 preflight only; no executable restoration permission"
+    },
+    {
+      "id": "F20-B-007",
+      "area": "File25 design token",
+      "state": "unverified",
+      "cause": "V12.3 #087A4E vs source #16803a for PWA theme; owner confirmation required"
+    }
+  ],
+  "release_gates": [
+    "R0 scope authority",
+    "R1 exact-head source+two reviews",
+    "R2 SHA256 deterministic production ZIP",
+    "R3 real staging UX/QA15-24",
+    "R4 backup/restore/rollback",
+    "R5 Founder-approved limited live",
+    "R6 exact live re-test/parity",
+    "R7 signed operational handoff"
+  ],
+  "non_goals": [
+    "No WordPress plugin deployment",
+    "No database/schema migration",
+    "No new private settings database",
+    "No ownership of clinical/member/security data",
+    "No merging PR41/42/43 on CI evidence alone",
+    "No claim of Live resolution"
+  ]
+}
