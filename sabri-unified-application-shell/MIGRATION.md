@@ -6,7 +6,15 @@ Normal release promotion is staging-first. For a proven production incident, fir
 
 Repository, staging and Live are separate evidence realities.
 
-## Upgrade to 1.4.17
+## Candidate upgrade to 1.4.18 (requires approval)
+
+1. The versioned draft artifact is `20-sabri-unified-application-shell-1.4.18-V12-1-CONTEXTUAL-SHELL.zip`; do not deploy it before exact-head CI, separate source review, founder approval and a Hostinger-equivalent staging install/upgrade/backup/rollback rehearsal.
+2. Preserve the previous 1.4.17 deployed-files/DB/migration freeze and exact package/runtime SHA-256 evidence. File20 schema remains 5; a version bump is not schema-migration proof.
+3. Exercise native Back/Forward and the no-JS fallback, owner-approved public-safe contextual Help, owner-gated generic workspace entries, RTL/LTR, stale/unauthorized owner behavior and cross-file contracts.
+4. Never infer full CV-033/034/035 end-to-end completion from source-only consumer mounts; missing companion owners remain disabled.
+5. Obtain the actual ZIP SHA-256 and deployed-file parity, then controlled promotion and original symptom re-tests before calling this release Live Verified.
+
+## Historical upgrade to 1.4.17
 
 1. Use the exact deterministic `20-sabri-unified-application-shell-1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER.zip` artifact only after exact-head QA succeeds.
 2. Record source HEAD, artifact SHA-256, source manifest and the actually deployed previous version before replacement.
@@ -23,7 +31,7 @@ Version 1.4.16 corrected the bounded reconciliation write path. Version 1.4.17 t
 
 For any current File01 reconciliation re-test:
 
-1. Deploy the exact approved **1.4.17** artifact and prove deployed parity.
+1. For a new rollout, deploy only the exact approved **1.4.18** artifact after full acceptance; if investigating the historical 1.4.17 incident, first freeze the actual deployed version and prove parity.
 2. Run File01 dry-run only. `home` and `news` must remain File21-owned. The twelve File20 handoffs must be accepted by `file-20` with command version `1.0.1`; blocker count must be exactly zero.
 3. Each File20 plan must remain `shell_navigation_reference_only`; File20 may persist only its own navigation Page-ID references and must not claim native content/domain truth from Files 03/05/06/07/08/10/11/12/15/16/17/18.
 4. Record the reviewed File01 plan hash. If it changes before apply, stop and regenerate/review the dry-run.

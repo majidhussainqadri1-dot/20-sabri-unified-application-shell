@@ -4,7 +4,7 @@ Independent repository for **File 20 — Sabri Unified Application Shell** of th
 
 ## Current lifecycle
 
-- Current reviewed source baseline: **Version `1.4.17`** on `main` at `ed9a43d62a3c1b9851ecc38f9fac195f6a39ea73` before the 2026-09-05 twenty-round review cycle.
+- Current reviewed source baseline: **Version `1.4.18`** in Draft V12.1 PR #43, branched from `main` `8a4dbcaf4fef8e926b9b834ecfde16c21a0f00ca`; main and current deployed version must be checked separately.
 - Active review branch: `review/file20-twenty-round-2026-09-05`.
 - Settings schema: **5**.
 - File 01 reconciliation command contract: **1.0.1**.
@@ -12,7 +12,11 @@ Independent repository for **File 20 — Sabri Unified Application Shell** of th
 - File 20 remains structural shell/navigation/layout/slots/diagnostics/recovery only. Native companion domains keep identity, authentication, Home/News, communication, notification, appointments, marketplace, Search/Discovery/Ranking, visual, clinical, financial, media, analytics and localization truth.
 - Repository/code/package/automated-QA evidence is not staging/live/operational acceptance.
 
-## Current 1.4.17 source truth
+## Current Draft 1.4.18 source truth
+
+The source-review branch introduces native true-history Back/Forward, an optional public-safe owner-approved contextual Help slot and a principal-bound generic Recent/Saved native-owner entry surface, without creating any duplicate private backend. CI/source/package parity proves no Live deployment; 1.4.17 remains historical scoped Live evidence.
+
+## Historical 1.4.17 source truth
 
 Version 1.4.17 centralizes trusted full `sabri_shell_settings` writes in `Settings::update_programmatically()`. File01 reconciliation, PlanV4 repair/rollback, Emergency persistence, activation-snapshot rollback, defaults normalization and retired-state migration use that canonical writer. The dynamic active-sanitizer regression and static no-direct-settings-write gate preserve this invariant.
 

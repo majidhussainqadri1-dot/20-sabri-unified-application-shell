@@ -2,7 +2,7 @@
 
 ## Current source truth
 
-File 20 is **Sabri Unified Application Shell 1.4.17**, settings schema **5**. The immutable historical `1.0.0 FINAL` archive remains in `SOURCE-ARCHIVE/` for provenance only and is not the current runtime candidate.
+File 20 Draft V12.1 source candidate is **Sabri Unified Application Shell 1.4.18**, settings schema **5**. Main `8a4dbcaf...` remains 1.4.17 until reviewed merge; deployed code is not verified. The immutable historical `1.0.0 FINAL` archive remains in `SOURCE-ARCHIVE/` for provenance only and is not the current runtime candidate.
 
 The current source implements the approved File 20 v5 / Future Shell specification, including the exact eighteen Future Shell enhancements. CF-01..CF-06 remain conditional native-owner integration targets; they are not silently promoted into File 20-owned domain backends.
 
@@ -11,14 +11,16 @@ The current source implements the approved File 20 v5 / Future Shell specificati
 | Stage | Current evidence |
 |---|---|
 | Specified | **Complete** — File 20 v5 / central-plan-harmonized specification plus exact 18-enhancement Future Shell amendment |
-| Coded | **Complete for the approved repository scope** — runtime/source version `1.4.17` |
-| Packaged | **Green repository evidence** — exact-head CI builds the deterministic production-only `1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER` artifact and proves source/package parity |
+| Coded | **Complete for the approved repository scope** — draft runtime/source version `1.4.18` |
+| Packaged | **Green repository evidence** — exact-head CI builds the deterministic production-only `1.4.18-V12-1-CONTEXTUAL-SHELL` draft artifact and proves source/package parity |
 | Automated QA | **Green repository evidence** — PHP 7.4/8.3 full regression, static ownership/security/privacy checks, deterministic package parity and Baseline Archive Integrity pass on the current 1.4.17 source line |
 | Staging accepted | **Not established for the whole File 20 acceptance matrix**. A scoped File01 reconciliation incident has separate exact-deployed Live evidence; that does not replace full File20 staging acceptance. |
 | Live deployed | **Scoped evidence only** — File20 `1.4.17` was deployed and exact package/runtime parity was verified for the 2026-08-29 File01 reconciliation incident. This is not a claim of whole-File20 production acceptance. |
 | Operational | **Not established for the whole File 20 scope** — full monitoring/SLO/support/backup-restore and all representative operational journeys remain separate evidence gates. |
 
 ## Current repository assurance
+
+Draft 1.4.18 adds V12.1 conditional native Back/Forward, public-safe owner-approved contextual Help and generic principal-bound native-owner Recent/Saved hub entry links. The new source/CI does not establish any native private record backend or operational acceptance.
 
 The 1.4.17 source centralizes trusted `sabri_shell_settings` writes in `Settings::update_programmatically()`. File01 reconciliation, recovery repair/rollback, Emergency persistence, activation-snapshot rollback, defaults normalization and retired-state migration use the canonical writer. Dynamic active-sanitizer regression plus a static no-direct-settings-write gate preserve this invariant.
 

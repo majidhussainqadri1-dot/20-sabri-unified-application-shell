@@ -32,8 +32,8 @@ $layout   = $read( 'includes/class-layout.php' );
 $assets   = $read( 'includes/class-assets.php' );
 $css      = $read( 'assets/css/shell-central-plan-v4.css' );
 
-$assert( false !== strpos( $main, '* Version: 1.4.17' ), 'Plugin header must be 1.4.17.' );
-$assert( false !== strpos( $main, "define( 'SABRI_SHELL_VERSION', '1.4.17' )" ), 'Runtime version must be 1.4.17.' );
+$assert( false !== strpos( $main, '* Version: 1.4.18' ), 'Plugin header must be 1.4.18.' );
+$assert( false !== strpos( $main, "define( 'SABRI_SHELL_VERSION', '1.4.18' )" ), 'Runtime version must be 1.4.18.' );
 $assert( false !== strpos( $main, 'CentralPlanContract::register()' ), 'Central-plan contract register' );
 $assert( false !== strpos( $main, 'FutureShellV5SeventhHardening::register()' ), 'Seventh register' );
 $assert( false !== strpos( $main, 'FutureShellV5EighthHardening::register()' ) && false !== strpos( $eighth, "CONTRACT_VERSION = '1.0.8'" ), 'Eighth preserved' );
@@ -61,7 +61,7 @@ $assert( false !== strpos( $eleventh, 'consume-foundation-registry-no-shell-or-s
 
 $decoded = json_decode( $contract_json, true );
 $assert( is_array( $decoded ), 'Central-plan JSON must decode' );
-$assert( is_array( $decoded ) && '1.4.17' === ( $decoded['runtime_target'] ?? '' ), 'Machine-readable runtime target must match current source line' );
+$assert( is_array( $decoded ) && '1.4.18' === ( $decoded['runtime_target'] ?? '' ), 'Machine-readable runtime target must match current source line' );
 $assert( is_array( $decoded ) && false !== strpos( (string) ( $decoded['file_plan'] ?? '' ), 'v4.1' ), 'Machine-readable plan must identify final v4.1 baseline' );
 $assert( is_array( $decoded ) && false !== strpos( (string) ( $decoded['file_plan'] ?? '' ), 'v5.0 Future Shell 18 Enhancements' ), 'Machine-readable plan must include final v5 addendum' );
 
@@ -90,4 +90,4 @@ if ( $failures ) {
 	exit( 1 );
 }
 
-echo sprintf( "File 20 central-plan/eleventh harmonization under 1.4.17: %d PASS, 0 FAIL\n", $checks );
+echo sprintf( "File 20 central-plan/eleventh harmonization under 1.4.18: %d PASS, 0 FAIL\n", $checks );

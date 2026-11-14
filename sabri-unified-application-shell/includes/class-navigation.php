@@ -48,7 +48,7 @@ final class Navigation {
 
 	public static function resolved() {
 		if ( is_array( self::$resolved ) ) {
-			return self::$resolved;
+			return SecurityNavigation::augment( self::$resolved );
 		}
 
 		$locale    = function_exists( 'determine_locale' ) ? determine_locale() : get_locale();
@@ -57,7 +57,7 @@ final class Navigation {
 		$cached    = get_transient( $cache_key );
 		if ( is_array( $cached ) ) {
 			self::$resolved = $cached;
-			return $cached;
+			return SecurityNavigation::augment( $cached );
 		}
 
 		$settings     = Settings::get();
@@ -96,7 +96,7 @@ final class Navigation {
 		uasort( $items, static function ( $a, $b ) { return (int) $a['order'] <=> (int) $b['order']; } );
 		set_transient( $cache_key, $items, HOUR_IN_SECONDS );
 		self::$resolved = $items;
-		return $items;
+		return SecurityNavigation::augment( $items );
 	}
 
 	/**

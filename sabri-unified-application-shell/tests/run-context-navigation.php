@@ -1,6 +1,6 @@
 <?php
 /**
- * Static regression suite for the shared Back + Home controls.
+ * Static regression suite for Back, Home and genuine contextual Forward.
  */
 
 $root = dirname( __DIR__ );
@@ -33,7 +33,16 @@ $assert( false !== strpos( $js, 'sabriShellContextNavigationStack' ), 'Back beha
 $assert( false !== strpos( $js, 'event.preventDefault()' ), 'JavaScript enhancement must preserve the no-JavaScript fallback link.' );
 $assert( false !== strpos( $js, "link.getAttribute('data-home-url')" ), 'Client fallback must preserve the canonical WordPress Home URL.' );
 $assert( false === strpos( $js, 'window.history.forward' ), 'A generic permanent Forward control is forbidden.' );
+$assert( false !== strpos( $php, 'data-sabri-context-forward' ) && false !== strpos( $php, 'hidden disabled' ), 'Forward must be hidden before genuine history evidence.' );
+$assert( false !== strpos( $js, 'nav.canGoForward !== true' ) && false !== strpos( $js, 'nav.entries()' ), 'Forward needs actual Navigation API history.' );
+$assert( false !== strpos( $js, 'nav.currentEntry.key' ) && false !== strpos( $js, 'safeSameOriginUrl(next.url)' ), 'Forward checks current/next native same-origin entry.' );
+$assert( false !== strpos( $js, 'nav.forward()' ) && false === strpos( $js, 'window.history.forward()' ), 'Only checked native Navigation.forward may run.' );
+$assert( false !== strpos( $css, '.sabri-context-navigation__forward[hidden]' ), 'Author styles must preserve hidden Forward.' );
+$assert( false !== strpos( $css, "html[dir='ltr'] .sabri-context-navigation__forward-icon" ), 'LTR must reverse Forward arrow.' );
+$assert( false !== strpos( $css, '#087A4E' ), 'Continuity fallback color must use Sabri Green.' );
 $assert( false === strpos( $js, 'window.history.back' ), 'Back must not risk crossing to an unverifiable external history entry.' );
+$assert( false !== strpos( $js, 'nav.canGoBack !== true' ) && false !== strpos( $js, 'safeSameOriginUrl(entries[i - 1].url)' ), 'Native Back must verify same-origin real history.' );
+$assert( false !== strpos( $js, 'nativeBack.back()' ) && false !== strpos( $js, 'navigateBackFallback(link)' ), 'Native Back must preserve original validated fallback.' );
 $assert( false === strpos( $js, 'innerHTML' ), 'Context navigation JavaScript must not inject HTML.' );
 $assert( false !== strpos( $css, 'min-block-size: 44px' ), 'Controls must satisfy the minimum touch target.' );
 $assert( false !== strpos( $css, ':focus-visible' ), 'Visible keyboard focus is required.' );

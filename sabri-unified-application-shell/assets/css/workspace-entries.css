@@ -1,0 +1,9 @@
+/* CV-034/035 native owner hub entries; no private object metadata or persistence. */
+.sabri-shell-workspace-entries{box-sizing:border-box;direction:inherit;inline-size:min(100%,38rem);margin:.5rem auto;padding-inline:clamp(.75rem,4vw,3rem);display:block;color:var(--sabri-shell-text,currentColor)}
+.sabri-shell-workspace-entries details{border:1px solid var(--sabri-shell-border,#adb5bd);border-radius:.75rem;background:var(--sabri-shell-surface,#fff)}
+.sabri-shell-workspace-entries details+details{margin-block-start:.5rem}
+.sabri-shell-workspace-entries summary{cursor:pointer;font-weight:700;min-block-size:44px;padding:.7rem 1rem}
+.sabri-shell-workspace-entries ul{list-style:disc;margin:.5rem 0 1rem;padding-inline-start:2rem;max-inline-size:30ch;overflow-wrap:anywhere}
+.sabri-shell-workspace-entries li+li{margin-block-start:.45rem}
+.sabri-shell-workspace-entries summary:focus-visible,.sabri-shell-workspace-entries a:focus-visible{outline:3px solid var(--sabri-shell-focus,#087A4E);outline-offset:3px}
+@media(forced-colors:active){.sabri-shell-workspace-entries details{border:1px solid CanvasText}}

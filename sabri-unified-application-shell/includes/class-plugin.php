@@ -52,6 +52,10 @@ final class Plugin {
 		 */
 		Renderer::register();
 		ContextNavigation::register();
+		/* V12.3 source-only additive Settings Hub shortcode, owner data untouched. */
+		SettingsHub::register();
+		ContextHelp::register();
+		WorkspaceEntries::register();
 		/* File 19 consumes these versioned shell-owned notification integration signals.
 		 * File 20 remains the only authority for global Safe Mode and shell placement. */
 		add_filter( 'sun_file20_safe_mode_active', array( __CLASS__, 'file19_safe_mode_state' ), 10, 1 );

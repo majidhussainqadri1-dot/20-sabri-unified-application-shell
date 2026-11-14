@@ -151,7 +151,7 @@ final class FutureShellV5 {
             'scope' => home_url( '/' ),
             'display' => 'standalone',
             'background_color' => '#ffffff',
-            'theme_color' => '#16803a',
+            'theme_color' => '#087A4E',
             'lang' => get_bloginfo( 'language' ) ?: 'en-US',
             'icons' => $icons,
         );
@@ -159,16 +159,16 @@ final class FutureShellV5 {
 
     private static function service_worker_source() {
         $offline = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Offline</title></head><body><main><h1>Sabri Homeopathy</h1><p>You are offline. Reconnect to continue.</p></main></body></html>';
-        return "const CACHE='sabri-shell-v140-static';\nconst OFFLINE=" . wp_json_encode( $offline ) . ";\n" .
+        return "const CACHE='sabri-shell-v123-static-public';\nconst OFFLINE=" . wp_json_encode( $offline ) . ";\n" .
             "self.addEventListener('install',e=>self.skipWaiting());\n" .
             "self.addEventListener('activate',e=>e.waitUntil((async()=>{for(const k of await caches.keys()){if(k!==CACHE&&k.indexOf('sabri-shell-')===0)await caches.delete(k);}await self.clients.claim();})()));\n" .
-            "self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;const u=new URL(r.url);if(u.origin!==self.location.origin)return;if(/\\/(wp-admin|wp-login\\.php|wp-json|messages|network|appointments|security|verification|account)(\\/|$)/i.test(u.pathname))return;if(r.mode==='navigate'){e.respondWith(fetch(r,{cache:'no-store'}).catch(()=>new Response(OFFLINE,{headers:{'Content-Type':'text/html; charset=utf-8'}})));return;}if(u.pathname.includes('/wp-content/plugins/sabri-unified-application-shell/')){e.respondWith(caches.open(CACHE).then(async c=>{const hit=await c.match(r);if(hit)return hit;const res=await fetch(r);if(res.ok)c.put(r,res.clone());return res;}));}});\n";
+            "self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;const u=new URL(r.url);if(u.origin!==self.location.origin)return;if(/\\/(wp-admin|wp-login\\.php|wp-json|messages|network|appointments|security|verification|account)(\\/|$)/i.test(u.pathname))return;if(r.mode==='navigate'){e.respondWith(fetch(r,{cache:'no-store'}).catch(()=>new Response(OFFLINE,{headers:{'Content-Type':'text/html; charset=utf-8'}})));return;}const prefix='/wp-content/plugins/sabri-unified-application-shell/assets/';if(u.pathname.startsWith(prefix)){const rel=u.pathname.slice(prefix.length);const parts=rel.split('/');const filename=parts[1]||'';const canonical=/^[a-z0-9][a-z0-9._-]*\.(?:css|js)$/i.test(filename)&&filename.indexOf('..')===-1;const css=parts[0]==='css'&&/\.css$/i.test(filename)&&r.destination==='style';const js=parts[0]==='js'&&/\.js$/i.test(filename)&&r.destination==='script';const safe=parts.length===2&&canonical&&(css||js);const q=new URLSearchParams(u.search);const verOk=!u.search||(Array.from(q.keys()).length===1&&q.has('ver')&&/^[0-9]+(?:\.[0-9]+){1,3}$/.test(q.get('ver')));if(safe&&verOk){e.respondWith(caches.open(CACHE).then(async c=>{const hit=await c.match(r);if(hit)return hit;const res=await fetch(r);const cc=res.headers.get('cache-control')||'';const vary=res.headers.get('vary')||'';const type=res.headers.get('content-type')||'';const correctType=(css&&/^text\/css(?:;|$)/i.test(type))||(js&&/(?:javascript|ecmascript)/i.test(type));const clean=!res.redirected&&res.url===r.url&&!/private|no-store/i.test(cc)&&!/(^|,)\s*(cookie|authorization)(,|$)/i.test(vary);if(res.ok&&res.type==='basic'&&clean&&correctType)await c.put(r,res.clone());return res;}));}}});\n";
     }
 
     public static function head_links() {
         if ( ! self::feature_enabled( 'pwa_shell' ) ) { return; }
         echo '<link rel="manifest" href="' . esc_url( home_url( '/sabri-shell-manifest.webmanifest' ) ) . '">';
-        echo '<meta name="theme-color" content="#16803a">';
+        echo '<meta name="theme-color" content="#087A4E">';
     }
 
     public static function enqueue() {

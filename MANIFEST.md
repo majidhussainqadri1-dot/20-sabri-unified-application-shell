@@ -9,21 +9,25 @@
 ## Current source and release flow
 
 - `sabri-unified-application-shell/` is the current reviewed plugin source.
-- Current runtime/source version: **1.4.17**; settings schema: **5**.
-- `.github/workflows/corrective-quality.yml` is the current **1.4.17 Canonical Programmatic Settings Writer** exact-head release workflow.
+- Draft source/runtime candidate: **1.4.18**; settings schema **5**. Main and historical scoped deployed evidence remain 1.4.17.
+- `.github/workflows/corrective-quality.yml` is the **1.4.18 V12.1 Contextual Shell** exact-head review/package workflow.
 - `STATUS.md` records lifecycle truth. Current installable artifacts are generated from exact-head CI; CI does not itself establish deployment or operational acceptance.
 
 ## Production-package constitution
 
-For **1.4.17**, CI derives a clean production source set, excludes tests/development-only files, writes an embedded manifest, builds one canonical plugin root, rejects traversal/duplicate/wrong-root ZIP entries, proves source/stage/extracted file-set plus SHA-256 parity, requires embedded/external manifest equality, and verifies archive SHA-256/CRC.
+For **Draft 1.4.18**, CI derives a clean production source set, excludes tests/development-only files, writes an embedded manifest, builds one canonical plugin root, rejects traversal/duplicate/wrong-root ZIP entries, proves source/stage/extracted file-set plus SHA-256 parity, requires embedded/external manifest equality, and verifies archive SHA-256/CRC.
 
 Canonical artifact basename:
 
-`20-sabri-unified-application-shell-1.4.17-CANONICAL-PROGRAMMATIC-SETTINGS-WRITER`
+`20-sabri-unified-application-shell-1.4.18-V12-1-CONTEXTUAL-SHELL`
 
 The historical File20 HomeFeed producer must not exist in the installable artifact.
 
-## Current 1.4.17 invariant
+## Current 1.4.18 source invariants
+
+The draft adds owner-gated public-safe contextual Help and generic Recent/Saved native workspace hub links without storing any user-private object data in File20. Native Back/Forward uses actual same-origin Navigation API entries only.
+
+## Retained 1.4.17 canonical writer invariant
 
 `Settings::update_programmatically()` is the single canonical trusted writer for full `sabri_shell_settings` persistence. It enforces File20-owned invariants, temporarily removes only the tab-oriented `Settings::sanitize` callback, preserves every other filter, restores the sanitizer in `finally`, and is used by File01 reconciliation, recovery repair/rollback, Emergency persistence, activation-snapshot rollback, defaults normalization and retired-state migration.
 
