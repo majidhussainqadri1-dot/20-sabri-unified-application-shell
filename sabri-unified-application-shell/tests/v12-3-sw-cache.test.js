@@ -9,6 +9,10 @@ new vm.Script(generated);
 let fetchHandler;
 let cacheControl = '';
 let responseType = 'basic';
+let responseRedirected = false;
+let responseUrlOverride = '';
+let varyHeader = '';
+let responseMimeOverride = '';
 const recorded = [];
 const self = {
   location: {origin: 'https://example.test'},
@@ -23,9 +27,16 @@ const caches = {
     put: async (req) => {recorded.push(req.url);}
   })
 };
-const fetch = async () => ({
+const fetch = async (req) => ({
   ok: true, type: responseType,
-  headers: {get(field) {return field.toLowerCase() === 'cache-control' ? cacheControl : '';}},
+  redirected: responseRedirected, url: responseUrlOverride || req.url,
+  headers: {get(field) {
+    field = field.toLowerCase();
+    if (field === 'cache-control') return cacheControl;
+    if (field === 'vary') return varyHeader;
+    if (field === 'content-type') return responseMimeOverride || (req.destination === 'style' ? 'text/css; charset=utf-8' : 'application/javascript');
+    return '';
+  }},
   clone() {return {};}
 });
 const sandbox = {self,caches,fetch,URL,URLSearchParams,Response,Promise};
@@ -45,6 +56,10 @@ async function check(url, destination, shouldIntercept, shouldCache) {
   const base='https://example.test/wp-content/plugins/sabri-unified-application-shell/';
   await check(base+'assets/css/shell.css?ver=1.4.17', 'style', true, true);
   await check(base+'assets/js/shell.js?ver=1.4.17', 'script', true, true);
+  await check(base+'assets/js/shell.js?ver=1.4.17', 'style', false, false);
+  await check(base+'assets/css/shell.css?ver=1.4.17', 'script', false, false);
+  await check(base+'assets/css/.secret.css?ver=1.4.17', 'style', false, false);
+  await check(base+'assets/js/../css/shell.css?ver=1.4.17', 'script', false, false);
   await check(base+'includes/class-settings.php', 'script', false, false);
   await check(base+'assets/css/private.css?privateToken=a', 'style', false, false);
   await check(base+'assets/css/shell.css?ver=1.4.17&token=a', 'style', false, false);
@@ -53,6 +68,19 @@ async function check(url, destination, shouldIntercept, shouldCache) {
   await check(base+'assets/css/shell.css?ver=1.4.17', 'image', false, false);
   cacheControl='private, no-store';
   await check(base+'assets/css/shell.css?ver=1.4.17', 'style', true, false);
+  cacheControl='';
+  responseRedirected=true;
+  await check(base+'assets/css/shell.css?ver=1.4.17', 'style', true, false);
+  responseRedirected=false;
+  responseUrlOverride='https://example.test/account/private/';
+  await check(base+'assets/css/shell.css?ver=1.4.17', 'style', true, false);
+  responseUrlOverride='';
+  varyHeader='Accept-Encoding, Cookie';
+  await check(base+'assets/css/shell.css?ver=1.4.17', 'style', true, false);
+  varyHeader='';
+  responseMimeOverride='text/html';
+  await check(base+'assets/css/shell.css?ver=1.4.17', 'style', true, false);
+  responseMimeOverride='';
   cacheControl='';
   responseType='opaque';
   await check(base+'assets/css/shell.css?ver=1.4.17', 'style', true, false);
