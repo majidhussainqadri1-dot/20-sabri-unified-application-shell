@@ -16,6 +16,8 @@ $assert = static function ( $ok, $message ) use ( &$errors ) {
     if ( ! $ok ) { $errors[] = $message; }
 };
 $assert( false !== strpos( $js, "const prefix='/wp-content/plugins/sabri-unified-application-shell/assets/'" ), 'Cache prefix constrained to File20 public asset folder.' );
+$assert( false !== strpos( $js, "const CACHE='sabri-shell-v123-static-public'" ), 'Cache namespace rotated to purge old broad plugin caches.' );
+$assert( false === strpos( $js, "const CACHE='sabri-shell-v140-static'" ), 'Old unrestricted caching namespace is not reused.' );
 $assert( false !== strpos( $js, "parts.length===2" ) && false !== strpos( $js, "parts[0]==='css'" ) && false !== strpos( $js, "parts[0]==='js'" ), 'Strict CSS/JS immediate child allowlist.' );
 $assert( false !== strpos( $js, "r.destination==='style'" ) && false !== strpos( $js, "r.destination==='script'" ), 'Only real stylesheet/script fetch destinations are cached.' );
 $assert( false !== strpos( $js, "q.has('ver')" ), 'Only safe WordPress asset version parameter is cache-eligible.' );
