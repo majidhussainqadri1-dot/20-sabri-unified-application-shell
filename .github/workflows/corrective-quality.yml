@@ -58,6 +58,16 @@ jobs:
         uses: actions/checkout@v5
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: PHP for exact generated service worker VM privacy tests
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+      - name: V12.3 generated service worker syntax and private-cache negative tests
+        run: |
+          set -euo pipefail
+          php sabri-unified-application-shell/tests/dump-v12-3-sw-cache.php > /tmp/sabri-v12-3-service-worker.js
+          node --check /tmp/sabri-v12-3-service-worker.js
+          node sabri-unified-application-shell/tests/v12-3-sw-cache.test.js
       - name: JavaScript JSON CSS canonical-writer reconciliation and release-truth static checks
         run: |
           set -euo pipefail
