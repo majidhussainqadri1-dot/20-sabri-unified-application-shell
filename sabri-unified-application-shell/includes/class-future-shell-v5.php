@@ -151,7 +151,7 @@ final class FutureShellV5 {
             'scope' => home_url( '/' ),
             'display' => 'standalone',
             'background_color' => '#ffffff',
-            'theme_color' => '#16803a',
+            'theme_color' => '#087A4E',
             'lang' => get_bloginfo( 'language' ) ?: 'en-US',
             'icons' => $icons,
         );
@@ -168,7 +168,7 @@ final class FutureShellV5 {
     public static function head_links() {
         if ( ! self::feature_enabled( 'pwa_shell' ) ) { return; }
         echo '<link rel="manifest" href="' . esc_url( home_url( '/sabri-shell-manifest.webmanifest' ) ) . '">';
-        echo '<meta name="theme-color" content="#16803a">';
+        echo '<meta name="theme-color" content="#087A4E">';
     }
 
     public static function enqueue() {
