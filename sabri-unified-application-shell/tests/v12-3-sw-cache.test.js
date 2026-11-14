@@ -7,6 +7,8 @@ const path = require('node:path');
 const generated = execFileSync('php', [path.join(__dirname, 'dump-v12-3-sw-cache.php')], {encoding: 'utf8'});
 new vm.Script(generated);
 let fetchHandler;
+let activateHandler;
+const deletedCaches = [];
 let cacheControl = '';
 let responseType = 'basic';
 let responseRedirected = false;
@@ -16,12 +18,13 @@ let responseMimeOverride = '';
 const recorded = [];
 const self = {
   location: {origin: 'https://example.test'},
-  addEventListener(type, cb) { if (type === 'fetch') fetchHandler = cb; },
+  addEventListener(type, cb) { if (type === 'fetch') fetchHandler = cb; if (type === 'activate') activateHandler = cb; },
   skipWaiting() {},
   clients: {claim: async () => {}}
 };
 const caches = {
-  keys: async () => [],
+  keys: async () => ['sabri-shell-v140-static','sabri-shell-v139-unreviewed','sabri-shell-v123-static-public','other-app-cache'],
+  delete: async key => {deletedCaches.push(key);return true;},
   open: async () => ({
     match: async () => undefined,
     put: async (req) => {recorded.push(req.url);}
@@ -42,6 +45,7 @@ const fetch = async (req) => ({
 const sandbox = {self,caches,fetch,URL,URLSearchParams,Response,Promise};
 vm.runInNewContext(generated, sandbox, {timeout: 1000});
 assert.equal(typeof fetchHandler, 'function', 'Exact generated SW registers fetch handler');
+assert.equal(typeof activateHandler, 'function', 'Exact generated SW registers activation handler');
 
 async function check(url, destination, shouldIntercept, shouldCache) {
   let promise = null;
@@ -53,6 +57,11 @@ async function check(url, destination, shouldIntercept, shouldCache) {
   assert.equal(recorded.length-before, shouldCache?1:0, url + ' cache write status');
 }
 (async () => {
+  let activateWait = null;
+  activateHandler({waitUntil(promise) {activateWait=promise;}});
+  assert.ok(activateWait, 'Activation provides deterministic cleanup lifetime');
+  await activateWait;
+  assert.deepEqual(deletedCaches.sort(), ['sabri-shell-v139-unreviewed','sabri-shell-v140-static'].sort(), 'Old broad-cache versions purged without touching unrelated caches or new static-only cache');
   const base='https://example.test/wp-content/plugins/sabri-unified-application-shell/';
   await check(base+'assets/css/shell.css?ver=1.4.17', 'style', true, true);
   await check(base+'assets/js/shell.js?ver=1.4.17', 'script', true, true);
