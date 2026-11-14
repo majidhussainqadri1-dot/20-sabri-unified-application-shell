@@ -34,6 +34,21 @@ final class Assets {
 			true
 		);
 
+		/* V12.3 progressive Responsive More; no second global menu. */
+		wp_enqueue_style(
+			'sabri-v12-adaptive-nav',
+			SABRI_SHELL_URL . 'assets/css/v12-3-adaptive-navigation.css',
+			array( 'sabri-shell' ),
+			SABRI_SHELL_VERSION
+		);
+		wp_enqueue_script(
+			'sabri-v12-adaptive-nav',
+			SABRI_SHELL_URL . 'assets/js/v12-3-adaptive-navigation.js',
+			array( 'sabri-shell' ),
+			SABRI_SHELL_VERSION,
+			true
+		);
+
 		$settings = Settings::get();
 		$visual   = class_exists( CentralPlanContract::class )
 			? CentralPlanContract::visual_contract()

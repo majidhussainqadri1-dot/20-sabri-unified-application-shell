@@ -1,0 +1,76 @@
+/* V12.3 progressive enhancement: never hide default navigation without JS. */
+.sabri-shell-primary-nav .sabri-shell-nav-more {
+  position: relative;
+  flex: 0 0 auto;
+  list-style: none;
+}
+.sabri-shell-primary-nav .sabri-shell-nav-more[hidden] { display: none !important; }
+.sabri-shell-primary-nav .sabri-shell-nav-more summary {
+  display: block; position: relative; line-height: 1.65;
+  cursor: pointer; min-block-size: 44px;
+  padding: .6rem .75rem; padding-inline-end: 1.8rem;
+  border-radius: var(--sabri-shell-radius, 8px);
+  max-inline-size: min(12rem, 35vw); overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap; color: var(--sabri-shell-text);
+}
+.sabri-shell-primary-nav .sabri-shell-nav-more summary::after {
+  content: '▾'; position: absolute; inset-inline-end: .5rem; inset-block-start: .65rem;
+}
+.sabri-shell-primary-nav .sabri-shell-nav-more summary:focus-visible,
+.sabri-shell-primary-nav a:focus-visible {
+  outline: 3px solid var(--sabri-visual-focus, #0b57d0); outline-offset: 2px;
+}
+.sabri-shell-primary-nav .sabri-shell-nav-more summary[aria-current="page"] {
+  background: var(--sabri-visual-primary-soft, #e7f5ee);
+  color: var(--sabri-visual-primary, #087a4e);
+  font-weight: 700;
+}
+.sabri-shell-primary-nav .sabri-shell-nav-more-menu {
+  position: absolute; display: block; z-index: 10020;
+  inset-block-start: 100%; inset-inline-end: 0;
+  inline-size: min(21rem, 85vw); max-block-size: min(60vh, 30rem); overflow-y: auto;
+  min-block-size: 0; max-inline-size: unset; margin: 0; padding: .4rem;
+  background: var(--sabri-visual-surface, #fff);
+  border: 1px solid var(--sabri-visual-border, #dfe2e6);
+  box-shadow: 0 .5rem 1.5rem rgb(0 0 0 / 15%);
+  border-radius: var(--sabri-visual-radius-card, 1rem);
+  white-space: normal; list-style: none;
+}
+.sabri-shell-primary-nav .sabri-shell-nav-more:not([open]) > details:not([open]) > .sabri-shell-nav-more-menu { display: none; }
+.sabri-shell-primary-nav .sabri-shell-nav-more-menu li { display: block; }
+.sabri-shell-primary-nav .sabri-shell-nav-more-menu a {
+  display: flex; min-block-size: 44px; align-items: center;
+  padding: .55rem .75rem; white-space: normal; overflow-wrap: anywhere;
+}
+/* Temporary measurement list is inaccessible and removed within a reflow. */
+.sabri-shell-primary-nav .sabri-v12-nav-meter {
+  position: absolute; visibility: hidden; pointer-events: none; z-index: -1;
+  inset-block-start: -200vh; inset-inline-start: -200vw;
+  inline-size: max-content; max-inline-size: none;
+  white-space: nowrap; flex-wrap: nowrap;
+}
+.sabri-shell-primary-nav[data-sabri-v12-adaptive="1"] { overflow: visible; }
+.sabri-shell-primary-nav[data-sabri-v12-adaptive="1"] > ul { flex-wrap: nowrap; overflow: visible; }
+@media (max-width: 1023px) {
+  /* Existing, owner-verified File26 search retains a discoverable mobile action. */
+  .sabri-shell-header-inner .sabri-shell-search {
+    display: flex; min-inline-size: 0; flex: 0 1 9rem;
+    inline-size: min(30vw, 9rem);
+  }
+  .sabri-shell-header-inner .sabri-shell-search input {
+    font-size: .85rem; min-inline-size: 0; padding-inline: .35rem;
+  }
+}
+@media (max-width: 480px) {
+  /* Keep the full brand link accessible while shortening its visual width. */
+  .sabri-shell-header-inner .sabri-shell-brand-text {
+    position: absolute; inline-size: 1px; block-size: 1px;
+    overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+  .sabri-shell-header-inner .sabri-shell-search { flex-basis: 6rem; inline-size: 6rem; }
+  .sabri-shell-primary-nav .sabri-shell-nav-more summary { max-inline-size: 38vw; }
+}
+@media (forced-colors: active) {
+  .sabri-shell-primary-nav .sabri-shell-nav-more-menu { background: Canvas; color: CanvasText; border-color: CanvasText; }
+  .sabri-shell-primary-nav .sabri-shell-nav-more summary:focus-visible { outline-color: Highlight; }
+}

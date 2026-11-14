@@ -307,20 +307,21 @@ final class Renderer {
 		foreach ( $direct as $item ) {
 			self::render_nav_item( $item );
 		}
-		if ( ! empty( $more ) ) {
-			$more_active = false;
-			foreach ( $more as $item ) {
-				if ( Navigation::is_active_url( $item['url'] ) ) {
-					$more_active = true;
-					break;
-				}
+		/* Keep one More target even when under seven routes are available.
+		 * Progressive adaptation can then move items into it on small screens.
+		 * The empty no-JS fallback remains hidden and never creates a second menu. */
+		$more_active = false;
+		foreach ( $more as $item ) {
+			if ( Navigation::is_active_url( $item['url'] ) ) {
+				$more_active = true;
+				break;
 			}
-			echo '<li class="sabri-shell-nav-more"><details><summary' . ( $more_active ? ' aria-current="page"' : '' ) . '>' . esc_html__( 'More', 'sabri-unified-application-shell' ) . '</summary><ul class="sabri-shell-nav-more-menu">';
-			foreach ( $more as $item ) {
-				self::render_nav_item( $item );
-			}
-			echo '</ul></details></li>';
 		}
+		echo '<li class="sabri-shell-nav-more"' . ( empty( $more ) ? ' hidden' : '' ) . '><details><summary' . ( $more_active ? ' aria-current="page"' : '' ) . '>' . esc_html__( 'More', 'sabri-unified-application-shell' ) . '</summary><ul class="sabri-shell-nav-more-menu">';
+		foreach ( $more as $item ) {
+			self::render_nav_item( $item );
+		}
+		echo '</ul></details></li>';
 		echo '</ul>';
 		echo '</nav>';
 	}
@@ -437,7 +438,7 @@ final class Renderer {
 	 */
 	private static function render_nav_item( array $item ) {
 		$active = Navigation::is_active_url( $item['url'] );
-		echo '<li>';
+		echo '<li data-sabri-destination="' . esc_attr( sanitize_key( isset( $item['key'] ) ? $item['key'] : '' ) ) . '">';
 		echo '<a href="' . esc_url( $item['url'] ) . '"' . ( $active ? ' aria-current="page"' : '' ) . '>';
 		echo esc_html( $item['label'] );
 		echo '</a>';
