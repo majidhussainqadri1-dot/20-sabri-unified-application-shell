@@ -67,7 +67,12 @@ $assert( $expected_controls === $control_ids, 'Every approved control key and or
 $actual_features = array_keys( FutureShellV5::features() );
 $assert( 18 === count( $actual_features ) && $actual_features === ( $data['future_shell_features'] ?? array() ), 'Exactly 18 Future Shell v5 keys; no nineteenth feature.' );
 $wp = array_column( (array) ( $data['work_packages'] ?? array() ), 'id' );
-$assert( 26 === count( $wp ) && 26 === count( array_unique( $wp ) ), '26 unique controlled work packages.' );
+$expected_wp = array();
+for ( $n = 1; $n <= 26; ++$n ) { $expected_wp[] = sprintf( 'WP-%02d', $n ); }
+$assert( $expected_wp === $wp, 'WP-01 through WP-26 in exact order without omissions or extras.' );
+foreach ( (array) ( $data['work_packages'] ?? array() ) as $package ) {
+    $assert( in_array( $package['state'] ?? '', array( 'in-progress', 'not-verified' ), true ), 'No unproven Work Package completion for ' . ( $package['id'] ?? 'unknown' ) );
+}
 foreach ( array( 'deployed_version', 'db_version', 'migration_state', 'live_verification', 'wp_options', 'runtime_logs', 'package_checksum' ) as $field ) {
     $assert( 'unverified' === ( $data['live'][ $field ] ?? '' ), 'Current Live ' . $field . ' remains explicitly unverified.' );
 }
