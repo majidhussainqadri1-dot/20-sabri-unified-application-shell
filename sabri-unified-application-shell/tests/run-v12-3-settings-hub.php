@@ -19,6 +19,10 @@ function esc_url( $s ) { return esc_attr( $s ); }
 function esc_html__( $s, $domain = '' ) { return esc_html( $s ); }
 function esc_attr__( $s, $domain = '' ) { return esc_attr( $s ); }
 function add_shortcode( $shortcode, $cb ) { $GLOBALS['v12_shortcode'] = array( $shortcode, $cb ); }
+function add_action( $hook, $cb ) { $GLOBALS['v12_hook'] = array( $hook, $cb ); }
+function is_singular() { return ! empty( $GLOBALS['v12_is_singular'] ); }
+function get_post() { return (object) array( 'post_content' => $GLOBALS['v12_content'] ?? '' ); }
+function has_shortcode( $content, $shortcode ) { return false !== strpos( (string) $content, '[' . $shortcode ); }
 function wp_enqueue_style( $handle ) { $GLOBALS['v12_queued'][] = $handle; }
 function wp_enqueue_script( $handle ) { $GLOBALS['v12_queued'][] = $handle; }
 function apply_filters( $name, $value, ...$args ) {
@@ -56,8 +60,24 @@ $ok( $keys === $expected && 23 === count( array_unique( $keys ) ), 'Exactly 23 a
 
 SettingsHub::register();
 $ok( SettingsHub::SHORTCODE === $GLOBALS['v12_shortcode'][0], 'Additive shortcode registered without taking over native route.' );
+$ok( 'wp_enqueue_scripts' === $GLOBALS['v12_hook'][0], 'Asset pre-enqueue hook registered.' );
+$GLOBALS['v12_is_singular'] = true;
+$GLOBALS['v12_content'] = 'Safe page with no hub.';
+SettingsHub::maybe_enqueue_assets();
+$ok( empty( $GLOBALS['v12_queued'] ), 'No assets loaded early on a page without the shortcode.' );
+$GLOBALS['v12_content'] = 'Content [sabri_shell_settings_hub] here';
+SettingsHub::maybe_enqueue_assets();
+$ok( count( $GLOBALS['v12_queued'] ) === 2, 'Confirmed shortcode page enqueues CSS and JS early.' );
+$GLOBALS['v12_queued'] = array();
 $guest = SettingsHub::render();
 $ok( 6 === substr_count( $guest, 'data-sabri-v12-control-key=' ), 'Guest only sees six public/device categories, no account controls.' );
+$guest_again = SettingsHub::render();
+preg_match( '/id="(sabri-v12-settings-search-[0-9]+)"/', $guest, $first_id );
+preg_match( '/id="(sabri-v12-settings-search-[0-9]+)"/', $guest_again, $second_id );
+$ok( ! empty( $first_id[1] ) && ! empty( $second_id[1] ) && $first_id[1] !== $second_id[1], 'Two shortcode instances have distinct search IDs.' );
+$ok( false !== strpos( $guest, 'for="' . ( $first_id[1] ?? 'NO_ID' ) . '"' ), 'First instance label targets its own input.' );
+$ok( false !== strpos( $guest_again, 'for="' . ( $second_id[1] ?? 'NO_ID' ) . '"' ), 'Second instance label targets its own input.' );
+$ok( false !== strpos( $guest, 'id="sabri-v12-group-1-language"' ) && false !== strpos( $guest_again, 'id="sabri-v12-group-2-language"' ), 'Group anchor IDs are separately scoped per instance.' );
 $ok( false === strpos( $guest, 'security.sessions' ) && false === strpos( $guest, 'privacy.requests' ), 'Guest DOM excludes private category keys/metadata.' );
 $ok( false === strpos( $guest, '<a href="https://example.test/account/' ), 'No unverified owner links are displayed.' );
 $ok( in_array( 'sabri-v12-settings-hub', $GLOBALS['v12_queued'], true ), 'Settings assets enqueued only when shortcode renders.' );
