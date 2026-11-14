@@ -8,6 +8,7 @@ define( 'SABRI_SHELL_URL', 'https://example.test/wp-content/plugins/sabri-unifie
 define( 'SABRI_SHELL_VERSION', '1.4.17' );
 $GLOBALS['v12_user_id'] = 0;
 $GLOBALS['v12_descriptor'] = null;
+$GLOBALS['v12_descriptor_key'] = '';
 $GLOBALS['v12_queued'] = array();
 function is_user_logged_in() { return $GLOBALS['v12_user_id'] > 0; }
 function get_current_user_id() { return $GLOBALS['v12_user_id']; }
@@ -26,7 +27,7 @@ function has_shortcode( $content, $shortcode ) { return false !== strpos( (strin
 function wp_enqueue_style( $handle ) { $GLOBALS['v12_queued'][] = $handle; }
 function wp_enqueue_script( $handle ) { $GLOBALS['v12_queued'][] = $handle; }
 function apply_filters( $name, $value, ...$args ) {
-    if ( 'sabri_shell_v12_3_settings_control' === $name ) { return $GLOBALS['v12_descriptor']; }
+    if ( 'sabri_shell_v12_3_settings_control' === $name && ( $args[0] ?? '' ) === $GLOBALS['v12_descriptor_key'] ) { return $GLOBALS['v12_descriptor']; }
     return $value;
 }
 require_once dirname( __DIR__ ) . '/includes/class-settings-hub.php';
@@ -84,10 +85,11 @@ $ok( in_array( 'sabri-v12-settings-hub', $GLOBALS['v12_queued'], true ), 'Settin
 
 $GLOBALS['v12_user_id'] = 7;
 $member = SettingsHub::render();
-$ok( 23 === substr_count( $member, 'data-sabri-v12-control-key=' ), 'Logged-in shell shows 23 generic non-sensitive titles.' );
+$ok( 6 === substr_count( $member, 'data-sabri-v12-control-key=' ), 'Unverified private controls stay out of member DOM despite the 23-key source catalogue.' );
 $ok( false === strpos( $member, 'Saved' ), 'No fake persisted-Saved state.' );
 
 $spec = $catalogue['notifications']['controls']['notifications.quiet'];
+$GLOBALS['v12_descriptor_key'] = 'notifications.quiet';
 $GLOBALS['v12_descriptor'] = array(
     'authorized' => true, 'status' => 'available', 'owner_file' => 'File19',
     'contract_version' => '1.2.3', 'url' => 'https://example.test/notifications/settings/',
@@ -96,6 +98,10 @@ $GLOBALS['v12_descriptor'] = array(
 $entry = SettingsHub::approved_descriptor( 'notifications.quiet', $spec, 7 );
 $ok( 'https://example.test/notifications/settings/' === ( $entry['url'] ?? '' ), 'Authoritative matching File19 account link may be shown.' );
 $ok( 'account' === ( $entry['scope'] ?? '' ) && 'off' === ( $entry['effective_state'] ?? '' ), 'Bounded state and scope projected.' );
+$member_with_one_owner = SettingsHub::render();
+$ok( 7 === substr_count( $member_with_one_owner, 'data-sabri-v12-control-key=' ), 'Only the one native-authorized private control joins the six public entries.' );
+$ok( false !== strpos( $member_with_one_owner, 'https://example.test/notifications/settings/' ), 'Exact owner link is visible when authorized.' );
+$ok( false === strpos( $member_with_one_owner, 'security.passkeys' ), 'Unverified private controls never enter searchable metadata.' );
 $ok( empty( SettingsHub::approved_descriptor( 'notifications.quiet', $spec, 0 ) ), 'Guest cannot claim a private link using forged provider true.' );
 
 foreach ( array(
@@ -121,6 +127,14 @@ $GLOBALS['v12_descriptor']['contract_version'] = '1.2.3';
 $GLOBALS['v12_descriptor']['authorized'] = false;
 $ok( empty( SettingsHub::approved_descriptor( 'notifications.quiet', $spec, 7 ) ), 'Revoked provider authorization removes link.' );
 
+$generic_spec = $catalogue['privacy']['controls']['privacy.consent'];
+$GLOBALS['v12_descriptor_key'] = 'privacy.consent';
+$GLOBALS['v12_descriptor'] = array(
+    'authorized' => true, 'status' => 'available', 'owner_file' => 'native-domain',
+    'contract_version' => '1.2.3', 'url' => 'https://example.test/privacy/consent/',
+    'scope' => 'account', 'effective_state' => 'unknown',
+);
+$ok( empty( SettingsHub::approved_descriptor( 'privacy.consent', $generic_spec, 7 ) ), 'Generic native-domain placeholder cannot authorize a control.' );
 $src = (string) file_get_contents( dirname( __DIR__ ) . '/includes/class-settings-hub.php' );
 $ok( ! preg_match( '/\b(update_option|add_option|delete_option|register_rest_route|wp_set_auth_cookie)\s*\(/', $src ), 'No independent writer, route or authority side effects.' );
 if ( $fail ) { fwrite( STDERR, count( $fail ) . " Settings Hub source contract failure(s)\n" ); exit( 1 ); }
