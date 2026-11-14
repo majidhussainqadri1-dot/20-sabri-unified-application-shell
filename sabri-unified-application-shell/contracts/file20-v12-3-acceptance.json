@@ -394,12 +394,13 @@
   },
   "live_evidence": {
     "repository_head": "8a4dbcaf4fef8e926b9b834ecfde16c21a0f00ca",
-    "candidate_head": "cff39ed2243e1a8c65f745d2169396e43d052ac9",
+    "candidate_head": "not-frozen-for-release",
     "deployed_version": "unverified",
     "db_version": "unverified",
     "migration_state": "unverified",
     "live_verification_status": "not-run",
-    "artifact_checksum": "unverified"
+    "artifact_checksum": "unverified",
+    "exact_release_head_note": "Record immutable approved source SHA only at R1/R2 release gate; this file is continuously edited source evidence."
   },
   "authorization": "NOT RELEASE-APPROVED",
   "risk_rule": "Active scope must have zero known open defects and full independently verified dependencies; optional excluded features retain open records"
