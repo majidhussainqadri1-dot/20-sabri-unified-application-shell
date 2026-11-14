@@ -129,7 +129,8 @@ final class SettingsHub {
         $raw = apply_filters( 'sabri_shell_v12_3_settings_control', null, $key, $user_id );
         if ( ! is_array( $raw ) || true !== ( $raw['authorized'] ?? false ) ||
             'available' !== ( $raw['status'] ?? '' ) ) { return array(); }
-        if ( ! in_array( $raw['owner_file'] ?? '', $spec['owners'], true ) ) { return array(); }
+        /* A placeholder cannot impersonate a concrete, versioned canonical owner. */
+        if ( 'native-domain' === ( $raw['owner_file'] ?? '' ) || ! in_array( $raw['owner_file'] ?? '', $spec['owners'], true ) ) { return array(); }
         if ( ! isset( $raw['contract_version'] ) || ! is_string( $raw['contract_version'] ) ||
             ! preg_match( '/^[0-9]+\.[0-9]+\.[0-9]+$/D', $raw['contract_version'] ) ) { return array(); }
         if ( 0 === $user_id && ! self::guest_key_allowed( $key ) ) { return array(); }
@@ -187,6 +188,9 @@ final class SettingsHub {
             foreach ( $record['controls'] as $key => $spec ) {
                 if ( 0 === $user_id && ! self::guest_key_allowed( $key ) ) { continue; }
                 $descriptor = self::approved_descriptor( $key, $spec, $user_id );
+                /* Unverified private controls are hidden from the DOM and its
+                 * local search index, including for unverified logged-in roles. */
+                if ( ! self::guest_key_allowed( $key ) && ! $descriptor ) { continue; }
                 $text = $spec['label'];
                 $search = $text . ' ' . $spec['aliases'] . ' ' . $key;
                 $line = '<li class="sabri-v12-control" tabindex="-1" data-sabri-v12-control-key="' . esc_attr( $key ) . '" data-sabri-v12-search-tokens="' . esc_attr( $search ) . '">';
