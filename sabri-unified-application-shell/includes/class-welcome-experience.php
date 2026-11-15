@@ -83,6 +83,7 @@ final class WelcomeExperience {
 				'enabled' => $enabled,
 				'visual_owner_verified' => $visual,
 				'founder_approval_valid' => $approved,
+				'file24_containment' => self::file24_containment_active(),
 				'audit_gap' => $gap,
 				'config_version' => absint( $config['config_version'] ),
 				'copy_version' => absint( $config['copy_version'] ),
@@ -240,13 +241,42 @@ final class WelcomeExperience {
 		return false;
 	}
 
+	/**
+	 * Restriction-only File24 containment signal. Never mutates File24's
+	 * authoritative security requests. If File24 is installed but cannot
+	 * produce a valid registry, hide only this optional visual.
+	 */
+	public static function file24_containment_active() {
+		if ( ! defined( 'SPCRC_VERSION' ) ) { return false; }
+		if ( ! function_exists( 'has_filter' ) ||
+			false === has_filter( 'spcrc/security_state_requests' ) ) { return true; }
+		try {
+			$requests = apply_filters( 'spcrc/security_state_requests', array() );
+			if ( ! is_array( $requests ) ) { return true; }
+			foreach ( array_slice( $requests, 0, 100, true ) as $record ) {
+				if ( ! is_array( $record ) ||
+					! is_string( $record['state'] ?? null ) ||
+					! is_string( $record['status'] ?? null ) ) { return true; }
+				if ( 'open' === $record['status'] &&
+					in_array( $record['state'], array(
+						'identity-lockdown', 'platform-read-only', 'incident-containment',
+					), true ) ) { return true; }
+			}
+			return false;
+		} catch ( \Throwable $error ) {
+			unset( $error );
+			return true;
+		}
+	}
+
 	public static function public_eligible() {
 		if ( is_admin() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) { return false; }
 		// V12.3 F13-CEN-01: welcome is guest-first only; authenticated tasks
 		// and account sessions must never receive an automatic intro.
 		if ( function_exists( 'is_user_logged_in' ) && is_user_logged_in() ) { return false; }
 		if ( defined( 'SABRI_SHELL_DISABLE_WELCOME' ) && SABRI_SHELL_DISABLE_WELCOME ) { return false; }
-		if ( SafeMode::disabled() || true === apply_filters( 'spcrc/file20_safe_mode_active', false ) ||
+		if ( SafeMode::disabled() || self::file24_containment_active() ||
+			true === apply_filters( 'spcrc/file20_safe_mode_active', false ) ||
 			false !== get_option( self::AUDIT_GAP_OPTION, false ) ) { return false; }
 		if ( function_exists( 'is_feed' ) && is_feed() ) { return false; }
 		if ( function_exists( 'is_404' ) && is_404() ) { return false; }
