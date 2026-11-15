@@ -182,6 +182,25 @@ function storageSnapshot() {
     });
     await reducedContext.close();
 
+    const authContext = await browser.newContext();
+    const authPage = await authContext.newPage();
+    await caseOf('Authenticated WordPress Founder home never displays auto welcome', async () => {
+      const fixturePassword = process.env.SABRI_CI_ADMIN_PASSWORD;
+      assert.ok(fixturePassword, 'Isolated CI password provided by workflow only');
+      await authPage.goto(base + 'wp-login.php', { waitUntil: 'domcontentloaded' });
+      await authPage.locator('#user_login').fill('ci_founder');
+      await authPage.locator('#user_pass').fill(fixturePassword);
+      await Promise.all([
+        authPage.waitForLoadState('domcontentloaded'),
+        authPage.locator('#wp-submit').click(),
+      ]);
+      await authPage.goto(base, { waitUntil: 'domcontentloaded' });
+      assert.equal(await authPage.locator('#sabri-shell-welcome').count(), 0,
+        'Automatic introductory markup must not be emitted for a logged-in WordPress user');
+      assert.ok(await authPage.locator('main, [role="main"]').count(), 'Authenticated page remains accessible');
+    });
+    await authContext.close();
+
     if (process.exitCode) throw Error('One or more real-browser acceptance journeys failed.');
     process.stdout.write('V12.3 real Chromium/WordPress: ' + tests.length + ' journeys passed\n');
   } finally {
