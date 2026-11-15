@@ -298,6 +298,7 @@ final class WelcomeExperience {
 	}
 
 	public static function register_admin() {
+		if ( ! self::operator_authorized( get_current_user_id() ) ) { return; }
 		add_options_page(
 			__( 'Sabri Welcome', 'sabri-unified-application-shell' ),
 			__( 'Sabri Welcome', 'sabri-unified-application-shell' ),
@@ -308,14 +309,14 @@ final class WelcomeExperience {
 	}
 
 	private static function require_admin( $action ) {
-		if ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) {
+		if ( ! self::operator_authorized( get_current_user_id() ) ) {
 			wp_die( esc_html__( 'Not authorized.', 'sabri-unified-application-shell' ), '', array( 'response' => 403 ) );
 		}
 		check_admin_referer( $action );
 	}
 
 	public static function admin_page() {
-		if ( ! current_user_can( 'manage_options' ) ) { return; }
+		if ( ! self::operator_authorized( get_current_user_id() ) ) { return; }
 		$config = self::configuration();
 		$approved = self::approval_valid( $config );
 		if ( false !== get_option( self::AUDIT_GAP_OPTION, false ) ) {
@@ -435,18 +436,41 @@ final class WelcomeExperience {
 	 * visual/copy decision. A local WordPress administrator alone cannot
 	 * impersonate Founder. File 00 MFA-retirement truth is not overridden.
 	 */
-	public static function founder_authorized( $user_id ) {
+	/**
+	 * File 00 is authoritative for both current operator eligibility and Founder.
+	 * A WordPress administrator capability alone is never an identity claim.
+	 */
+	private static function verified_file00_identity( $user_id ) {
 		$user_id = absint( $user_id );
-		if ( ! $user_id || ! class_exists( 'SMC_Contracts' ) || ! is_callable( array( 'SMC_Contracts', 'assertions' ) ) ) {
-			return false;
+		if ( $user_id < 1 || ! class_exists( 'SMC_Contracts' ) ||
+			! is_callable( array( 'SMC_Contracts', 'assertions' ) ) ) { return array(); }
+		try {
+			$claims = \SMC_Contracts::assertions( $user_id );
+			if ( ! is_array( $claims ) ||
+				absint( $claims['user_id'] ?? 0 ) !== $user_id ||
+				true !== (bool) ( $claims['approved'] ?? false ) ||
+				true !== (bool) ( $claims['eligible'] ?? false ) ||
+				true !== (bool) ( $claims['suspended'] ?? true ) ) {
+				return array();
+			}
+			return $claims;
+		} catch ( \Throwable $error ) {
+			unset( $error );
+			return array();
 		}
-		$assertions = \SMC_Contracts::assertions( $user_id );
-		return is_array( $assertions )
-			&& absint( $assertions['user_id'] ?? 0 ) === $user_id
-			&& 'founder' === (string) ( $assertions['account_class'] ?? '' )
-			&& true === (bool) ( $assertions['approved'] ?? false )
-			&& true === (bool) ( $assertions['eligible'] ?? false )
-			&& false === (bool) ( $assertions['suspended'] ?? true );
+	}
+
+	public static function operator_authorized( $user_id ) {
+		if ( ! function_exists( 'is_user_logged_in' ) || ! is_user_logged_in() ||
+			! current_user_can( 'manage_options' ) ||
+			absint( $user_id ) !== get_current_user_id() ) { return false; }
+		$claims = self::verified_file00_identity( $user_id );
+		return in_array( (string) ( $claims['account_class'] ?? '' ), array( 'founder', 'administrator' ), true );
+	}
+
+	public static function founder_authorized( $user_id ) {
+		$claims = self::verified_file00_identity( $user_id );
+		return 'founder' === (string) ( $claims['account_class'] ?? '' );
 	}
 
 	/**
