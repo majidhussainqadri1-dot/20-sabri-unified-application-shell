@@ -42,6 +42,9 @@ $assert( ! WelcomeExperience::route_eligible( '/clinical/visit', $config ), 'cli
 $assert( ! WelcomeExperience::route_eligible( '/news/%2e%2e/account', $config ), 'encoded traversal suppressed' );
 $assert( ! WelcomeExperience::route_eligible( '//external.example/', $config ), 'network-path reference suppressed' );
 $assert( ! WelcomeExperience::route_eligible( '/news/#section', $config ), 'fragment links not auto-eligible' );
+$assert( WelcomeExperience::manual_requested( '/?sabri_welcome=manual' ), 'explicit manual replay home URL is recognized' );
+$assert( ! WelcomeExperience::manual_requested( '/?sabri_welcome=manual&token=123' ), 'manual replay rejects extra query arguments' );
+$assert( ! WelcomeExperience::manual_requested( '/clinical?sabri_welcome=manual' ), 'manual replay cannot bypass sensitive-route suppression' );
 $assert( WelcomeExperience::sensitive_path( '/emergency/help' ), 'emergency path always suppressed' );
 $assert( WelcomeExperience::sensitive_path( '/booking' ), 'booking route always suppressed' );
 $assert( ! WelcomeExperience::sensitive_path( '/encyclopedia' ), 'public reference content not globally excluded' );
