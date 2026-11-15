@@ -14,6 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 final class WelcomeExperience {
 	const OPTION = 'sabri_shell_welcome_config';
 	const AUDIT_OPTION = 'sabri_shell_welcome_audit';
+	const AUDIT_GAP_OPTION = 'sabri_shell_welcome_audit_gap';
 	const APPROVAL_OPTION = 'sabri_shell_welcome_founder_approval';
 	const APPROVAL_ACTION = 'sabri_shell_welcome_approve';
 	const NONCE_ACTION = 'sabri_shell_welcome_save';
@@ -161,7 +162,7 @@ final class WelcomeExperience {
 	public static function public_eligible() {
 		if ( is_admin() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) { return false; }
 		if ( defined( 'SABRI_SHELL_DISABLE_WELCOME' ) && SABRI_SHELL_DISABLE_WELCOME ) { return false; }
-		if ( SafeMode::disabled() ) { return false; }
+		if ( SafeMode::disabled() || false !== get_option( self::AUDIT_GAP_OPTION, false ) ) { return false; }
 		if ( function_exists( 'is_feed' ) && is_feed() ) { return false; }
 		if ( function_exists( 'is_404' ) && is_404() ) { return false; }
 		if ( in_array( Layout::current_mode(), array( Layout::MINIMAL, Layout::IMMERSIVE ), true ) ) { return false; }
@@ -315,6 +316,9 @@ final class WelcomeExperience {
 		if ( ! current_user_can( 'manage_options' ) ) { return; }
 		$config = self::configuration();
 		$approved = self::approval_valid( $config );
+		if ( false !== get_option( self::AUDIT_GAP_OPTION, false ) ) {
+			echo '<div class="notice notice-error"><p>' . esc_html__( 'Welcome disabled: configuration audit is incomplete. Review and reconcile the recorded audit gap before approval.', 'sabri-unified-application-shell' ) . '</p></div>';
+		}
 		echo '<div class="wrap"><h1>' . esc_html__( 'Welcome experience — File 20', 'sabri-unified-application-shell' ) . '</h1>';
 		echo '<p>' . esc_html__( 'File 20 owns route/frequency state; File 25 owns visual presentation. Public activation also requires the independent canonical Founder approval assertion.', 'sabri-unified-application-shell' ) . '</p>';
 		echo '<p><strong>' . esc_html__( 'Founder approval:', 'sabri-unified-application-shell' ) . '</strong> ' . esc_html( $approved ? 'verified' : 'absent / blocked' ) . '</p>';
@@ -340,6 +344,44 @@ final class WelcomeExperience {
 			echo '<a class="button button-secondary" target="_blank" rel="noopener" href="' . esc_url( $url ) . '">' . esc_html( ucfirst( $state ) ) . '</a> ';
 		}
 		echo '</div>';
+	}
+
+
+	/**
+	 * Compare-and-swap audit updates; do not silently discard a concurrent
+	 * administrator's record. A persistent gap disables all public activation.
+	 */
+	private static function append_audit( array $record ) {
+		global $wpdb;
+		if ( false === get_option( self::AUDIT_OPTION, false ) ) {
+			add_option( self::AUDIT_OPTION, array(), '', false );
+		}
+		for ( $attempt = 0; $attempt < 3; $attempt++ ) {
+			$row = $wpdb->get_row( $wpdb->prepare(
+				"SELECT option_id, option_value FROM {$wpdb->options} WHERE option_name=%s LIMIT 1",
+				self::AUDIT_OPTION
+			), ARRAY_A );
+			if ( ! is_array( $row ) || ! isset( $row['option_id'], $row['option_value'] ) ) { continue; }
+			$prior = maybe_unserialize( $row['option_value'] );
+			$prior = is_array( $prior ) ? $prior : array();
+			$prior[] = $record;
+			$next = array_slice( $prior, -100 );
+			$updated = $wpdb->query( $wpdb->prepare(
+				"UPDATE {$wpdb->options} SET option_value=%s WHERE option_id=%d AND option_name=%s AND option_value=%s",
+				maybe_serialize( $next ), absint( $row['option_id'] ),
+				self::AUDIT_OPTION, (string) $row['option_value']
+			) );
+			if ( 1 === $updated ) {
+				wp_cache_delete( self::AUDIT_OPTION, 'options' );
+				return true;
+			}
+		}
+		update_option( self::AUDIT_GAP_OPTION, array(
+			'detected_at' => gmdate( 'c' ),
+			'event' => sanitize_key( $record['event'] ?? 'unknown' ),
+			'actor' => absint( $record['actor'] ?? 0 ),
+		), false );
+		return false;
 	}
 
 	public static function save() {
@@ -380,10 +422,7 @@ final class WelcomeExperience {
 		}
 		wp_cache_delete( self::OPTION, 'options' );
 		delete_option( self::APPROVAL_OPTION ); // Any changed configuration invalidates the previous Founder approval.
-		$audit = get_option( self::AUDIT_OPTION, array() );
-		$audit = is_array( $audit ) ? $audit : array();
-		$audit[] = array( 'at' => gmdate( 'c' ), 'actor' => get_current_user_id(), 'from' => $expected, 'to' => $new['config_version'], 'enabled' => $new['enabled'] );
-		update_option( self::AUDIT_OPTION, array_slice( $audit, -100 ), false );
+		self::append_audit( array( 'event' => 'config_saved', 'at' => gmdate( 'c' ), 'actor' => get_current_user_id(), 'from' => $expected, 'to' => $new['config_version'], 'enabled' => $new['enabled'] ) );
 		wp_safe_redirect( admin_url( 'options-general.php?page=sabri-shell-welcome&updated=1' ) );
 		exit;
 	}
@@ -433,6 +472,7 @@ final class WelcomeExperience {
 
 	public static function approval_valid( array $config ) {
 		$approval = get_option( self::APPROVAL_OPTION, array() );
+		if ( false !== get_option( self::AUDIT_GAP_OPTION, false ) ) { return false; }
 		if ( ! is_array( $approval ) || empty( $approval['signer_id'] ) || empty( $approval['signature'] ) ) { return false; }
 		$expected = self::approval_signature( $config );
 		return '' !== $expected
@@ -447,6 +487,7 @@ final class WelcomeExperience {
 			wp_die( 'POST required', '', array( 'response' => 405 ) );
 		}
 		$user_id = get_current_user_id();
+		if ( false !== get_option( self::AUDIT_GAP_OPTION, false ) ) { wp_die( 'Audit integrity gap must be reconciled before approval.', '', array( 'response' => 409 ) ); }
 		if ( ! self::founder_authorized( $user_id ) ) {
 			wp_die( 'A current canonical File 00 Founder assertion is required.', '', array( 'response' => 403 ) );
 		}
@@ -460,6 +501,11 @@ final class WelcomeExperience {
 			'approved_at' => gmdate( 'c' ),
 			'signature' => $signature,
 		), false );
+		wp_cache_delete( self::APPROVAL_OPTION, 'options' );
+		if ( ! self::approval_valid( $config ) || ! self::append_audit( array( 'event' => 'founder_approved', 'at' => gmdate( 'c' ), 'actor' => $user_id, 'copy_version' => $config['copy_version'] ) ) ) {
+			delete_option( self::APPROVAL_OPTION );
+			wp_die( 'Founder approval not durably recorded; welcome remains disabled.', '', array( 'response' => 503 ) );
+		}
 		wp_safe_redirect( admin_url( 'options-general.php?page=sabri-shell-welcome&approved=1' ) );
 		exit;
 	}
