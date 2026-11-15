@@ -106,6 +106,24 @@ test('Cross-tab dismissal closes a visible panel', () => {
   assert.equal(c.shown(), false);
   assert.equal(a.panel.hidden, true);
 });
+test('Closing from a focused Skip control restores keyboard focus to the main region', () => {
+  const a = environment();
+  let mainFocused = false;
+  const main = {
+    attrs: {},
+    hasAttribute(k) { return Object.prototype.hasOwnProperty.call(this.attrs, k); },
+    setAttribute(k, v) { this.attrs[k] = v; },
+    focus() { mainFocused = true; }
+  };
+  a.doc.body = a.doc.activeElement;
+  a.doc.querySelector = () => main;
+  const c = controller.createController(a.win, a.doc, { storageKey: KEY, days: 30 });
+  a.doc.activeElement = { inPanel: true };
+  a.callbacks['skip:click']();
+  assert.equal(c.shown(), false);
+  assert.equal(main.attrs.tabindex, '-1');
+  assert.equal(mainFocused, true);
+});
 test('Manual welcome remains usable without localStorage and never changes recurrence', () => {
   const a = environment();
   Object.defineProperty(a.win, 'localStorage', { get() { throw Error('blocked'); } });
@@ -128,4 +146,4 @@ test('Storage failure still exposes ordinary underlying content', () => {
   try { controller.createController(a.win, a.doc, { storageKey: KEY }); } catch (_) { a.panel.hidden = true; }
   assert.equal(a.panel.hidden, true);
 });
-if (!process.exitCode) process.stdout.write('File20 V12.3 welcome JS behavior: 11 cases passed\n');
+if (!process.exitCode) process.stdout.write('File20 V12.3 welcome JS behavior: 12 cases passed\n');
