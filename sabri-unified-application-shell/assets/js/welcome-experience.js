@@ -66,9 +66,21 @@
     function routeStillEligible() {
       if (configuration.manual === true) return true;
       if (!win.location) return true; // Pure CI fixture without a DOM URL.
-      const actualPath = String(win.location.pathname || '/').replace(/\/+$/, '') || '/';
-      const serverPath = String(configuration.serverPath || actualPath).replace(/\/+$/, '') || '/';
-      return !win.location.hash && !win.location.search && actualPath === serverPath;
+      // PHP normalizes request slugs with rawurldecode, whereas browsers
+      // expose location.pathname in percent-encoded form. Decode exactly once
+      // to preserve Urdu/Arabic slugs without accepting encoded separators.
+      function normalizedPath(raw) {
+        try {
+          const path = decodeURIComponent(String(raw || '/'));
+          if (path.includes('\\') || path.includes('\\0') || path.includes('..') ||
+              /%(?:2e|2f|5c|00|0a|0d|7f)/i.test(path)) return null;
+          return path.replace(/\/+$/, '') || '/';
+        } catch (_) { return null; }
+      }
+      const actualPath = normalizedPath(win.location.pathname);
+      const serverPath = normalizedPath(configuration.serverPath || win.location.pathname);
+      return actualPath !== null && serverPath !== null &&
+        !win.location.hash && !win.location.search && actualPath === serverPath;
     }
     if (!routeStillEligible()) {
       panel.hidden = true;
