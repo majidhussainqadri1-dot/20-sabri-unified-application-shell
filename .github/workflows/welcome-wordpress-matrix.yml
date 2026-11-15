@@ -92,6 +92,11 @@ jobs:
           rsync -a --exclude=".git" --exclude="build" \
             file25/ wordpress/wp-content/plugins/sabri-public-experience/
           ${W} plugin activate sabri-membership-core
+          # File00 activation intentionally queues schema migrations until an admin request.
+          # Invoke its exact native deferred installer in isolated ephemeral CI;
+          # never infer migration success from plugin activation or green code checks.
+          SABRI_EPHEMERAL_CI=1 ${W} eval-file \
+            "${GITHUB_WORKSPACE}/file20/sabri-unified-application-shell/tests/wp-file00-deferred-migration-ci.php"
           ${W} option update smc_founder_user_id 1
           ${W} plugin activate sabri-unified-application-shell
           ${W} plugin activate sabri-public-experience
@@ -139,13 +144,18 @@ jobs:
             node file20/sabri-unified-application-shell/tests/welcome-browser-e2e.cjs
           # Genuine WordPress site-locale round trips; all data remains ephemeral.
           for locale in ur ar; do
-            ${W} option update WPLANG "${locale}"
+            # Install the actual WordPress locale pack and switch the site's
+            # canonical language, not a synthetic JS or uninstalled WPLANG value.
+            ${W} language core install "${locale}"
+            ${W} site switch-language "${locale}"
+            installed_locale="$("${W}" eval 'echo get_locale();')"
+            test "${installed_locale}" = "${locale}"
             SABRI_E2E_LOCALE="${locale}" \
               SABRI_WP_TEST_URL=http://127.0.0.1:8888/ \
               SABRI_CI_SCREENSHOT="${RUNNER_TEMP}/sabri-welcome-${locale}.png" \
               node file20/sabri-unified-application-shell/tests/welcome-locale-e2e.cjs
           done
-          ${W} option update WPLANG en_US
+          ${W} site switch-language en_US
       - name: Print private CI WordPress server error log on browser failure
         if: failure() && matrix.wp == '7.1.4'
         run: tail -n 120 "${RUNNER_TEMP}/sabri-welcome-http.log" || true
