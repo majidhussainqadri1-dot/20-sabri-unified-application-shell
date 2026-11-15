@@ -128,6 +128,19 @@ function storageSnapshot() {
     });
     await hashContext.close();
 
+    const spaContext = await browser.newContext();
+    const spa = await spaContext.newPage();
+    await caseOf('History.pushState clinical/task deep-link instantly hides visible welcome', async () => {
+      await spa.goto(base, { waitUntil: 'domcontentloaded' });
+      await visible(spa);
+      await spa.evaluate(() => history.pushState({ task: true }, '', '/clinical/patient?case=1'));
+      assert.equal(await spa.locator('#sabri-shell-welcome').evaluate(el => el.hidden), true,
+        'Sensitive SPA navigation must suppress introduction even without popstate');
+      assert.equal((await spa.evaluate(storageSnapshot)).length, 1,
+        'First-view recurrence survives SPA navigation without explicit dismissal');
+    });
+    await spaContext.close();
+
     const deniedContext = await browser.newContext();
     await deniedContext.addInitScript(() => {
       for (const name of ['localStorage', 'sessionStorage']) {
