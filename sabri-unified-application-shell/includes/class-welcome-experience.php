@@ -119,7 +119,8 @@ final class WelcomeExperience {
 
 	public static function normalize_path( $path ) {
 		$path = rawurldecode( (string) $path );
-		if ( false !== strpos( $path, '\\' ) || false !== strpos( $path, "\0" ) || false !== strpos( $path, '..' ) ) { return ''; }
+		if ( false !== strpos( $path, '\\' ) || false !== strpos( $path, "\0" ) || false !== strpos( $path, '..' ) ||
+			preg_match( '/%(?:2e|2f|5c|00|0a|0d|7f)/i', $path ) ) { return ''; }
 		$path = '/' . ltrim( preg_replace( '#/+#', '/', $path ), '/' );
 		return '/' === $path ? '/' : rtrim( $path, '/' );
 	}
