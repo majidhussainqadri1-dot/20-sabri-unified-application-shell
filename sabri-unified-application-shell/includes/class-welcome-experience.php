@@ -50,6 +50,14 @@ final class WelcomeExperience {
 		);
 	}
 
+	/** Limit Unicode copy without splitting an Urdu/Arabic UTF-8 codepoint. */
+	private static function limit_text( $text, $length ) {
+		$text = (string) $text;
+		if ( function_exists( 'mb_substr' ) ) { return mb_substr( $text, 0, $length, 'UTF-8' ); }
+		if ( function_exists( 'wp_html_excerpt' ) ) { return wp_html_excerpt( $text, $length, '' ); }
+		return substr( $text, 0, $length );
+	}
+
 	/** Only the File 20 owner may read and enforce this bounded preference. */
 	public static function configuration() {
 		$stored = get_option( self::OPTION, array() );
@@ -62,10 +70,10 @@ final class WelcomeExperience {
 			$value['enabled'] = in_array( $input['enabled'], array( true, 1, '1', 'on', 'yes' ), true );
 		}
 		if ( isset( $input['title'] ) ) {
-			$value['title'] = substr( sanitize_text_field( (string) $input['title'] ), 0, 180 );
+			$value['title'] = self::limit_text( sanitize_text_field( (string) $input['title'] ), 180 );
 		}
 		if ( isset( $input['message'] ) ) {
-			$value['message'] = substr( sanitize_textarea_field( (string) $input['message'] ), 0, 600 );
+			$value['message'] = self::limit_text( sanitize_textarea_field( (string) $input['message'] ), 600 );
 		}
 		foreach ( array( 'start_at', 'end_at' ) as $field ) {
 			if ( array_key_exists( $field, $input ) ) {
