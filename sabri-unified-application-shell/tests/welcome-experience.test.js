@@ -124,6 +124,29 @@ test('Closing from a focused Skip control restores keyboard focus to the main re
   assert.equal(main.attrs.tabindex, '-1');
   assert.equal(mainFocused, true);
 });
+test('Client URL hash/query suppresses automation before browser preference is touched', () => {
+  const a = environment();
+  a.win.location = { pathname: '/', search: '', hash: '#/appointment' };
+  const first = controller.createController(a.win, a.doc, { storageKey: KEY, serverPath: '/' });
+  assert.equal(first, null);
+  assert.equal(a.panel.hidden, true);
+  assert.equal(a.sessionStorage.getItem(KEY + ':seen'), null);
+  const b = environment();
+  b.win.location = { pathname: '/', search: '?recovery=1', hash: '' };
+  assert.equal(controller.createController(b.win, b.doc, { storageKey: KEY, serverPath: '/' }), null);
+  assert.equal(b.panel.hidden, true);
+});
+test('Client-side SPA navigation closes visible welcome without dismissal persistence', () => {
+  const a = environment();
+  a.win.location = { pathname: '/', search: '', hash: '' };
+  const c = controller.createController(a.win, a.doc, { storageKey: KEY, serverPath: '/' });
+  assert.equal(c.shown(), true);
+  a.win.location.hash = '#/clinical';
+  a.events.hashchange({});
+  assert.equal(c.shown(), false);
+  assert.equal(a.panel.hidden, true);
+  assert.equal(a.localStorage.getItem(KEY), null);
+});
 test('Manual welcome remains usable without localStorage and never changes recurrence', () => {
   const a = environment();
   Object.defineProperty(a.win, 'localStorage', { get() { throw Error('blocked'); } });
@@ -146,4 +169,4 @@ test('Storage failure still exposes ordinary underlying content', () => {
   try { controller.createController(a.win, a.doc, { storageKey: KEY }); } catch (_) { a.panel.hidden = true; }
   assert.equal(a.panel.hidden, true);
 });
-if (!process.exitCode) process.stdout.write('File20 V12.3 welcome JS behavior: 12 cases passed\n');
+if (!process.exitCode) process.stdout.write('File20 V12.3 welcome JS behavior: 14 cases passed\n');
