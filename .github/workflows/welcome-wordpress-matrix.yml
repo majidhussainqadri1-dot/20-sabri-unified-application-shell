@@ -47,6 +47,12 @@ jobs:
           repository: majidhussainqadri1-dot/25-sabri-public-ui-profile-timeline-visual-experience
           ref: 35a34e9c8f919c1839d39ce4df7cfd3ee1bb77eb
           path: file25
+      - name: Checkout actual canonical File00 membership authority
+        uses: actions/checkout@v5
+        with:
+          repository: majidhussainqadri1-dot/00-sabri-membership-core
+          ref: 1fad051c86d530d558be3eb1890d3c6e67bce6e8
+          path: file00
       - name: Set PHP 8.3 and WordPress requirements
         uses: shivammathur/setup-php@v2
         with:
@@ -78,9 +84,12 @@ jobs:
             --admin_email=ci@example.test --skip-email
           mkdir -p wordpress/wp-content/plugins
           cp -a file20/sabri-unified-application-shell wordpress/wp-content/plugins/
+          cp -a file00/source/sabri-membership-core wordpress/wp-content/plugins/
           mkdir -p wordpress/wp-content/plugins/sabri-public-experience
           rsync -a --exclude=".git" --exclude="build" \
             file25/ wordpress/wp-content/plugins/sabri-public-experience/
+          ${W} plugin activate sabri-membership-core
+          ${W} option update smc_founder_user_id 1
           ${W} plugin activate sabri-unified-application-shell
           ${W} plugin activate sabri-public-experience
           ${W} plugin list --fields=name,status,version --format=table
@@ -92,8 +101,15 @@ jobs:
           php "${RUNNER_TEMP}/wp-cli.phar" \
             --path="${GITHUB_WORKSPACE}/wordpress" \
             eval-file "${GITHUB_WORKSPACE}/file20/sabri-unified-application-shell/tests/wp-real-environment-smoke.php"
+      - name: Test true File00 Founder identity and guarded File20/File25 approval
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "${RUNNER_TEMP}/wp-cli.phar" \\
+            --path="${GITHUB_WORKSPACE}/wordpress" --user=ci_founder \\
+            eval-file "${GITHUB_WORKSPACE}/file20/sabri-unified-application-shell/tests/wp-full-owner-setup.php"
       - name: Truth boundary
         run: |
           echo "Isolated WordPress core + ephemeral MySQL/plugin smoke only."
-          echo "No production site accessed, no Founder approval fabricated."
+          echo "No production site accessed; test-only Founder claim comes from actual File00 plugin on an ephemeral DB."
           echo "No real browser, screen reader, restored DB, live parity or deployment acceptance claimed."
