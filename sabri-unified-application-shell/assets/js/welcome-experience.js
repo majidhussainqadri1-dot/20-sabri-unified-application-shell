@@ -52,6 +52,19 @@
     if (!panel || !configuration || typeof configuration.storageKey !== 'string' ||
         !/^[a-z0-9_-]{8,96}$/.test(configuration.storageKey)) return null;
 
+    // URL fragments are invisible to PHP. A client-side appointment or account
+    // route must not unexpectedly inherit an eligible server-rendered homepage.
+    function routeStillEligible() {
+      if (configuration.manual === true) return true;
+      if (!win.location) return true; // Pure CI fixture without a DOM URL.
+      const actualPath = String(win.location.pathname || '/').replace(/\/+$/, '') || '/';
+      const serverPath = String(configuration.serverPath || actualPath).replace(/\/+$/, '') || '/';
+      return !win.location.hash && !win.location.search && actualPath === serverPath;
+    }
+    if (!routeStillEligible()) {
+      panel.hidden = true;
+      return null;
+    }
     const key = configuration.storageKey;
     const manual = configuration.manual === true;
     let local = null;
@@ -110,6 +123,11 @@
     shown = true;
     // Non-modal: neither focus theft nor a focus trap; no delayed animation
     // is required to access the page or dismiss the banner.
+    function suppressOnClientRouteChange() {
+      if (shown && !routeStillEligible()) hide();
+    }
+    win.addEventListener('hashchange', suppressOnClientRouteChange);
+    win.addEventListener('popstate', suppressOnClientRouteChange);
     const closeButtons = panel.querySelectorAll('[data-sabri-welcome-dismiss], [data-sabri-welcome-skip]');
     closeButtons.forEach(button => button.addEventListener('click', dismiss));
     const continueLink = panel.querySelector('[data-sabri-welcome-continue]');
