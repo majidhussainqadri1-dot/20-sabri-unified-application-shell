@@ -104,6 +104,16 @@ namespace {
 	$_SERVER['REQUEST_URI'] = '/';
 	$check( $owner::approval_valid( $config ), 'File00 Founder assertion and exact visual digest accepted.' );
 	$check( $owner::public_eligible(), 'First eligible homepage authorized only after valid approval.' );
+	$css_path = SABRI_PUBLIC_EXPERIENCE_DIR . 'assets/css/design-system.css';
+	$original_css = file_get_contents( $css_path );
+	$check( is_string( $original_css ), 'Genuine File25 CSS is readable.' );
+	try {
+		file_put_contents( $css_path, $original_css . "\n/* simulated unapproved design change */\n" );
+		$check( ! $owner::approval_valid( $config ), 'A changed File25 design asset invalidates Founder approval.' );
+	} finally {
+		file_put_contents( $css_path, $original_css );
+	}
+	$check( $owner::approval_valid( $config ), 'Exact File25 CSS restoration recovers approved hash.' );
 	$GLOBALS['welcome_options'][ $owner::AUDIT_GAP_OPTION ] = array( 'event' => 'config_saved' );
 	$check( ! $owner::public_eligible(), 'Unreconciled configuration audit gap blocks approved welcome.' );
 	unset( $GLOBALS['welcome_options'][ $owner::AUDIT_GAP_OPTION ] );
