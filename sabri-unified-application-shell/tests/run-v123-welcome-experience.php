@@ -56,6 +56,8 @@ $assert( WelcomeExperience::manual_requested( '/?sabri_welcome=manual' ), 'expli
 $assert( ! WelcomeExperience::manual_requested( '/?sabri_welcome=manual&token=123' ), 'manual replay rejects extra query arguments' );
 $assert( ! WelcomeExperience::manual_requested( '/clinical?sabri_welcome=manual' ), 'manual replay cannot bypass sensitive-route suppression' );
 $assert( WelcomeExperience::sensitive_path( '/emergency/help' ), 'emergency path always suppressed' );
+$assert( WelcomeExperience::sensitive_path( '/EMERGENCY/HELP' ), 'case-insensitive emergency route always suppressed' );
+$assert( WelcomeExperience::sensitive_path( '/WP-LOGIN.PHP' ), 'case-folded login is denied' );
 $assert( WelcomeExperience::sensitive_path( '/booking' ), 'booking route always suppressed' );
 $assert( ! WelcomeExperience::sensitive_path( '/encyclopedia' ), 'public reference content not globally excluded' );
 
