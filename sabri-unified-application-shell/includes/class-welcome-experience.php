@@ -457,10 +457,11 @@ final class WelcomeExperience {
 		$show = ! in_array( $state, array( 'skipped', 'disabled', 'error' ), true ) && '' !== $panel;
 		echo '<!doctype html><html lang="' . esc_attr( get_bloginfo( 'language' ) ) . '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Welcome Preview</title><style>';
 		echo self::placement_css(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static CSS owned by this class.
+		echo '.sabri-shell-welcome-preview-reduced *{animation:none!important;transition:none!important}';
 		if ( class_exists( 'Sabri\\PublicExperience\\Three_Plan_Corrections' ) ) {
 			echo \Sabri\PublicExperience\Three_Plan_Corrections::css(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
-		echo '</style></head><body><main><h1>Underlying content is immediately available</h1><p>Preview state: ' . esc_html( $state ) . ' (no public storage or session mutation)</p></main>';
+		echo '</style></head><body class="' . ( 'reduced' === $state ? 'sabri-shell-welcome-preview-reduced' : '' ) . '"><main><h1>Underlying content is immediately available</h1><p>Preview state: ' . esc_html( $state ) . ' (no public storage or session mutation)</p></main>';
 		if ( $show ) {
 			echo '<aside class="sabri-shell-welcome" style="position:relative;inset:auto;pointer-events:auto">';
 			echo $panel; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- File25 escapes.
