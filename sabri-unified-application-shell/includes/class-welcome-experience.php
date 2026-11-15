@@ -641,8 +641,25 @@ final class WelcomeExperience {
 				if ( ! is_string( $hash ) || '' === $hash ) { return ''; }
 				$digests[ $name ] = $hash;
 			}
+			$file20_root = realpath( dirname( __DIR__ ) );
+			if ( false === $file20_root ) { return ''; }
+			$file20_sources = array(
+				'file20_owner_php' => __FILE__,
+				'file20_browser_controller_js' => dirname( __DIR__ ) . '/assets/js/welcome-experience.js',
+				'file20_registration_php' => dirname( __DIR__ ) . '/includes/class-four-plan-harmonization.php',
+			);
+			$file20_digests = array();
+			foreach ( $file20_sources as $name => $source ) {
+				$resolved = realpath( $source );
+				if ( false === $resolved || 0 !== strpos( $resolved, $file20_root . DIRECTORY_SEPARATOR ) ||
+					! is_readable( $resolved ) ) { return ''; }
+				$digest = hash_file( 'sha256', $resolved );
+				if ( ! is_string( $digest ) || '' === $digest ) { return ''; }
+				$file20_digests[ $name ] = $digest;
+			}
 			return hash( 'sha256', wp_json_encode( array(
 				'file20_version' => SABRI_SHELL_VERSION,
+				'file20_source_sha256' => $file20_digests,
 				'file25_version' => SABRI_PUBLIC_EXPERIENCE_VERSION,
 				'file25_visual_sha256' => $digests,
 				'config' => self::sanitize( $config, $config ),
