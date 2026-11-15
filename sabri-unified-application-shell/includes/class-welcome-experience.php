@@ -37,6 +37,7 @@ final class WelcomeExperience {
 		add_action( 'template_redirect', array( __CLASS__, 'prevent_public_html_cache' ), 0 );
 		add_action( 'admin_post_' . self::PREVIEW_ACTION, array( __CLASS__, 'preview' ) );
 		add_filter( 'sabri_shell_welcome_contract', array( __CLASS__, 'contract' ) );
+		add_filter( 'sabri_shell_system_check_sections', array( __CLASS__, 'system_health' ) );
 		add_shortcode( 'sabri_welcome_manual_link', array( __CLASS__, 'manual_link' ) );
 	}
 
@@ -56,6 +57,49 @@ final class WelcomeExperience {
 			'eligible_paths' => array( '/' ),
 			'frequency_days' => self::DAYS,
 		);
+	}
+
+	/**
+	 * File20 System Check: internal, bounded, privacy-safe current-state
+	 * evidence. Runtime source health is NOT a staging/live acceptance record.
+	 * Never disclose operator or Founder identifiers through this filter.
+	 */
+	public static function system_health( $sections = array() ) {
+		$sections = is_array( $sections ) ? $sections : array();
+		if ( ! self::operator_authorized( get_current_user_id() ) ) { return $sections; }
+		try {
+			$config = self::configuration();
+			$gap = false !== get_option( self::AUDIT_GAP_OPTION, false );
+			$visual = self::visual_available();
+			$approved = self::approval_valid( $config );
+			$enabled = ! empty( $config['enabled'] );
+			$state = $gap ? 'fail' : ( $enabled && ( ! $visual || ! $approved ) ? 'warn' : 'pass' );
+			$sections['file20-welcome-v123'] = array(
+				'label' => 'V12.3 File 13 / File 20 welcome',
+				'status' => $state,
+				'severity' => 'fail' === $state ? 'critical' : ( 'warn' === $state ? 'high' : 'info' ),
+				'owner' => 'file-20',
+				'visual_owner' => 'file-25',
+				'enabled' => $enabled,
+				'visual_owner_verified' => $visual,
+				'founder_approval_valid' => $approved,
+				'audit_gap' => $gap,
+				'config_version' => absint( $config['config_version'] ),
+				'copy_version' => absint( $config['copy_version'] ),
+				'frequency_days' => self::DAYS,
+				'live_acceptance' => 'not-established-by-source-health',
+			);
+		} catch ( \Throwable $error ) {
+			unset( $error );
+			$sections['file20-welcome-v123'] = array(
+				'label' => 'V12.3 File 13 / File 20 welcome',
+				'status' => 'fail',
+				'severity' => 'critical',
+				'error' => 'unavailable',
+				'live_acceptance' => 'unknown',
+			);
+		}
+		return $sections;
 	}
 
 	/** Limit Unicode copy without splitting an Urdu/Arabic UTF-8 codepoint. */
