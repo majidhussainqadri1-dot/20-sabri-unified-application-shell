@@ -325,6 +325,7 @@ final class WelcomeExperience {
 			'invoked_by_file_20' => true,
 			'title' => $copy['title'],
 			'message' => $copy['message'],
+			'language' => $copy['language'],
 			'continue_label' => $copy['continue'],
 			'close_label' => $copy['close'],
 			'skip_label' => $copy['skip'],
