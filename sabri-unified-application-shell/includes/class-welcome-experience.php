@@ -20,10 +20,14 @@ final class WelcomeExperience {
 	const PREVIEW_ACTION = 'sabri_shell_welcome_preview';
 	const STORAGE_KEY = 'sabri-shell-welcome-dismiss-until-v1';
 	const DAYS = 30;
+	/** Only one File 20 placement per response, even if both theme hooks fire. */
+	private static $rendered = false;
 
 	public static function register() {
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue' ), 125 );
 		add_action( 'wp_body_open', array( __CLASS__, 'render' ), 3 );
+		// Theme compatibility: scripts print later than this guarded fallback.
+		add_action( 'wp_footer', array( __CLASS__, 'render' ), 2 );
 		add_action( 'admin_menu', array( __CLASS__, 'register_admin' ), 99 );
 		add_action( 'admin_post_sabri_shell_welcome_save', array( __CLASS__, 'save' ) );
 		add_action( 'admin_post_' . self::APPROVAL_ACTION, array( __CLASS__, 'approve' ) );
@@ -252,9 +256,10 @@ final class WelcomeExperience {
 	}
 
 	public static function render() {
-		if ( ! self::public_eligible() ) { return; }
+		if ( self::$rendered || ! self::public_eligible() ) { return; }
 		$panel = self::panel( self::configuration() );
 		if ( '' === $panel ) { return; }
+		self::$rendered = true;
 		echo '<aside id="sabri-shell-welcome" class="sabri-shell-welcome" hidden aria-label="' . esc_attr__( 'Welcome to Sabri Homeopathy', 'sabri-unified-application-shell' ) . '" data-owner="file-20">';
 		echo $panel; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- File 25 owns and escapes its visual markup.
 		echo '</aside>';
