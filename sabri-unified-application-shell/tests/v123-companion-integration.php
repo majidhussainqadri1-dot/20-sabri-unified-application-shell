@@ -126,7 +126,9 @@ namespace {
 	$GLOBALS['welcome_options'][ $owner::APPROVAL_OPTION ] = array( 'signer_id' => 91, 'signature' => $signature );
 	$_SERVER['REQUEST_URI'] = '/';
 	$check( $owner::approval_valid( $config ), 'File00 Founder assertion and exact visual digest accepted.' );
-	$check( $owner::public_eligible(), 'First eligible homepage authorized only after valid approval.' );
+	$check( ! $owner::public_eligible(), 'V12.3 login suppression blocks even an approved intro for authenticated Founder.' );
+	$GLOBALS['welcome_logged_in'] = false;
+	$check( $owner::public_eligible(), 'First eligible anonymous homepage authorized only after valid approval.' );
 	$css_path = SABRI_PUBLIC_EXPERIENCE_DIR . 'assets/css/design-system.css';
 	$original_css = file_get_contents( $css_path );
 	$check( is_string( $original_css ), 'Genuine File25 CSS is readable.' );
