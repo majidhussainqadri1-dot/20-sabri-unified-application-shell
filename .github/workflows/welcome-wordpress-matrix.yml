@@ -148,7 +148,7 @@ jobs:
             # canonical language, not a synthetic JS or uninstalled WPLANG value.
             ${W} language core install "${locale}"
             ${W} site switch-language "${locale}"
-            installed_locale="$("${W}" eval 'echo get_locale();')"
+            installed_locale="$(php "${RUNNER_TEMP}/wp-cli.phar" --path="${GITHUB_WORKSPACE}/wordpress" eval 'echo get_locale();')"
             test "${installed_locale}" = "${locale}"
             SABRI_E2E_LOCALE="${locale}" \
               SABRI_WP_TEST_URL=http://127.0.0.1:8888/ \
