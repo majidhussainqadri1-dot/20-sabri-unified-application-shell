@@ -60,6 +60,9 @@ $assert( ! WelcomeExperience::route_eligible( '/appointment/123', $config ), 'ap
 $assert( ! WelcomeExperience::route_eligible( '/account', $config ), 'account suppression' );
 $assert( ! WelcomeExperience::route_eligible( '/clinical/visit', $config ), 'clinical suppression' );
 $assert( ! WelcomeExperience::route_eligible( '/news/%2e%2e/account', $config ), 'encoded traversal suppressed' );
+$assert( '' === WelcomeExperience::normalize_path( '/learn%2fclinical' ), 'Single encoded slash cannot launder a sensitive route.' );
+$assert( '' === WelcomeExperience::normalize_path( '/news%2e%2e/account' ), 'Single encoded dot bytes cannot bypass traversal guard.' );
+$assert( '/learn/اردو' === WelcomeExperience::normalize_path( '/learn/%D8%A7%D8%B1%D8%AF%D9%88' ), 'WordPress path normalizer accepts bona fide Urdu percent-encoded slug.' );
 $assert( '' === WelcomeExperience::normalize_path( '/news/%252e%252e/account' ), 'double-encoded traversal is rejected' );
 $assert( '' === WelcomeExperience::normalize_path( '/news/%252faccount' ), 'double-encoded separator is rejected' );
 $assert( ! WelcomeExperience::route_eligible( '//external.example/', $config ), 'network-path reference suppressed' );
