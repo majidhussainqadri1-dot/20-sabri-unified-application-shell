@@ -258,6 +258,7 @@ final class WelcomeExperience {
 	}
 
 	public static function enqueue() {
+		try {
 		if ( ! self::public_eligible() || ! self::visual_available() ) { return; }
 		wp_register_style( 'sabri-shell-welcome-placement', false, array(), SABRI_SHELL_VERSION );
 		wp_enqueue_style( 'sabri-shell-welcome-placement' );
@@ -273,16 +274,24 @@ final class WelcomeExperience {
 			) ) . ';',
 			'before'
 		);
+		} catch ( \Throwable $error ) {
+			unset( $error ); // Never let an optional intro asset block the public page.
+		}
 	}
 
 	public static function render() {
-		if ( self::$rendered || ! self::public_eligible() ) { return; }
+		if ( self::$rendered ) { return; }
+		try {
+		if ( ! self::public_eligible() ) { return; }
 		$panel = self::panel( self::configuration() );
 		if ( '' === $panel ) { return; }
 		self::$rendered = true;
 		echo '<aside id="sabri-shell-welcome" class="sabri-shell-welcome" hidden aria-label="' . esc_attr__( 'Welcome to Sabri Homeopathy', 'sabri-unified-application-shell' ) . '" data-owner="file-20">';
 		echo $panel; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- File 25 owns and escapes its visual markup.
 		echo '</aside>';
+		} catch ( \Throwable $error ) {
+			unset( $error ); // Source/visual contract failure cannot hide the real page.
+		}
 	}
 
 	public static function register_admin() {
