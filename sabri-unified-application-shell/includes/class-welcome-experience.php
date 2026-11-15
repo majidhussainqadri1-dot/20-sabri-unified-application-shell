@@ -194,6 +194,9 @@ final class WelcomeExperience {
 
 	public static function public_eligible() {
 		if ( is_admin() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) { return false; }
+		// V12.3 F13-CEN-01: welcome is guest-first only; authenticated tasks
+		// and account sessions must never receive an automatic intro.
+		if ( function_exists( 'is_user_logged_in' ) && is_user_logged_in() ) { return false; }
 		if ( defined( 'SABRI_SHELL_DISABLE_WELCOME' ) && SABRI_SHELL_DISABLE_WELCOME ) { return false; }
 		if ( SafeMode::disabled() || true === apply_filters( 'spcrc/file20_safe_mode_active', false ) ||
 			false !== get_option( self::AUDIT_GAP_OPTION, false ) ) { return false; }
