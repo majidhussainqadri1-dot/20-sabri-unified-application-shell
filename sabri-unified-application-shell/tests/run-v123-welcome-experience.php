@@ -30,6 +30,14 @@ $config = WelcomeExperience::sanitize( array(
 ), $default );
 $assert( true === $config['enabled'], 'operator request preserved but separately approval-gated' );
 $assert( 30 === $config['frequency_days'], 'frequency cannot be shortened by an input option' );
+$assert( null === WelcomeExperience::utc_timestamp( '' ), 'Empty UTC schedule is unbounded.' );
+$assert( 1794744000 === WelcomeExperience::utc_timestamp( '2026-11-15 12:00:00' ), 'UTC time is interpreted independently of server timezone.' );
+$assert( false === WelcomeExperience::utc_timestamp( '2026-02-30 12:00:00' ), 'Nonexistent calendar date is not accepted.' );
+$assert( false === WelcomeExperience::utc_timestamp( 'tomorrow' ), 'Relative dates are forbidden.' );
+$assert( false === WelcomeExperience::utc_timestamp( '2026-11-15 12:00 GMT+5' ), 'Ambiguous non-UTC strings are forbidden.' );
+$invalid_schedule = WelcomeExperience::sanitize( array( 'start_at' => 'tomorrow' ), $default );
+$assert( '__invalid_utc__' === $invalid_schedule['start_at'], 'Invalid stored schedules remain visibly fail-closed.' );
+
 $assert( false === strpos( $config['title'], '<script>' ), 'copy is sanitized' );
 $assert( array( '/', '/news' ) === $config['eligible_paths'], 'sensitive, deceptive and traversal paths rejected' );
 
