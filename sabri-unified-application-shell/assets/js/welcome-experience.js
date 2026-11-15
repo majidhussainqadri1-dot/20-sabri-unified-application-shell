@@ -10,13 +10,22 @@
   function isStorageUsable(storage) {
     if (!storage || typeof storage.getItem !== 'function' || typeof storage.setItem !== 'function' ||
         typeof storage.removeItem !== 'function') return false;
+    const probe = 'sabri-welcome-storage-check';
+    let prior = null;
     try {
-      const probe = 'sabri-welcome-storage-check';
+      // Never destroy a pre-existing value owned by another script. The
+      // temporary probe has no device identifier and is not transmitted.
+      prior = storage.getItem(probe);
       storage.setItem(probe, '1');
-      if (storage.getItem(probe) !== '1') return false;
-      storage.removeItem(probe);
-      return true;
+      const writable = storage.getItem(probe) === '1';
+      if (prior === null) storage.removeItem(probe);
+      else storage.setItem(probe, prior);
+      return writable;
     } catch (_) {
+      try {
+        if (prior === null) storage.removeItem(probe);
+        else storage.setItem(probe, prior);
+      } catch (ignored) {}
       return false;
     }
   }
