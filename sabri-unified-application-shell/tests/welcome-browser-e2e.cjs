@@ -94,6 +94,12 @@ function storageSnapshot() {
       const stored = await page.evaluate(storageSnapshot);
       assert.deepEqual(stored, [dismissed]);
     });
+    await caseOf('Manual route cannot bypass clinical SPA hash suppression', async () => {
+      await page.goto(base + '?sabri_welcome=manual#/clinical/case', { waitUntil: 'domcontentloaded' });
+      assert.equal(await page.locator('#sabri-shell-welcome').evaluate(el => el.hidden), true);
+      assert.deepEqual(await page.evaluate(storageSnapshot), [dismissed],
+        'Manual clinical hash must not change device preference');
+    });
     await caseOf('A completed 30-day period permits new automatic visit', async () => {
       await page.goto(base, { waitUntil: 'domcontentloaded' });
       await page.evaluate(() => {
