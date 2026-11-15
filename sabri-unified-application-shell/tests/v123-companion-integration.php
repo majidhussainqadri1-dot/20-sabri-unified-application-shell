@@ -34,6 +34,9 @@ namespace {
 	function wp_json_encode( $s ) { return json_encode( $s ); }
 	function get_option( $name, $default = false ) { return $GLOBALS['welcome_options'][ $name ] ?? $default; }
 	function is_admin() { return false; }
+	function is_user_logged_in() { return ! empty( $GLOBALS['welcome_logged_in'] ); }
+	function current_user_can( $cap ) { return 'manage_options' === $cap && ! empty( $GLOBALS['welcome_manage_options'] ); }
+	function get_current_user_id() { return absint( $GLOBALS['welcome_user_id'] ?? 0 ); }
 	function wp_doing_ajax() { return false; }
 	function is_feed() { return false; }
 	function is_404() { return false; }
@@ -54,9 +57,9 @@ namespace {
 	}
 	class SMC_Contracts {
 		public static function assertions( $user_id ) {
-			return array(
+			return $GLOBALS['welcome_claim_override'] ?? array(
 				'user_id' => (int) $user_id,
-				'account_class' => 'founder',
+				'account_class' => 91 === (int) $user_id ? 'founder' : 'member',
 				'approved' => true, 'eligible' => true, 'suspended' => false,
 			);
 		}
@@ -92,6 +95,26 @@ namespace {
 	$owner = \Sabri\UnifiedShell\WelcomeExperience::class;
 	$contract = \Sabri\PublicExperience\Design_System::class;
 	$check( ! $owner::public_eligible(), 'Disabled default cannot show welcome.' );
+	$GLOBALS['welcome_logged_in'] = true;
+	$GLOBALS['welcome_manage_options'] = true;
+	$GLOBALS['welcome_user_id'] = 91;
+	$check( $owner::operator_authorized( 91 ), 'Canonical File00 Founder with current native admin capability is an operator.' );
+	$check( $owner::founder_authorized( 91 ), 'Current Founder claim is valid.' );
+	$GLOBALS['welcome_manage_options'] = false;
+	$check( ! $owner::operator_authorized( 91 ), 'File00 Founder identity alone is insufficient without native capability.' );
+	$GLOBALS['welcome_manage_options'] = true;
+	$GLOBALS['welcome_user_id'] = 17;
+	$check( ! $owner::operator_authorized( 17 ), 'WordPress administrator without File00 institutional status cannot edit.' );
+	$check( ! $owner::founder_authorized( 17 ), 'Admin or member cannot sign Founder approval.' );
+	$GLOBALS['welcome_claim_override'] = array( 'user_id' => 17, 'account_class' => 'administrator', 'approved' => true, 'eligible' => true, 'suspended' => true );
+	$check( ! $owner::operator_authorized( 17 ), 'Suspended File00 Administrator is denied.' );
+	$GLOBALS['welcome_claim_override']['suspended'] = false;
+	$check( $owner::operator_authorized( 17 ), 'Approved eligible File00 Administrator plus native capability is allowed to draft.' );
+	$GLOBALS['welcome_claim_override']['eligible'] = false;
+	$check( ! $owner::operator_authorized( 17 ), 'File00 ineligible Administrator cannot read or edit welcome config.' );
+	unset( $GLOBALS['welcome_claim_override'] );
+	$GLOBALS['welcome_user_id'] = 91;
+
 	$GLOBALS['welcome_options'][ $owner::OPTION ] = array_replace(
 		$owner::defaults(), array( 'enabled' => true, 'message' => 'Learn classical homeopathy' )
 	);
