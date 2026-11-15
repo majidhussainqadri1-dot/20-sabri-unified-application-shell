@@ -178,10 +178,42 @@ final class WelcomeExperience {
 	}
 
 	private static function visual_available() {
-		return defined( 'SABRI_PUBLIC_EXPERIENCE_VERSION' )
-			&& version_compare( (string) SABRI_PUBLIC_EXPERIENCE_VERSION, '0.15.0', '>=' )
-			&& function_exists( 'sabri_visual_experience_render_welcome' )
-			&& class_exists( 'Sabri\\PublicExperience\\Three_Plan_Corrections' );
+		if ( ! defined( 'SABRI_PUBLIC_EXPERIENCE_VERSION' ) ||
+			version_compare( (string) SABRI_PUBLIC_EXPERIENCE_VERSION, '0.15.0', '<' ) ||
+			! defined( 'SABRI_PUBLIC_EXPERIENCE_DIR' ) ||
+			! function_exists( 'sabri_visual_experience_render_welcome' ) ||
+			! class_exists( 'Sabri\\PublicExperience\\Three_Plan_Corrections' ) ||
+			! class_exists( 'Sabri\\PublicExperience\\Design_System' ) ) {
+			return false;
+		}
+		$callback = array( 'Sabri\\PublicExperience\\Design_System', 'filter_shell_visual_contract' );
+		if ( ! function_exists( 'has_filter' ) || false === has_filter( 'sabri_shell_file25_visual_contract', $callback ) ) {
+			return false;
+		}
+		try {
+			$renderer = ( new \ReflectionClass( 'Sabri\\PublicExperience\\Three_Plan_Corrections' ) )->getFileName();
+			$canonical = realpath( SABRI_PUBLIC_EXPERIENCE_DIR . 'includes/class-three-plan-corrections.php' );
+			if ( false === $canonical || realpath( $renderer ) !== $canonical ) { return false; }
+		} catch ( \Throwable $error ) {
+			unset( $error );
+			return false;
+		}
+		$contract = apply_filters( 'sabri_shell_file25_visual_contract', array() );
+		if ( ! is_array( $contract ) || 'file-25' !== (string) ( $contract['owner'] ?? '' ) ||
+			! is_string( $contract['version'] ?? null ) ||
+			! preg_match( '/^\d+\.\d+\.\d+$/', $contract['version'] ) ||
+			version_compare( $contract['version'], '1.9.0', '<' ) ||
+			version_compare( $contract['version'], '2.0.0', '>=' ) ||
+			! is_array( $contract['tokens'] ?? null ) ) {
+			return false;
+		}
+		foreach ( array( 'primary_color', 'text', 'surface_strong' ) as $token ) {
+			if ( ! is_string( $contract['tokens'][ $token ] ?? null ) ||
+				! preg_match( '/^#[0-9a-fA-F]{6}$/', $contract['tokens'][ $token ] ) ) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private static function panel( array $config ) {
