@@ -72,7 +72,7 @@
       function normalizedPath(raw) {
         try {
           const path = decodeURIComponent(String(raw || '/'));
-          if (path.includes('\\') || path.includes('\\0') || path.includes('..') ||
+          if (path.includes('\\') || path.includes('\0') || path.includes('..') ||
               /%(?:2e|2f|5c|00|0a|0d|7f)/i.test(path)) return null;
           return path.replace(/\/+$/, '') || '/';
         } catch (_) { return null; }
