@@ -30,6 +30,16 @@ function storageSnapshot() {
     await caseOf('First eligible guest visit displays nonblocking File25 welcome', async () => {
       const response = await page.goto(base, { waitUntil: 'domcontentloaded' });
       assert.ok(response && response.status() < 400, 'WordPress homepage HTTP response');
+      const diagnostics = await page.evaluate(() => ({
+        title: document.title,
+        welcomeCount: document.querySelectorAll('#sabri-shell-welcome').length,
+        clientConfig: window.SABRI_SHELL_WELCOME || null,
+        script: [...document.scripts].filter(n => (n.src||'').includes('welcome')).map(n => n.src),
+        plugins: [...document.querySelectorAll('link[rel="stylesheet"]')].filter(n => (n.href||'').includes('sabri')).map(n => n.href),
+        page: document.documentElement.outerHTML.slice(0, 2100),
+      }));
+      process.stdout.write('WELCOME_BROWSER_DIAGNOSTICS ' + JSON.stringify(diagnostics) + '\\n');
+      if (diagnostics.welcomeCount === 0) throw Error('Server omitted File20 host; inspect public_eligible/contract and server logs');
       await visible(page);
       assert.ok(await page.locator('main, [role="main"]').count(), 'Underlying content is present');
       assert.ok(await page.locator('[data-sabri-welcome-skip]').count());
