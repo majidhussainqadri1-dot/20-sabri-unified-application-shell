@@ -130,12 +130,24 @@ final class WelcomeExperience {
 		return false;
 	}
 
+	/** Resolve the actual public home path (including WordPress subdirectory). */
+	public static function home_path() {
+		$path = wp_parse_url( home_url( '/' ), PHP_URL_PATH );
+		return self::normalize_path( is_string( $path ) ? $path : '/' );
+	}
+
 	public static function route_eligible( $request_uri, array $config ) {
 		$parts = wp_parse_url( (string) $request_uri );
 		if ( ! is_array( $parts ) || isset( $parts['scheme'] ) || isset( $parts['host'] ) || isset( $parts['user'] ) || isset( $parts['pass'] ) || ! empty( $parts['query'] ) || ! empty( $parts['fragment'] ) ) { return false; }
 		$path = self::normalize_path( (string) ( $parts['path'] ?? '/' ) );
 		if ( '' === $path || self::sensitive_path( $path ) ) { return false; }
-		return in_array( $path, $config['eligible_paths'], true );
+		$base_path = self::home_path();
+		foreach ( (array) $config['eligible_paths'] as $allowed ) {
+			$allowed = self::normalize_path( $allowed );
+			$absolute = '/' === $allowed ? $base_path : self::normalize_path( rtrim( $base_path, '/' ) . $allowed );
+			if ( '' !== $absolute && $path === $absolute ) { return true; }
+		}
+		return false;
 	}
 
 	public static function public_eligible() {
@@ -168,7 +180,7 @@ final class WelcomeExperience {
 		$parts = wp_parse_url( (string) $request_uri );
 		return is_array( $parts )
 			&& ! isset( $parts['host'] ) && ! isset( $parts['scheme'] )
-			&& '/' === self::normalize_path( $parts['path'] ?? '/' )
+			&& self::home_path() === self::normalize_path( $parts['path'] ?? '/' )
 			&& 'sabri_welcome=manual' === (string) ( $parts['query'] ?? '' );
 	}
 
@@ -246,7 +258,7 @@ final class WelcomeExperience {
 		wp_add_inline_script(
 			'sabri-shell-welcome-controller',
 			'window.SABRI_SHELL_WELCOME=' . wp_json_encode( array(
-				'storageKey' => self::STORAGE_KEY,
+				'storageKey' => self::STORAGE_KEY . '-' . substr( hash( 'sha256', home_url( '/' ) ), 0, 12 ),
 				'days' => self::DAYS,
 				'copyVersion' => self::configuration()['copy_version'],
 				'manual' => self::manual_requested( isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '/' ),
