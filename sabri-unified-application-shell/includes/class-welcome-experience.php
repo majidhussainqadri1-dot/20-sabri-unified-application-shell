@@ -45,7 +45,7 @@ final class WelcomeExperience {
 	/** Only the File 20 owner may read and enforce this bounded preference. */
 	public static function configuration() {
 		$stored = get_option( self::OPTION, array() );
-		return self::sanitize( is_array( $stored ) ? $stored : array(), self::defaults() );
+		return self::sanitize( is_array( $stored ) ? $stored : array(), is_array( $stored ) ? $stored : self::defaults() );
 	}
 
 	public static function sanitize( array $input, array $base ) {
@@ -254,7 +254,7 @@ final class WelcomeExperience {
 			$old = get_option( self::OPTION, false );
 		}
 		$old = is_array( $old ) ? $old : self::defaults();
-		$base = self::sanitize( $old, self::defaults() );
+		$base = self::sanitize( $old, $old );
 		if ( $expected !== absint( $base['config_version'] ) ) {
 			wp_die( 'Configuration was modified in another session. Reload and retry.', '', array( 'response' => 409 ) );
 		}
