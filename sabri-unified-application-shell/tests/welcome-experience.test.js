@@ -84,6 +84,8 @@ test('DOM controller shows non-modal panel and closes immediately on Skip', () =
   assert.equal(c.shown(), true);
   assert.equal(a.panel.hidden, false);
   assert.equal(a.sessionStorage.getItem(KEY + ':seen'), '1');
+  assert.ok(Number(a.localStorage.getItem(KEY)) >= Date.now() + 30 * DAY_MS - 10000,
+    'Initial display itself must start the 30-day device interval');
   a.callbacks['skip:click']();
   assert.equal(c.shown(), false);
   assert.equal(a.panel.hidden, true);
@@ -136,7 +138,7 @@ test('Client URL hash/query suppresses automation before browser preference is t
   assert.equal(controller.createController(b.win, b.doc, { storageKey: KEY, serverPath: '/' }), null);
   assert.equal(b.panel.hidden, true);
 });
-test('Client-side SPA navigation closes visible welcome without dismissal persistence', () => {
+test('Client-side SPA navigation closes welcome but retains 30-day first-view state', () => {
   const a = environment();
   a.win.location = { pathname: '/', search: '', hash: '' };
   const c = controller.createController(a.win, a.doc, { storageKey: KEY, serverPath: '/' });
@@ -145,7 +147,22 @@ test('Client-side SPA navigation closes visible welcome without dismissal persis
   a.events.hashchange({});
   assert.equal(c.shown(), false);
   assert.equal(a.panel.hidden, true);
-  assert.equal(a.localStorage.getItem(KEY), null);
+  assert.ok(Number(a.localStorage.getItem(KEY)) >= Date.now() + 30 * DAY_MS - 10000,
+    'Seen-first-visit state persists even when SPA route changes before a click');
+});
+test('Storage writes failing during first view keep welcome hidden', () => {
+  const a = environment();
+  a.localStorage.setItem = () => { throw Error('Storage quota revoked'); };
+  const c = controller.createController(a.win, a.doc, { storageKey: KEY, days: 30 });
+  assert.equal(c.shown(), false);
+  assert.equal(a.panel.hidden, true);
+});
+test('New browser session cannot repeat a viewed welcome without explicit dismissal', () => {
+  const a = environment();
+  const first = controller.createController(a.win, a.doc, { storageKey: KEY, days: 30 });
+  assert.equal(first.shown(), true);
+  const freshSession = store();
+  assert.equal(controller.canAutoShow(a.localStorage, freshSession, KEY, Date.now() + 1000), false);
 });
 test('Manual welcome remains usable without localStorage and never changes recurrence', () => {
   const a = environment();
@@ -169,4 +186,4 @@ test('Storage failure still exposes ordinary underlying content', () => {
   try { controller.createController(a.win, a.doc, { storageKey: KEY }); } catch (_) { a.panel.hidden = true; }
   assert.equal(a.panel.hidden, true);
 });
-if (!process.exitCode) process.stdout.write('File20 V12.3 welcome JS behavior: 14 cases passed\n');
+if (!process.exitCode) process.stdout.write('File20 V12.3 welcome JS behavior: 16 cases passed\n');
