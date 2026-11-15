@@ -450,7 +450,7 @@ final class WelcomeExperience {
 				absint( $claims['user_id'] ?? 0 ) !== $user_id ||
 				true !== (bool) ( $claims['approved'] ?? false ) ||
 				true !== (bool) ( $claims['eligible'] ?? false ) ||
-				true !== (bool) ( $claims['suspended'] ?? true ) ) {
+				false !== (bool) ( $claims['suspended'] ?? true ) ) {
 				return array();
 			}
 			return $claims;
