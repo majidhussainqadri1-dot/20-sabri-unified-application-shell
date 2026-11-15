@@ -53,6 +53,12 @@ jobs:
           repository: majidhussainqadri1-dot/13-sabri-welcome-intro-animation
           ref: 62e6e19a88b16c3fbb483b9bc51a944f361cc6f3
           path: file13
+      - name: Checkout exact real File24 native security owner
+        uses: actions/checkout@v5
+        with:
+          repository: majidhussainqadri1-dot/24-sabri-platform-security-privacy-compliance-and-resilience-center
+          ref: a5b8d49968a7a5a7d6f3f4655bea541bf38a9acb
+          path: file24
       - name: Checkout actual canonical File00 membership authority
         uses: actions/checkout@v5
         with:
@@ -95,6 +101,7 @@ jobs:
           cp -a file20/sabri-unified-application-shell wordpress/wp-content/plugins/
           cp -a file00/source/sabri-membership-core wordpress/wp-content/plugins/
           cp -a file13/sabri-welcome-intro-13 wordpress/wp-content/plugins/
+          cp -a file24/plugin/sabri-security-center wordpress/wp-content/plugins/
           mkdir -p wordpress/wp-content/plugins/sabri-public-experience
           rsync -a --exclude=".git" --exclude="build" \
             file25/ wordpress/wp-content/plugins/sabri-public-experience/
@@ -108,6 +115,7 @@ jobs:
           ${W} option update smc_founder_user_id 1
           ${W} plugin activate sabri-unified-application-shell
           ${W} plugin activate sabri-public-experience
+          ${W} plugin activate sabri-security-center
           ${W} plugin list --fields=name,status,version --format=table
           test "$(${W} core version)" = "${{ matrix.wp }}"
       - name: Execute real WordPress 7.0.1/7.1.4 plugin contract smoke
