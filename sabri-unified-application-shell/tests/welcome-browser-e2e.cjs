@@ -55,6 +55,16 @@ function storageSnapshot() {
       const notes = result.violations.map(v => v.id + ': ' + v.help).join('; ');
       assert.equal(result.violations.length, 0, 'WCAG 2.2 violations within welcome region: ' + notes);
     });
+    await caseOf('First presentation suppresses a fresh session even with no Skip/Close click', async () => {
+      const original = await page.evaluate(storageSnapshot);
+      assert.equal(original.length, 1, 'First shown visit must record minimum device preference');
+      assert.ok(original[0].until >= Date.now() + toMs - 30000, 'First-view state valid for full 30 days');
+      const fresh = await context.newPage();
+      await fresh.goto(base, { waitUntil: 'domcontentloaded' });
+      assert.equal(await fresh.locator('#sabri-shell-welcome').evaluate(el => el.hidden), true,
+        'New browser tab/session cannot force repeated first-view welcome');
+      await fresh.close();
+    });
     let dismissed = null;
     await caseOf('Skip hides immediately and persists a full 30 days', async () => {
       await page.locator('[data-sabri-welcome-skip]').click();
