@@ -183,7 +183,8 @@ final class WelcomeExperience {
 	public static function public_eligible() {
 		if ( is_admin() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) { return false; }
 		if ( defined( 'SABRI_SHELL_DISABLE_WELCOME' ) && SABRI_SHELL_DISABLE_WELCOME ) { return false; }
-		if ( SafeMode::disabled() || false !== get_option( self::AUDIT_GAP_OPTION, false ) ) { return false; }
+		if ( SafeMode::disabled() || true === apply_filters( 'spcrc/file20_safe_mode_active', false ) ||
+			false !== get_option( self::AUDIT_GAP_OPTION, false ) ) { return false; }
 		if ( function_exists( 'is_feed' ) && is_feed() ) { return false; }
 		if ( function_exists( 'is_404' ) && is_404() ) { return false; }
 		if ( in_array( Layout::current_mode(), array( Layout::MINIMAL, Layout::IMMERSIVE ), true ) ) { return false; }
@@ -524,9 +525,9 @@ final class WelcomeExperience {
 			$claims = \SMC_Contracts::assertions( $user_id );
 			if ( ! is_array( $claims ) ||
 				absint( $claims['user_id'] ?? 0 ) !== $user_id ||
-				true !== (bool) ( $claims['approved'] ?? false ) ||
-				true !== (bool) ( $claims['eligible'] ?? false ) ||
-				false !== (bool) ( $claims['suspended'] ?? true ) ) {
+				true !== ( $claims['approved'] ?? false ) ||
+				true !== ( $claims['eligible'] ?? false ) ||
+				false !== ( $claims['suspended'] ?? true ) ) {
 				return array();
 			}
 			return $claims;
