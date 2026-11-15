@@ -25,6 +25,13 @@ WP_CLI::log( 'File25 bootstrap state: ' . wp_json_encode( array(
 ) ) );
 $assert( defined( 'SABRI_SHELL_VERSION' ), 'File20 must actually be active.' );
 $assert( defined( 'SABRI_PUBLIC_EXPERIENCE_VERSION' ), 'File25 must actually be active.' );
+$assert( defined( 'SWI_VERSION' ) && class_exists( 'Sabri\\WelcomeIntro\\Settings' ),
+	'File13 historical compatibility plugin must load without owner collision.' );
+$legacy = \Sabri\WelcomeIntro\Settings::get();
+$assert( is_array( $legacy ) && empty( $legacy['enabled'] ) && empty( $legacy['analytics_enabled'] ) &&
+	'disabled' === ( $legacy['status'] ?? '' ), 'File13 remains hard-disabled for public intro/analytics.' );
+$assert( false === has_action( 'wp_body_open', array( 'Sabri\\WelcomeIntro\\Renderer', 'render' ) ),
+	'File13 must not register a duplicate automatic public body renderer.' );
 $assert( version_compare( PHP_VERSION, '8.3', '>=' ), 'PHP 8.3 baseline required.' );
 $assert( class_exists( 'Sabri\\UnifiedShell\\WelcomeExperience' ), 'File20 welcome class autoload.' );
 $assert( class_exists( 'Sabri\\PublicExperience\\Three_Plan_Corrections' ), 'File25 presentation class autoload.' );
