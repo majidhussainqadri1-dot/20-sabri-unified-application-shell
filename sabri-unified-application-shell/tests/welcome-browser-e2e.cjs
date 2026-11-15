@@ -52,6 +52,10 @@ function storageSnapshot() {
     await caseOf('Skip hides immediately and persists a full 30 days', async () => {
       await page.locator('[data-sabri-welcome-skip]').click();
       assert.equal(await page.locator('#sabri-shell-welcome').evaluate(el => el.hidden), true);
+      assert.equal(await page.evaluate(() => {
+        const active = document.activeElement;
+        return active !== null && (active.matches('main, [role="main"], #content, h1'));
+      }), true, 'Keyboard focus restored to the main region rather than hidden Skip button');
       const stored = await page.evaluate(storageSnapshot);
       assert.equal(stored.length, 1, 'Only one site-local dismissal preference');
       assert.ok(stored[0].until >= Date.now() + toMs - 30000, '30 complete days');
@@ -72,6 +76,18 @@ function storageSnapshot() {
       assert.equal(await page.locator('#sabri-shell-welcome').evaluate(el => el.hidden), true);
       const stored = await page.evaluate(storageSnapshot);
       assert.deepEqual(stored, [dismissed]);
+    });
+    await caseOf('A completed 30-day period permits new automatic visit', async () => {
+      await page.goto(base, { waitUntil: 'domcontentloaded' });
+      await page.evaluate(() => {
+        const key = Object.keys(localStorage).find(k => k.startsWith('sabri-shell-welcome-dismiss-until-v1-'));
+        if (!key) throw Error('30-day preference does not exist');
+        localStorage.setItem(key, String(Date.now() - 1000));
+      });
+      const newTab = await context.newPage();
+      await newTab.goto(base, { waitUntil: 'domcontentloaded' });
+      await visible(newTab);
+      await newTab.close();
     });
     await context.close();
 
