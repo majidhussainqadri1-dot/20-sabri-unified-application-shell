@@ -137,6 +137,15 @@ jobs:
           SABRI_WP_TEST_URL=http://127.0.0.1:8888/ \
             SABRI_CI_SCREENSHOT="${RUNNER_TEMP}/sabri-welcome-mobile.png" \
             node file20/sabri-unified-application-shell/tests/welcome-browser-e2e.cjs
+          # Genuine WordPress site-locale round trips; all data remains ephemeral.
+          for locale in ur ar; do
+            ${W} option update WPLANG "${locale}"
+            SABRI_E2E_LOCALE="${locale}" \
+              SABRI_WP_TEST_URL=http://127.0.0.1:8888/ \
+              SABRI_CI_SCREENSHOT="${RUNNER_TEMP}/sabri-welcome-${locale}.png" \
+              node file20/sabri-unified-application-shell/tests/welcome-locale-e2e.cjs
+          done
+          ${W} option update WPLANG en_US
       - name: Print private CI WordPress server error log on browser failure
         if: failure() && matrix.wp == '7.1.4'
         run: tail -n 120 "${RUNNER_TEMP}/sabri-welcome-http.log" || true
@@ -150,6 +159,8 @@ jobs:
           path: |
             ${{ runner.temp }}/sabri-welcome-http.log
             ${{ runner.temp }}/sabri-welcome-mobile.png
+            ${{ runner.temp }}/sabri-welcome-ur.png
+            ${{ runner.temp }}/sabri-welcome-ar.png
       - name: Truth boundary
         run: |
           echo "Isolated WordPress core + ephemeral MySQL/plugin smoke only."
