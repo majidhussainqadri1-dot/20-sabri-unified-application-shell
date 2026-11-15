@@ -64,7 +64,6 @@
     // URL fragments are invisible to PHP. A client-side appointment or account
     // route must not unexpectedly inherit an eligible server-rendered homepage.
     function routeStillEligible() {
-      if (configuration.manual === true) return true;
       if (!win.location) return true; // Pure CI fixture without a DOM URL.
       // PHP normalizes request slugs with rawurldecode, whereas browsers
       // expose location.pathname in percent-encoded form. Decode exactly once
@@ -81,8 +80,11 @@
       }
       const actualPath = normalizedPath(win.location.pathname);
       const serverPath = normalizedPath(configuration.serverPath || win.location.pathname);
+      const queryAllowed = configuration.manual === true
+        ? win.location.search === '?sabri_welcome=manual'
+        : !win.location.search;
       return actualPath !== null && serverPath !== null &&
-        !win.location.hash && !win.location.search && actualPath === serverPath;
+        !win.location.hash && queryAllowed && actualPath === serverPath;
     }
     if (!routeStillEligible()) {
       panel.hidden = true;
