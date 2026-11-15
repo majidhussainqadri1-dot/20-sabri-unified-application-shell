@@ -656,9 +656,16 @@ final class WelcomeExperience {
 		);
 		if ( ! self::append_audit( $record ) ) { return false; }
 		delete_option( self::APPROVAL_OPTION );
-		delete_option( self::AUDIT_GAP_OPTION );
+		// A second concurrent failure may have replaced this gap during the
+		// review. Never delete a newer fault marker by option name alone.
+		global $wpdb;
+		$cleared = $wpdb->query( $wpdb->prepare(
+			"DELETE FROM {$wpdb->options} WHERE option_name=%s AND option_value=%s",
+			self::AUDIT_GAP_OPTION, maybe_serialize( $gap )
+		) );
+		self::invalidate_option_cache( self::AUDIT_GAP_OPTION );
 		self::purge_public_cache();
-		return false === get_option( self::AUDIT_GAP_OPTION, false );
+		return 1 === $cleared && false === get_option( self::AUDIT_GAP_OPTION, false );
 	}
 
 	public static function reconcile_audit_action() {
