@@ -54,6 +54,16 @@ $assert( ! $owner::public_eligible(), 'Authenticated Founder cannot see approved
 wp_set_current_user( 0 );
 $_SERVER['REQUEST_URI'] = '/';
 $assert( $owner::public_eligible(), 'Fresh anonymous visitor may see approved welcome at canonical home.' );
+$assert( ! $owner::file24_containment_active(), 'Current real File24 registry has no incident containment in CI.' );
+$containment = static function ( $records ) {
+	$records['ci-only-lockdown'] = array( 'state' => 'incident-containment', 'status' => 'open' );
+	return $records;
+};
+add_filter( 'spcrc/security_state_requests', $containment, 999 );
+$assert( $owner::file24_containment_active(), 'File24 security containment must suppress optional intro.' );
+$assert( ! $owner::public_eligible(), 'File24 incident containment must block approved guest welcome.' );
+remove_filter( 'spcrc/security_state_requests', $containment, 999 );
+$assert( $owner::public_eligible(), 'Cleared File24 test containment restores unchanged Founder-approved guest eligibility.' );
 wp_set_current_user( $user_id );
 $ur = $owner::localized_panel_copy( $verified, 'ur_PK' );
 $ar = $owner::localized_panel_copy( $verified, 'ar_SA' );
