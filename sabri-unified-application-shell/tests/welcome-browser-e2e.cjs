@@ -4,6 +4,7 @@
 'use strict';
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
+const AxeBuilder = require('@axe-core/playwright').default;
 
 const base = process.env.SABRI_WP_TEST_URL || 'http://127.0.0.1:8888/';
 const toMs = 30 * 86400000;
@@ -48,6 +49,12 @@ function storageSnapshot() {
       assert.equal(await page.locator('[aria-live="polite"]').count() > 0, true);
     });
     if (process.exitCode) throw Error('Stop at first HTTP/frontend gate until the cause is established.');
+    await caseOf('Welcome controls pass automated WCAG 2.2 A/AA checks', async () => {
+      const result = await new AxeBuilder({ page }).include('#sabri-shell-welcome')
+        .withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']).analyze();
+      const notes = result.violations.map(v => v.id + ': ' + v.help).join('; ');
+      assert.equal(result.violations.length, 0, 'WCAG 2.2 violations within welcome region: ' + notes);
+    });
     let dismissed = null;
     await caseOf('Skip hides immediately and persists a full 30 days', async () => {
       await page.locator('[data-sabri-welcome-skip]').click();
