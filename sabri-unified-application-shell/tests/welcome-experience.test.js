@@ -52,6 +52,14 @@ test('First eligible browser with storage can display without tracking', () => {
   const a = environment();
   assert.equal(controller.canAutoShow(a.localStorage, a.sessionStorage, KEY, 2000000000000), true);
 });
+test('Temporary writable-storage probe cannot destroy an existing value', () => {
+  const a = environment();
+  a.localStorage.setItem('sabri-welcome-storage-check', 'PRESERVE-OLD-VALUE');
+  assert.equal(controller.isStorageUsable(a.localStorage), true);
+  assert.equal(a.localStorage.getItem('sabri-welcome-storage-check'), 'PRESERVE-OLD-VALUE');
+  assert.equal(controller.canAutoShow(a.localStorage, a.sessionStorage, KEY, Date.now()), true);
+  assert.equal(a.localStorage.getItem('sabri-welcome-storage-check'), 'PRESERVE-OLD-VALUE');
+});
 test('No storage, blocked storage or malfunction always fail closed', () => {
   const s = store();
   const broken = { getItem() { throw Error('blocked'); }, setItem() { throw Error('blocked'); }, removeItem() {} };
@@ -207,4 +215,4 @@ test('Storage failure still exposes ordinary underlying content', () => {
   try { controller.createController(a.win, a.doc, { storageKey: KEY }); } catch (_) { a.panel.hidden = true; }
   assert.equal(a.panel.hidden, true);
 });
-if (!process.exitCode) process.stdout.write('File20 V12.3 welcome JS behavior: 17 cases passed\n');
+if (!process.exitCode) process.stdout.write('File20 V12.3 welcome JS behavior: 18 cases passed\n');
