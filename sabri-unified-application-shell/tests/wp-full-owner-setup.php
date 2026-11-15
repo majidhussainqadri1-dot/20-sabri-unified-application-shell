@@ -50,6 +50,11 @@ update_option( $owner::APPROVAL_OPTION, array(
 	'signature' => $signature,
 ), false );
 $assert( $owner::approval_valid( $verified ), 'Real File00 Founder claim + genuine File25 render approval mismatched.' );
+$assert( ! $owner::public_eligible(), 'Authenticated Founder cannot see approved automatic intro.' );
+wp_set_current_user( 0 );
+$_SERVER['REQUEST_URI'] = '/';
+$assert( $owner::public_eligible(), 'Fresh anonymous visitor may see approved welcome at canonical home.' );
+wp_set_current_user( $user_id );
 $ur = $owner::localized_panel_copy( $verified, 'ur_PK' );
 $ar = $owner::localized_panel_copy( $verified, 'ar_SA' );
 $assert( false !== strpos( $ur['title'], 'صابری' ) && 'چھوڑ دیں' === $ur['skip'], 'Real File20 Urdu variant/labels missing.' );
