@@ -49,5 +49,27 @@ update_option( $owner::APPROVAL_OPTION, array(
 	'signature' => $signature,
 ), false );
 $assert( $owner::approval_valid( $verified ), 'Real File00 Founder claim + genuine File25 render approval mismatched.' );
+$ur = $owner::localized_panel_copy( $verified, 'ur_PK' );
+$ar = $owner::localized_panel_copy( $verified, 'ar_SA' );
+$assert( false !== strpos( $ur['title'], 'صابری' ) && 'چھوڑ دیں' === $ur['skip'], 'Real File20 Urdu variant/labels missing.' );
+$assert( false !== strpos( $ar['title'], 'مرحبًا' ) && 'إغلاق' === $ar['close'], 'Real File20 Arabic variant/labels missing.' );
+$localized_markup = sabri_visual_experience_render_welcome( array(
+	'invoked_by_file_20' => true,
+	'title' => $ur['title'],
+	'message' => $ur['message'],
+	'continue_label' => $ur['continue'],
+	'skip_label' => $ur['skip'],
+	'close_label' => $ur['close'],
+	'continue_url' => home_url( '/' ),
+) );
+$assert( false !== strpos( $localized_markup, 'چھوڑ دیں' ) && false !== strpos( $localized_markup, 'dir="auto"' ),
+	'Genuine File25 bilingual markup not linked to File20 approved localized text.' );
+$draft = $verified;
+$draft['message_ur'] = 'متن میں تبدیلی';
+update_option( $owner::OPTION, $draft, false );
+$assert( ! $owner::approval_valid( $owner::configuration() ), 'Changing only Urdu approved copy must revoke prior Founder approval.' );
+update_option( $owner::OPTION, $verified, false );
+$assert( $owner::approval_valid( $owner::configuration() ), 'Restored byte-equivalent localization recovers exact approval digest.' );
+
 
 WP_CLI::success( 'Full owner File00+File20+File25 isolated CI activation, claims and explicit fixture approval passed.' );
