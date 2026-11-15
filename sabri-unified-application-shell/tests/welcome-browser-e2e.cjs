@@ -130,7 +130,15 @@ function storageSnapshot() {
     await caseOf('Mobile reduced-motion, Arabic/Urdu RTL stays in viewport', async () => {
       await mobile.goto(base, { waitUntil: 'domcontentloaded' });
       await visible(mobile);
-      await mobile.evaluate(() => { document.documentElement.dir = 'rtl'; });
+      await mobile.evaluate(() => { document.documentElement.dir = 'rtl'; document.documentElement.lang = 'ur'; });
+      const englishDirection = await mobile.locator('.sabri-ui-welcome-panel__message').evaluate(el => getComputedStyle(el).direction);
+      assert.equal(englishDirection, 'ltr', 'English copy must retain LTR even within Urdu UI.');
+      await mobile.evaluate(() => {
+        document.querySelector('#sabri-welcome-title').textContent = 'صابری سوشل ہومیوپیتھی میں خوش آمدید';
+        document.querySelector('.sabri-ui-welcome-panel__message').textContent = 'کلاسیکی ہومیوپیتھی سیکھیں اور عالمی برادری سے رابطہ کریں۔';
+      });
+      const urduDirection = await mobile.locator('.sabri-ui-welcome-panel__message').evaluate(el => getComputedStyle(el).direction);
+      assert.equal(urduDirection, 'rtl', 'Urdu source copy must retain RTL without JS layout patches.');
       const css = await mobile.locator('#sabri-shell-welcome').evaluate(el => {
         const style = getComputedStyle(el);
         return { animation: style.animationDuration, transition: style.transitionDuration,
