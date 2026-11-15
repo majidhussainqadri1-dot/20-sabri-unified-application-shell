@@ -175,7 +175,7 @@ final class WelcomeExperience {
 		if ( '' !== $config['start_at'] && ( $start = strtotime( $config['start_at'] ) ) !== false && $now < $start ) { return false; }
 		if ( '' !== $config['end_at'] && ( $end = strtotime( $config['end_at'] ) ) !== false && $now >= $end ) { return false; }
 		$uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '/';
-		if ( self::manual_requested( $uri ) ) { return self::route_eligible( '/', $config ); }
+		if ( self::manual_requested( $uri ) ) { return self::route_eligible( self::home_path(), $config ); }
 		return self::route_eligible( $uri, $config );
 	}
 
