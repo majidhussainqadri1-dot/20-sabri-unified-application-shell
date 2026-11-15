@@ -30,6 +30,18 @@ $config = WelcomeExperience::sanitize( array(
 ), $default );
 $assert( true === $config['enabled'], 'operator request preserved but separately approval-gated' );
 $assert( 30 === $config['frequency_days'], 'frequency cannot be shortened by an input option' );
+$english = WelcomeExperience::localized_panel_copy( $default, 'en_US' );
+$urdu = WelcomeExperience::localized_panel_copy( $default, 'ur_PK' );
+$arabic = WelcomeExperience::localized_panel_copy( $default, 'ar_SA' );
+$assert( 'Explore platform' === $english['continue'] && 'en' === $english['language'], 'American English remains canonical base.' );
+$assert( false !== strpos( $urdu['title'], 'صابری' ) && 'چھوڑ دیں' === $urdu['skip'], 'Urdu title and Skip are independently localized.' );
+$assert( false !== strpos( $arabic['title'], 'مرحبًا' ) && 'إغلاق' === $arabic['close'], 'Arabic copy and Close are independently localized.' );
+$assert( 'en' === WelcomeExperience::localized_panel_copy( $default, 'fr_FR' )['language'], 'Unsupported locale uses approved English fallback.' );
+$custom = $default;
+$custom['title_ur'] = 'درست شدہ عنوان';
+$assert( 'درست شدہ عنوان' === WelcomeExperience::localized_panel_copy( $custom, 'ur' )['title'], 'Founder-editable Urdu override renders without changing English.' );
+$assert( $default['title'] === WelcomeExperience::localized_panel_copy( $custom, 'en_US' )['title'], 'Localized copy never mutates source English text.' );
+
 $assert( null === WelcomeExperience::utc_timestamp( '' ), 'Empty UTC schedule is unbounded.' );
 $assert( 1794744000 === WelcomeExperience::utc_timestamp( '2026-11-15 12:00:00' ), 'UTC time is interpreted independently of server timezone.' );
 $assert( false === WelcomeExperience::utc_timestamp( '2026-02-30 12:00:00' ), 'Nonexistent calendar date is not accepted.' );
