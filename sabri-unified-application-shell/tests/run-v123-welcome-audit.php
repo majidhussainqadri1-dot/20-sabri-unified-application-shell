@@ -10,7 +10,8 @@ use Sabri\UnifiedShell\WelcomeExperience;
 function add_option( $key, $value ) { $GLOBALS['test_options'][ $key ] = $value; return true; }
 function maybe_serialize( $value ) { return serialize( $value ); }
 function maybe_unserialize( $value ) { return is_string( $value ) ? unserialize( $value, array( 'allowed_classes' => false ) ) : $value; }
-function wp_cache_delete( $key, $group = '' ) { return true; }
+function wp_cache_delete( $key, $group = '' ) { $GLOBALS['welcome_cache_deletes'][] = array( $key, $group ); return true; }
+function wp_json_encode( $value ) { return json_encode( $value ); }
 
 class WelcomeAuditDbDouble {
 	public $options = 'wp_options';
@@ -49,4 +50,30 @@ $assert( $original === $GLOBALS['test_options'][ WelcomeExperience::AUDIT_OPTION
 $gap = get_option( WelcomeExperience::AUDIT_GAP_OPTION, false );
 $assert( is_array( $gap ) && 'config_saved' === $gap['event'], 'Audit gap is persisted for manual reconciliation.' );
 $assert( ! WelcomeExperience::public_eligible(), 'Sticky audit gap blocks public intro.' );
-echo "File20 V12.3 CAS audit: 8 checks passed" . PHP_EOL;
+$assert( in_array( array( 'alloptions', 'options' ), $GLOBALS['welcome_cache_deletes'], true ),
+	'Direct SQL audit update invalidated WordPress alloptions cache.' );
+$assert( in_array( array( 'notoptions', 'options' ), $GLOBALS['welcome_cache_deletes'], true ),
+	'Direct SQL audit update invalidated WordPress notoptions cache.' );
+$GLOBALS['wpdb']->force_conflict = false;
+$GLOBALS['test_membership_assertions'][91] = array(
+	'user_id' => 91,
+	'account_class' => 'founder',
+	'approved' => true,
+	'eligible' => true,
+	'suspended' => false,
+);
+$GLOBALS['test_options'][ WelcomeExperience::APPROVAL_OPTION ] = array( 'signature' => 'old-approval' );
+$repair = new ReflectionMethod( WelcomeExperience::class, 'reconcile_gap' );
+$repair->setAccessible( true );
+$assert( false === $repair->invoke( null, 17 ), 'Unapproved operator cannot repair an audit gap.' );
+$assert( true === $repair->invoke( null, 91 ), 'Canonical Founder may append an explicit reconciliation record.' );
+$assert( false === get_option( WelcomeExperience::AUDIT_GAP_OPTION, false ),
+	'Sticky audit gap is removed only following a successful signed reconciliation.' );
+$assert( false === get_option( WelcomeExperience::APPROVAL_OPTION, false ),
+	'Founder approval invalidates after audit reconciliation.' );
+$records = get_option( WelcomeExperience::AUDIT_OPTION, array() );
+$last = end( $records );
+$assert( 'audit_gap_reconciled' === ( $last['event'] ?? '' ) &&
+		false === ( $last['historical_entries_reconstructed'] ?? true ),
+	'Recovery records provenance rather than fabricating missing history.' );
+echo "File20 V12.3 CAS audit: 15 checks passed" . PHP_EOL;
