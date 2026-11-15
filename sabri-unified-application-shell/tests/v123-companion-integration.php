@@ -104,6 +104,9 @@ namespace {
 	$_SERVER['REQUEST_URI'] = '/';
 	$check( $owner::approval_valid( $config ), 'File00 Founder assertion and exact visual digest accepted.' );
 	$check( $owner::public_eligible(), 'First eligible homepage authorized only after valid approval.' );
+	$GLOBALS['welcome_options'][ $owner::AUDIT_GAP_OPTION ] = array( 'event' => 'config_saved' );
+	$check( ! $owner::public_eligible(), 'Unreconciled configuration audit gap blocks approved welcome.' );
+	unset( $GLOBALS['welcome_options'][ $owner::AUDIT_GAP_OPTION ] );
 	$_SERVER['REQUEST_URI'] = '/?appointment=42';
 	$check( ! $owner::public_eligible(), 'Homepage task/deep-link query blocked.' );
 	$_SERVER['REQUEST_URI'] = '/';
