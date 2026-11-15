@@ -68,9 +68,20 @@
       panel.hidden = true;
       shown = false;
       const focused = doc.activeElement;
-      if (focused && panel.contains(focused) && priorFocus &&
-          typeof priorFocus.focus === 'function' && doc.contains(priorFocus)) {
-        priorFocus.focus();
+      if (focused && panel.contains(focused)) {
+        let target = priorFocus && typeof priorFocus.focus === 'function' &&
+          doc.contains(priorFocus) && priorFocus !== doc.body ? priorFocus : null;
+        if (!target && typeof doc.querySelector === 'function') {
+          target = doc.querySelector('main, [role="main"], #content, h1');
+          if (target && typeof target.setAttribute === 'function' &&
+              typeof target.hasAttribute === 'function' && !target.hasAttribute('tabindex')) {
+            target.setAttribute('tabindex', '-1');
+          }
+        }
+        if (target && typeof target.focus === 'function') {
+          try { target.focus({ preventScroll: true }); }
+          catch (_) { target.focus(); }
+        }
       }
     }
 
