@@ -14,6 +14,15 @@ $assert = static function ( $condition, $why ) use ( $fail ) {
 	if ( ! $condition ) { $fail( $why ); }
 };
 
+WP_CLI::log( 'Loaded plugin files: ' . implode( ', ', array_filter( (array) get_option( 'active_plugins', array() ), 'is_string' ) ) );
+WP_CLI::log( 'File25 bootstrap state: ' . wp_json_encode( array(
+	'version' => defined( 'SABRI_PUBLIC_EXPERIENCE_VERSION' ) ? SABRI_PUBLIC_EXPERIENCE_VERSION : 'missing',
+	'file' => defined( 'SABRI_PUBLIC_EXPERIENCE_FILE' ) ? SABRI_PUBLIC_EXPERIENCE_FILE : 'missing',
+	'bootstrap_function' => function_exists( 'sabri_public_experience_bootstrap' ),
+	'include' => array_values( array_filter( get_included_files(), static function ( $p ) {
+		return false !== strpos( $p, 'sabri-public-experience.php' );
+	} ) ),
+) ) );
 $assert( defined( 'SABRI_SHELL_VERSION' ), 'File20 must actually be active.' );
 $assert( defined( 'SABRI_PUBLIC_EXPERIENCE_VERSION' ), 'File25 must actually be active.' );
 $assert( version_compare( PHP_VERSION, '8.3', '>=' ), 'PHP 8.3 baseline required.' );
