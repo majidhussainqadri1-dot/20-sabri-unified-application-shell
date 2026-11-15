@@ -16,6 +16,7 @@ function wp_json_encode( $value ) { return json_encode( $value ); }
 class WelcomeAuditDbDouble {
 	public $options = 'wp_options';
 	public $force_conflict = false;
+	public $mutate_gap_on_delete = false;
 	public $write_count = 0;
 	public function prepare( $sql, ...$args ) { return array( $sql, $args ); }
 	public function get_row( $statement, $mode ) {
@@ -26,6 +27,17 @@ class WelcomeAuditDbDouble {
 		$this->write_count++;
 		if ( $this->force_conflict ) { return 0; }
 		$args = $statement[1];
+		if ( 0 === strpos( $statement[0], 'DELETE FROM ' ) ) {
+			if ( $this->mutate_gap_on_delete ) {
+				$GLOBALS['test_options'][ WelcomeExperience::AUDIT_GAP_OPTION ]['event'] = 'concurrent_new_gap';
+			}
+			$persisted = serialize( $GLOBALS['test_options'][ WelcomeExperience::AUDIT_GAP_OPTION ] ?? array() );
+			if ( WelcomeExperience::AUDIT_GAP_OPTION !== (string) $args[0] || (string) $args[1] !== $persisted ) {
+				return 0;
+			}
+			unset( $GLOBALS['test_options'][ WelcomeExperience::AUDIT_GAP_OPTION ] );
+			return 1;
+		}
 		$old = serialize( $GLOBALS['test_options'][ WelcomeExperience::AUDIT_OPTION ] );
 		if ( (string) $args[3] !== $old ) { return 0; }
 		$GLOBALS['test_options'][ WelcomeExperience::AUDIT_OPTION ] = unserialize( (string) $args[0], array( 'allowed_classes' => false ) );
@@ -76,4 +88,12 @@ $last = end( $records );
 $assert( 'audit_gap_reconciled' === ( $last['event'] ?? '' ) &&
 		false === ( $last['historical_entries_reconstructed'] ?? true ),
 	'Recovery records provenance rather than fabricating missing history.' );
-echo "File20 V12.3 CAS audit: 15 checks passed" . PHP_EOL;
+$GLOBALS['test_options'][ WelcomeExperience::AUDIT_GAP_OPTION ] = array(
+	'event' => 'first_gap', 'detected_at' => '2026-11-15T00:00:00Z',
+);
+$GLOBALS['wpdb']->mutate_gap_on_delete = true;
+$assert( false === $repair->invoke( null, 91 ), 'Concurrent newer audit gap must not be deleted by a stale reconciliation.' );
+$assert( 'concurrent_new_gap' === ( get_option( WelcomeExperience::AUDIT_GAP_OPTION, array() )['event'] ?? '' ),
+	'Latest unreconciled incident retains a sticky block.' );
+$GLOBALS['wpdb']->mutate_gap_on_delete = false;
+echo "File20 V12.3 CAS audit: 17 checks passed" . PHP_EOL;
