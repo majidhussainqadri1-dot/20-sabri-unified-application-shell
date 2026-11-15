@@ -301,7 +301,8 @@ final class WelcomeExperience {
 			'ar' => array( 'continue' => 'استكشف المنصة', 'skip' => 'تخطَّ', 'close' => 'إغلاق',
 				'aria' => 'مرحبًا بك في صبري للمعالجة المثلية' ),
 		);
-		$label_set = $labels[ $language ] ?? $labels['en'];
+		if ( ! isset( $labels[ $language ] ) ) { $language = 'en'; }
+		$label_set = $labels[ $language ];
 		$title_key = in_array( $language, array( 'ur', 'ar' ), true ) ? 'title_' . $language : 'title';
 		$message_key = in_array( $language, array( 'ur', 'ar' ), true ) ? 'message_' . $language : 'message';
 		$title = (string) ( $config[ $title_key ] ?? $defaults[ $title_key ] ?? '' );
