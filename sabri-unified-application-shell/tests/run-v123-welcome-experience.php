@@ -40,6 +40,8 @@ $assert( ! WelcomeExperience::route_eligible( '/appointment/123', $config ), 'ap
 $assert( ! WelcomeExperience::route_eligible( '/account', $config ), 'account suppression' );
 $assert( ! WelcomeExperience::route_eligible( '/clinical/visit', $config ), 'clinical suppression' );
 $assert( ! WelcomeExperience::route_eligible( '/news/%2e%2e/account', $config ), 'encoded traversal suppressed' );
+$assert( '' === WelcomeExperience::normalize_path( '/news/%252e%252e/account' ), 'double-encoded traversal is rejected' );
+$assert( '' === WelcomeExperience::normalize_path( '/news/%252faccount' ), 'double-encoded separator is rejected' );
 $assert( ! WelcomeExperience::route_eligible( '//external.example/', $config ), 'network-path reference suppressed' );
 $assert( ! WelcomeExperience::route_eligible( '/news/#section', $config ), 'fragment links not auto-eligible' );
 $assert( WelcomeExperience::manual_requested( '/?sabri_welcome=manual' ), 'explicit manual replay home URL is recognized' );
