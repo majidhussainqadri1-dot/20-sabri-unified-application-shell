@@ -120,7 +120,7 @@ jobs:
           ${W} option update home http://127.0.0.1:8888
           ${W} option update siteurl http://127.0.0.1:8888
           cd "${GITHUB_WORKSPACE}/file20/sabri-unified-application-shell"
-          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          npm install --no-save --no-audit --no-fund playwright@1.56.1 @axe-core/playwright@4.10.2
           npx playwright install --with-deps chromium
           cd "${GITHUB_WORKSPACE}"
           SABRI_WP_CI_ROOT="${GITHUB_WORKSPACE}/wordpress" \
