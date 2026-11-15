@@ -29,6 +29,7 @@ final class WelcomeExperience {
 		add_action( 'admin_post_' . self::APPROVAL_ACTION, array( __CLASS__, 'approve' ) );
 		add_action( 'admin_post_' . self::PREVIEW_ACTION, array( __CLASS__, 'preview' ) );
 		add_filter( 'sabri_shell_welcome_contract', array( __CLASS__, 'contract' ) );
+		add_shortcode( 'sabri_welcome_manual_link', array( __CLASS__, 'manual_link' ) );
 	}
 
 	public static function defaults() {
@@ -150,7 +151,30 @@ final class WelcomeExperience {
 		if ( '' !== $config['start_at'] && ( $start = strtotime( $config['start_at'] ) ) !== false && $now < $start ) { return false; }
 		if ( '' !== $config['end_at'] && ( $end = strtotime( $config['end_at'] ) ) !== false && $now >= $end ) { return false; }
 		$uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '/';
+		if ( self::manual_requested( $uri ) ) { return self::route_eligible( '/', $config ); }
 		return self::route_eligible( $uri, $config );
+	}
+
+	/**
+	 * Manual replay is an explicit, single-parameter home request. It never
+	 * overrides kill switches, Founder approval or sensitive-route exclusions.
+	 * The browser controller will not read/write device state for this mode.
+	 */
+	public static function manual_requested( $request_uri ) {
+		$parts = wp_parse_url( (string) $request_uri );
+		return is_array( $parts )
+			&& ! isset( $parts['host'] ) && ! isset( $parts['scheme'] )
+			&& '/' === self::normalize_path( $parts['path'] ?? '/' )
+			&& 'sabri_welcome=manual' === (string) ( $parts['query'] ?? '' );
+	}
+
+	/** Optional accessible link for the Help/Introduction page. */
+	public static function manual_link() {
+		$config = self::configuration();
+		if ( empty( $config['enabled'] ) || ! self::approval_valid( $config ) ) { return ''; }
+		$url = add_query_arg( 'sabri_welcome', 'manual', home_url( '/' ) );
+		return '<a class="sabri-welcome-manual-link" href="' . esc_url( $url ) . '">' .
+			esc_html__( 'Show platform introduction', 'sabri-unified-application-shell' ) . '</a>';
 	}
 
 	private static function visual_available() {
@@ -189,6 +213,7 @@ final class WelcomeExperience {
 				'storageKey' => self::STORAGE_KEY,
 				'days' => self::DAYS,
 				'copyVersion' => self::configuration()['copy_version'],
+				'manual' => self::manual_requested( isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '/' ),
 			) ) . ';',
 			'before'
 		);
