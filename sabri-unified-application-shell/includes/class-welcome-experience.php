@@ -124,7 +124,7 @@ final class WelcomeExperience {
 
 	public static function route_eligible( $request_uri, array $config ) {
 		$parts = wp_parse_url( (string) $request_uri );
-		if ( ! is_array( $parts ) || ! empty( $parts['query'] ) || ! empty( $parts['fragment'] ) ) { return false; }
+		if ( ! is_array( $parts ) || isset( $parts['scheme'] ) || isset( $parts['host'] ) || isset( $parts['user'] ) || isset( $parts['pass'] ) || ! empty( $parts['query'] ) || ! empty( $parts['fragment'] ) ) { return false; }
 		$path = self::normalize_path( (string) ( $parts['path'] ?? '/' ) );
 		if ( '' === $path || self::sensitive_path( $path ) ) { return false; }
 		return in_array( $path, $config['eligible_paths'], true );
@@ -295,7 +295,7 @@ final class WelcomeExperience {
 		$panel = self::panel( self::configuration() );
 		$show = ! in_array( $state, array( 'skipped', 'disabled', 'error' ), true ) && '' !== $panel;
 		echo '<!doctype html><html lang="' . esc_attr( get_bloginfo( 'language' ) ) . '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Welcome Preview</title><style>';
-		echo esc_html( self::placement_css() );
+		echo self::placement_css(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static CSS owned by this class.
 		if ( class_exists( 'Sabri\\PublicExperience\\Three_Plan_Corrections' ) ) {
 			echo \Sabri\PublicExperience\Three_Plan_Corrections::css(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
