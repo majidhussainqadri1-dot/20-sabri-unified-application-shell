@@ -139,6 +139,16 @@ namespace {
 		file_put_contents( $css_path, $original_css );
 	}
 	$check( $owner::approval_valid( $config ), 'Exact File25 CSS restoration recovers approved hash.' );
+	$js_path = dirname( __DIR__ ) . '/assets/js/welcome-experience.js';
+	$original_js = file_get_contents( $js_path );
+	$check( is_string( $original_js ), 'File20 browser controller source is readable for integrity check.' );
+	try {
+		file_put_contents( $js_path, $original_js . "\n/* unapproved changed 30-day behavior */\n" );
+		$check( ! $owner::approval_valid( $config ), 'Changed File20 welcome controller invalidates prior Founder approval.' );
+	} finally {
+		file_put_contents( $js_path, $original_js );
+	}
+	$check( $owner::approval_valid( $config ), 'Restored File20 controller recovers the exact approved source hash.' );
 	$GLOBALS['welcome_options'][ $owner::AUDIT_GAP_OPTION ] = array( 'event' => 'config_saved' );
 	$check( ! $owner::public_eligible(), 'Unreconciled configuration audit gap blocks approved welcome.' );
 	unset( $GLOBALS['welcome_options'][ $owner::AUDIT_GAP_OPTION ] );
