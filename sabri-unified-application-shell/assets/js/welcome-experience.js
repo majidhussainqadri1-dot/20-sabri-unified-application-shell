@@ -53,8 +53,13 @@
         !/^[a-z0-9_-]{8,96}$/.test(configuration.storageKey)) return null;
 
     const key = configuration.storageKey;
-    const local = win.localStorage;
-    const session = win.sessionStorage;
+    const manual = configuration.manual === true;
+    let local = null;
+    let session = null;
+    if (!manual) {
+      try { local = win.localStorage; session = win.sessionStorage; }
+      catch (_) { panel.hidden = true; return { shown: () => false, dismiss() {}, hide() {} }; }
+    }
     const clock = () => Date.now();
     let shown = false;
     let priorFocus = null;
@@ -71,20 +76,22 @@
 
     function dismiss() {
       if (!shown) return;
-      dismissUntil(local, session, key, clock(), configuration.days);
+      if (!manual) dismissUntil(local, session, key, clock(), configuration.days);
       hide();
     }
 
-    if (!canAutoShow(local, session, key, clock())) {
+    if (!manual && !canAutoShow(local, session, key, clock())) {
       panel.hidden = true;
       return { shown: () => false, dismiss, hide };
     }
 
-    try {
-      session.setItem(key + ':seen', '1');
-    } catch (_) {
-      panel.hidden = true;
-      return { shown: () => false, dismiss, hide };
+    if (!manual) {
+      try {
+        session.setItem(key + ':seen', '1');
+      } catch (_) {
+        panel.hidden = true;
+        return { shown: () => false, dismiss, hide };
+      }
     }
 
     priorFocus = doc.activeElement;
@@ -103,7 +110,7 @@
         dismiss();
       }
     });
-    win.addEventListener('storage', function (event) {
+    if (!manual) win.addEventListener('storage', function (event) {
       if (event.key === key && shown) {
         try {
           const until = Number(local.getItem(key));
