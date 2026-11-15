@@ -212,6 +212,19 @@ test('History API pushState and replaceState immediately suppress SPA task-route
     assert.ok(Number(a.localStorage.getItem(KEY)) > Date.now(), 'First-view suppression preserved');
   }
 });
+test('Manual replay cannot remain visible after changing to a clinical SPA deep-link', () => {
+  const a = environment();
+  a.win.location = { pathname: '/', search: '?sabri_welcome=manual', hash: '' };
+  const c = controller.createController(a.win, a.doc, {
+    storageKey: KEY, serverPath: '/', manual: true,
+  });
+  assert.equal(c.shown(), true);
+  a.win.location.hash = '#/clinical/case';
+  a.events.hashchange({});
+  assert.equal(c.shown(), false);
+  assert.equal(a.panel.hidden, true);
+  assert.equal(a.localStorage.getItem(KEY), null, 'Manual preview never mutates the 30-day device preference');
+});
 test('Manual welcome remains usable without localStorage and never changes recurrence', () => {
   const a = environment();
   Object.defineProperty(a.win, 'localStorage', { get() { throw Error('blocked'); } });
@@ -234,4 +247,4 @@ test('Storage failure still exposes ordinary underlying content', () => {
   try { controller.createController(a.win, a.doc, { storageKey: KEY }); } catch (_) { a.panel.hidden = true; }
   assert.equal(a.panel.hidden, true);
 });
-if (!process.exitCode) process.stdout.write('File20 V12.3 welcome JS behavior: 19 cases passed\n');
+if (!process.exitCode) process.stdout.write('File20 V12.3 welcome JS behavior: 20 cases passed\n');
