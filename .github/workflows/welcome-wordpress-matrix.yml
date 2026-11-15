@@ -116,6 +116,13 @@ jobs:
           php "${RUNNER_TEMP}/wp-cli.phar" \
             --path="${GITHUB_WORKSPACE}/wordpress" --user=ci_founder \
             eval-file "${GITHUB_WORKSPACE}/file20/sabri-unified-application-shell/tests/wp-full-owner-setup.php"
+      - name: Exercise genuine MySQL welcome audit-gap, Founder reconciliation and rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "${RUNNER_TEMP}/wp-cli.phar" \
+            --path="${GITHUB_WORKSPACE}/wordpress" --user=ci_founder \
+            eval-file "${GITHUB_WORKSPACE}/file20/sabri-unified-application-shell/tests/wp-welcome-db-recovery-smoke.php"
       - name: Real Chromium browser journeys on WordPress 7.1.4 only
         if: matrix.wp == '7.1.4'
         shell: bash
