@@ -59,6 +59,21 @@ final class WelcomeExperience {
 		return substr( $text, 0, $length );
 	}
 
+	/**
+	 * Accept only exact UTC calendar timestamps, never relative or server
+	 * timezone interpretations (e.g. "tomorrow" or "2026-02-30").
+	 * Returns null for no boundary and false for an invalid boundary.
+	 */
+	public static function utc_timestamp( $value ) {
+		if ( ! is_string( $value ) || '' === trim( $value ) ) { return null; }
+		$value = trim( $value );
+		if ( ! preg_match( '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}(?::\d{2})?$/', $value ) ) { return false; }
+		$format = 16 === strlen( $value ) ? '!Y-m-d H:i' : '!Y-m-d H:i:s';
+		$date = \DateTimeImmutable::createFromFormat( $format, $value, new \DateTimeZone( 'UTC' ) );
+		if ( false === $date || $date->format( 16 === strlen( $value ) ? 'Y-m-d H:i' : 'Y-m-d H:i:s' ) !== $value ) { return false; }
+		return $date->getTimestamp();
+	}
+
 	/** Only the File 20 owner may read and enforce this bounded preference. */
 	public static function configuration() {
 		$stored = get_option( self::OPTION, array() );
@@ -79,7 +94,8 @@ final class WelcomeExperience {
 		foreach ( array( 'start_at', 'end_at' ) as $field ) {
 			if ( array_key_exists( $field, $input ) ) {
 				$candidate = sanitize_text_field( (string) $input[ $field ] );
-				$value[ $field ] = '' === $candidate || false !== strtotime( $candidate ) ? $candidate : '';
+				$value[ $field ] = null !== self::utc_timestamp( $candidate ) && false !== self::utc_timestamp( $candidate ) ? $candidate :
+					( '' === $candidate ? '' : '__invalid_utc__' );
 			}
 		}
 		if ( isset( $input['eligible_paths'] ) ) {
@@ -174,8 +190,14 @@ final class WelcomeExperience {
 		if ( ! self::approval_valid( $config ) ) { return false; }
 		if ( true !== apply_filters( 'sabri_shell_welcome_file24_allowed', true, $config ) ) { return false; }
 		$now = time();
-		if ( '' !== $config['start_at'] && ( $start = strtotime( $config['start_at'] ) ) !== false && $now < $start ) { return false; }
-		if ( '' !== $config['end_at'] && ( $end = strtotime( $config['end_at'] ) ) !== false && $now >= $end ) { return false; }
+		$start = self::utc_timestamp( (string) $config['start_at'] );
+		$end = self::utc_timestamp( (string) $config['end_at'] );
+		if ( false === $start || false === $end ||
+			( null !== $start && $now < $start ) ||
+			( null !== $end && $now >= $end ) ||
+			( null !== $start && null !== $end && $end <= $start ) ) {
+			return false;
+		}
 		$uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '/';
 		if ( self::manual_requested( $uri ) ) { return self::route_eligible( self::home_path(), $config ); }
 		return self::route_eligible( $uri, $config );
@@ -341,6 +363,7 @@ final class WelcomeExperience {
 			submit_button( __( 'Approve current welcome copy and visual version as Founder', 'sabri-unified-application-shell' ), 'secondary' );
 			echo '</form>';
 		}
+		echo '<p>' . esc_html__( 'UTC schedules must use YYYY-MM-DD HH:MM or YYYY-MM-DD HH:MM:SS; invalid or reversed windows deny activation.', 'sabri-unified-application-shell' ) . '</p>';
 		echo '<p>' . esc_html__( 'A dismissal always suppresses automatic display for at least 30 days on that device. Preview never writes device preference.', 'sabri-unified-application-shell' ) . '</p>';
 		foreach ( array( 'default', 'skipped', 'reduced', 'disabled', 'error' ) as $state ) {
 			$url = wp_nonce_url( admin_url( 'admin-post.php?action=' . self::PREVIEW_ACTION . '&state=' . $state ), self::PREVIEW_ACTION );
