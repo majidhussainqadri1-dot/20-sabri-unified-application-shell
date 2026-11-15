@@ -106,6 +106,16 @@ test('Cross-tab dismissal closes a visible panel', () => {
   assert.equal(c.shown(), false);
   assert.equal(a.panel.hidden, true);
 });
+test('Manual welcome remains usable without localStorage and never changes recurrence', () => {
+  const a = environment();
+  Object.defineProperty(a.win, 'localStorage', { get() { throw Error('blocked'); } });
+  Object.defineProperty(a.win, 'sessionStorage', { get() { throw Error('blocked'); } });
+  const c = controller.createController(a.win, a.doc, { storageKey: KEY, manual: true, days: 30 });
+  assert.equal(c.shown(), true);
+  a.callbacks['dismiss:click']();
+  assert.equal(c.shown(), false);
+  assert.equal(a.panel.hidden, true);
+});
 test('Controller fails closed on invalid binding or absent panel', () => {
   const a = environment();
   assert.equal(controller.createController(a.win, a.doc, { storageKey: 'bad key?' }), null);
@@ -118,4 +128,4 @@ test('Storage failure still exposes ordinary underlying content', () => {
   try { controller.createController(a.win, a.doc, { storageKey: KEY }); } catch (_) { a.panel.hidden = true; }
   assert.equal(a.panel.hidden, true);
 });
-if (!process.exitCode) process.stdout.write('File20 V12.3 welcome JS behavior: 10 cases passed\n');
+if (!process.exitCode) process.stdout.write('File20 V12.3 welcome JS behavior: 11 cases passed\n');
