@@ -113,7 +113,16 @@
     const closeButtons = panel.querySelectorAll('[data-sabri-welcome-dismiss], [data-sabri-welcome-skip]');
     closeButtons.forEach(button => button.addEventListener('click', dismiss));
     const continueLink = panel.querySelector('[data-sabri-welcome-continue]');
-    if (continueLink) continueLink.addEventListener('click', dismiss);
+    if (continueLink) continueLink.addEventListener('click', function (event) {
+      // Stay on the already loaded page. The manual-replay URL is different:
+      // there Continue is allowed to navigate to the clean homepage.
+      if (!manual && win.location && typeof continueLink.getAttribute === 'function' &&
+          continueLink.getAttribute('href') === win.location.href && event &&
+          typeof event.preventDefault === 'function') {
+        event.preventDefault();
+      }
+      dismiss();
+    });
 
     doc.addEventListener('keydown', function (event) {
       if (event.key === 'Escape' && shown) {
