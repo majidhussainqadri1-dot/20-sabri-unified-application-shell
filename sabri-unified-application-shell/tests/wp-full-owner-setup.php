@@ -27,6 +27,7 @@ $owner = 'Sabri\\UnifiedShell\\WelcomeExperience';
 $assert( class_exists( $owner ), 'File20 WelcomeExperience not loaded.' );
 $assert( $owner::founder_authorized( $user_id ), 'File20 failed to honor actual File00 Founder claim.' );
 $assert( $owner::operator_authorized( $user_id ), 'Native WordPress administrator + File00 claims did not permit admin drafting.' );
+$assert( ! $owner::public_eligible(), 'Authenticated Founder must never receive an automatic welcome (F13-CEN-01).' );
 $settings = \Sabri\UnifiedShell\Settings::get();
 $settings['enabled'] = true;
 $settings['emergency_disabled'] = false;
