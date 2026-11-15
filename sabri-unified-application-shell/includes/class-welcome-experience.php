@@ -14,6 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 final class WelcomeExperience {
 	const OPTION = 'sabri_shell_welcome_config';
 	const AUDIT_OPTION = 'sabri_shell_welcome_audit';
+	const APPROVAL_OPTION = 'sabri_shell_welcome_founder_approval';
+	const APPROVAL_ACTION = 'sabri_shell_welcome_approve';
 	const NONCE_ACTION = 'sabri_shell_welcome_save';
 	const PREVIEW_ACTION = 'sabri_shell_welcome_preview';
 	const STORAGE_KEY = 'sabri-shell-welcome-dismiss-until-v1';
@@ -24,6 +26,7 @@ final class WelcomeExperience {
 		add_action( 'wp_body_open', array( __CLASS__, 'render' ), 3 );
 		add_action( 'admin_menu', array( __CLASS__, 'register_admin' ), 99 );
 		add_action( 'admin_post_sabri_shell_welcome_save', array( __CLASS__, 'save' ) );
+		add_action( 'admin_post_' . self::APPROVAL_ACTION, array( __CLASS__, 'approve' ) );
 		add_action( 'admin_post_' . self::PREVIEW_ACTION, array( __CLASS__, 'preview' ) );
 		add_filter( 'sabri_shell_welcome_contract', array( __CLASS__, 'contract' ) );
 	}
@@ -139,9 +142,9 @@ final class WelcomeExperience {
 		if ( in_array( Layout::current_mode(), array( Layout::MINIMAL, Layout::IMMERSIVE ), true ) ) { return false; }
 		$config = self::configuration();
 		if ( empty( $config['enabled'] ) || empty( $config['eligible_paths'] ) ) { return false; }
-		// A trust assertion supplied by File 00 or a Founder-approved owner
-		// is mandatory. A WordPress role/email/ID never implies that approval.
-		if ( true !== apply_filters( 'sabri_shell_welcome_founder_approved', false, $config ) ) { return false; }
+		// Every activation requires a stored content-bound approval signed by
+		// a current File 00 canonical Founder, never inferred from a WP role.
+		if ( ! self::approval_valid( $config ) ) { return false; }
 		if ( true !== apply_filters( 'sabri_shell_welcome_file24_allowed', true, $config ) ) { return false; }
 		$now = time();
 		if ( '' !== $config['start_at'] && ( $start = strtotime( $config['start_at'] ) ) !== false && $now < $start ) { return false; }
@@ -220,7 +223,7 @@ final class WelcomeExperience {
 	public static function admin_page() {
 		if ( ! current_user_can( 'manage_options' ) ) { return; }
 		$config = self::configuration();
-		$approved = true === apply_filters( 'sabri_shell_welcome_founder_approved', false, $config );
+		$approved = self::approval_valid( $config );
 		echo '<div class="wrap"><h1>' . esc_html__( 'Welcome experience — File 20', 'sabri-unified-application-shell' ) . '</h1>';
 		echo '<p>' . esc_html__( 'File 20 owns route/frequency state; File 25 owns visual presentation. Public activation also requires the independent canonical Founder approval assertion.', 'sabri-unified-application-shell' ) . '</p>';
 		echo '<p><strong>' . esc_html__( 'Founder approval:', 'sabri-unified-application-shell' ) . '</strong> ' . esc_html( $approved ? 'verified' : 'absent / blocked' ) . '</p>';
@@ -233,7 +236,14 @@ final class WelcomeExperience {
 		}
 		echo '<p><label>' . esc_html__( 'Eligible public paths (one per line)', 'sabri-unified-application-shell' ) . '<br><textarea name="eligible_paths" rows="5" cols="55">' . esc_textarea( implode( "\n", $config['eligible_paths'] ) ) . '</textarea></label></p>';
 		submit_button( __( 'Save guarded configuration', 'sabri-unified-application-shell' ) );
-		echo '</form><p>' . esc_html__( 'A dismissal always suppresses automatic display for at least 30 days on that device. Preview never writes device preference.', 'sabri-unified-application-shell' ) . '</p>';
+		echo '</form>';
+		if ( self::founder_authorized( get_current_user_id() ) ) {
+			echo '<form action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" method="post"><input type="hidden" name="action" value="' . esc_attr( self::APPROVAL_ACTION ) . '">';
+			wp_nonce_field( self::APPROVAL_ACTION );
+			submit_button( __( 'Approve current welcome copy and visual version as Founder', 'sabri-unified-application-shell' ), 'secondary' );
+			echo '</form>';
+		}
+		echo '<p>' . esc_html__( 'A dismissal always suppresses automatic display for at least 30 days on that device. Preview never writes device preference.', 'sabri-unified-application-shell' ) . '</p>';
 		foreach ( array( 'default', 'skipped', 'reduced', 'disabled', 'error' ) as $state ) {
 			$url = wp_nonce_url( admin_url( 'admin-post.php?action=' . self::PREVIEW_ACTION . '&state=' . $state ), self::PREVIEW_ACTION );
 			echo '<a class="button button-secondary" target="_blank" rel="noopener" href="' . esc_url( $url ) . '">' . esc_html( ucfirst( $state ) ) . '</a> ';
@@ -278,11 +288,88 @@ final class WelcomeExperience {
 			wp_die( 'Concurrent change detected; no configuration overwritten.', '', array( 'response' => 409 ) );
 		}
 		wp_cache_delete( self::OPTION, 'options' );
+		delete_option( self::APPROVAL_OPTION ); // Any changed configuration invalidates the previous Founder approval.
 		$audit = get_option( self::AUDIT_OPTION, array() );
 		$audit = is_array( $audit ) ? $audit : array();
 		$audit[] = array( 'at' => gmdate( 'c' ), 'actor' => get_current_user_id(), 'from' => $expected, 'to' => $new['config_version'], 'enabled' => $new['enabled'] );
 		update_option( self::AUDIT_OPTION, array_slice( $audit, -100 ), false );
 		wp_safe_redirect( admin_url( 'options-general.php?page=sabri-shell-welcome&updated=1' ) );
+		exit;
+	}
+
+
+	/**
+	 * Canonical File 00 verification for the actor making or retaining the
+	 * visual/copy decision. A local WordPress administrator alone cannot
+	 * impersonate Founder. File 00 MFA-retirement truth is not overridden.
+	 */
+	public static function founder_authorized( $user_id ) {
+		$user_id = absint( $user_id );
+		if ( ! $user_id || ! class_exists( 'SMC_Contracts' ) || ! is_callable( array( 'SMC_Contracts', 'assertions' ) ) ) {
+			return false;
+		}
+		$assertions = \SMC_Contracts::assertions( $user_id );
+		return is_array( $assertions )
+			&& absint( $assertions['user_id'] ?? 0 ) === $user_id
+			&& 'founder' === (string) ( $assertions['account_class'] ?? '' )
+			&& true === (bool) ( $assertions['approved'] ?? false )
+			&& true === (bool) ( $assertions['eligible'] ?? false )
+			&& false === (bool) ( $assertions['suspended'] ?? true );
+	}
+
+	/**
+	 * A change to File 25's actual renderer file invalidates the existing
+	 * acceptance even if a package author forgot to bump its version.
+	 */
+	public static function approval_signature( array $config ) {
+		if ( ! self::visual_available() ) { return ''; }
+		try {
+			$source = ( new \ReflectionClass( 'Sabri\\PublicExperience\\Three_Plan_Corrections' ) )->getFileName();
+			$visual_hash = is_string( $source ) && is_readable( $source ) ? hash_file( 'sha256', $source ) : false;
+			if ( ! is_string( $visual_hash ) || '' === $visual_hash ) { return ''; }
+			return hash( 'sha256', wp_json_encode( array(
+				'file20_version' => SABRI_SHELL_VERSION,
+				'file25_version' => SABRI_PUBLIC_EXPERIENCE_VERSION,
+				'file25_renderer_sha256' => $visual_hash,
+				'config' => self::sanitize( $config, $config ),
+				'frequency_days' => self::DAYS,
+			) ) );
+		} catch ( \Throwable $error ) {
+			unset( $error );
+			return '';
+		}
+	}
+
+	public static function approval_valid( array $config ) {
+		$approval = get_option( self::APPROVAL_OPTION, array() );
+		if ( ! is_array( $approval ) || empty( $approval['signer_id'] ) || empty( $approval['signature'] ) ) { return false; }
+		$expected = self::approval_signature( $config );
+		return '' !== $expected
+			&& is_string( $approval['signature'] )
+			&& hash_equals( $expected, $approval['signature'] )
+			&& self::founder_authorized( $approval['signer_id'] );
+	}
+
+	public static function approve() {
+		self::require_admin( self::APPROVAL_ACTION );
+		if ( 'POST' !== (string) ( $_SERVER['REQUEST_METHOD'] ?? '' ) ) {
+			wp_die( 'POST required', '', array( 'response' => 405 ) );
+		}
+		$user_id = get_current_user_id();
+		if ( ! self::founder_authorized( $user_id ) ) {
+			wp_die( 'A current canonical File 00 Founder assertion is required.', '', array( 'response' => 403 ) );
+		}
+		$config = self::configuration();
+		$signature = self::approval_signature( $config );
+		if ( '' === $signature ) {
+			wp_die( 'File 25 source/visual owner is not available for approval.', '', array( 'response' => 503 ) );
+		}
+		update_option( self::APPROVAL_OPTION, array(
+			'signer_id' => absint( $user_id ),
+			'approved_at' => gmdate( 'c' ),
+			'signature' => $signature,
+		), false );
+		wp_safe_redirect( admin_url( 'options-general.php?page=sabri-shell-welcome&approved=1' ) );
 		exit;
 	}
 
