@@ -145,6 +145,7 @@ final class WelcomeExperience {
 	}
 
 	public static function sensitive_path( $path ) {
+		$path = strtolower( (string) $path );
 		$prefixes = array(
 			'/wp-admin', '/wp-login.php', '/wp-json', '/login', '/logout',
 			'/register', '/signup', '/account', '/password', '/recovery',
@@ -472,6 +473,12 @@ final class WelcomeExperience {
 			'end_at' => $input['end_at'] ?? '',
 			'eligible_paths' => $input['eligible_paths'] ?? '',
 		), $base );
+		$start_utc = self::utc_timestamp( (string) $new['start_at'] );
+		$end_utc = self::utc_timestamp( (string) $new['end_at'] );
+		if ( false === $start_utc || false === $end_utc ||
+			( null !== $start_utc && null !== $end_utc && $end_utc <= $start_utc ) ) {
+			wp_die( 'Invalid UTC schedule or reversed start/end window. The prior configuration is unchanged.', '', array( 'response' => 422 ) );
+		}
 		$new['config_version'] = $expected + 1;
 		$new['copy_version'] = absint( $base['copy_version'] ) + ( ( $base['title'] !== $new['title'] || $base['message'] !== $new['message'] ) ? 1 : 0 );
 		global $wpdb;
