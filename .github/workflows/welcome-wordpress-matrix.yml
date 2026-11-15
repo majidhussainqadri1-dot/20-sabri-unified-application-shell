@@ -105,8 +105,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          php "${RUNNER_TEMP}/wp-cli.phar" \\
-            --path="${GITHUB_WORKSPACE}/wordpress" --user=ci_founder \\
+          php "${RUNNER_TEMP}/wp-cli.phar" \
+            --path="${GITHUB_WORKSPACE}/wordpress" --user=ci_founder \
             eval-file "${GITHUB_WORKSPACE}/file20/sabri-unified-application-shell/tests/wp-full-owner-setup.php"
       - name: Real Chromium browser journeys on WordPress 7.1.4 only
         if: matrix.wp == '7.1.4'
@@ -120,16 +120,16 @@ jobs:
           npm install --no-save --no-audit --no-fund playwright@1.56.1
           npx playwright install --with-deps chromium
           cd "${GITHUB_WORKSPACE}"
-          SABRI_WP_CI_ROOT="${GITHUB_WORKSPACE}/wordpress" \\
-            php -S 127.0.0.1:8888 -t wordpress \\
-            file20/sabri-unified-application-shell/tests/wp-ci-router.php \\
+          SABRI_WP_CI_ROOT="${GITHUB_WORKSPACE}/wordpress" \
+            php -S 127.0.0.1:8888 -t wordpress \
+            file20/sabri-unified-application-shell/tests/wp-ci-router.php \
             > "${RUNNER_TEMP}/sabri-welcome-http.log" 2>&1 &
           for attempt in {1..30}; do
             if curl --fail --silent --output /dev/null http://127.0.0.1:8888/; then break; fi
             sleep 1
           done
-          SABRI_WP_TEST_URL=http://127.0.0.1:8888/ \\
-            SABRI_CI_SCREENSHOT="${RUNNER_TEMP}/sabri-welcome-mobile.png" \\
+          SABRI_WP_TEST_URL=http://127.0.0.1:8888/ \
+            SABRI_CI_SCREENSHOT="${RUNNER_TEMP}/sabri-welcome-mobile.png" \
             node file20/sabri-unified-application-shell/tests/welcome-browser-e2e.cjs
       - name: Upload real-browser diagnostics for review
         if: always() && matrix.wp == '7.1.4'
