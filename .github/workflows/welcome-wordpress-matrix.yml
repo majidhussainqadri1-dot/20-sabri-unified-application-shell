@@ -139,6 +139,7 @@ jobs:
           echo "CI welcome HTTP status, headers and first real HTML bytes:"
           curl -sS -i http://127.0.0.1:8888/ | head -c 2200 || true
           echo
+          SABRI_CI_ADMIN_PASSWORD=CI-runner-only-placeholder \
           SABRI_WP_TEST_URL=http://127.0.0.1:8888/ \
             SABRI_CI_SCREENSHOT="${RUNNER_TEMP}/sabri-welcome-mobile.png" \
             node file20/sabri-unified-application-shell/tests/welcome-browser-e2e.cjs
