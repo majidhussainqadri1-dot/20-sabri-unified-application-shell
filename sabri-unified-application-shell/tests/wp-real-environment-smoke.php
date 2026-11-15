@@ -25,6 +25,11 @@ WP_CLI::log( 'File25 bootstrap state: ' . wp_json_encode( array(
 ) ) );
 $assert( defined( 'SABRI_SHELL_VERSION' ), 'File20 must actually be active.' );
 $assert( defined( 'SABRI_PUBLIC_EXPERIENCE_VERSION' ), 'File25 must actually be active.' );
+$assert( defined( 'SPCRC_VERSION' ), 'Real File24 security owner must be active.' );
+$assert( false !== has_filter( 'spcrc/file20_safe_mode_active' ),
+	'File24 native File20 Safe Mode observation hook must be registered.' );
+$assert( true === apply_filters( 'spcrc/file20_adapter_available', false ),
+	'File24 must recognize real File20 canonical shell owner as available.' );
 $assert( defined( 'SWI_VERSION' ) && class_exists( 'Sabri\\WelcomeIntro\\Settings' ),
 	'File13 historical compatibility plugin must load without owner collision.' );
 $legacy = \Sabri\WelcomeIntro\Settings::get();
