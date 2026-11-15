@@ -47,6 +47,10 @@ final class WelcomeExperience {
 			'copy_version' => 1,
 			'title' => 'Welcome to Sabri Social Homeopathy Platform',
 			'message' => 'A place to learn, connect, and explore classical homeopathy.',
+			'title_ur' => 'صابری سوشل ہومیوپیتھی پلیٹ فارم میں خوش آمدید',
+			'message_ur' => 'کلاسیکی ہومیوپیتھی سیکھنے، رابطہ قائم کرنے اور علمی وسائل دریافت کرنے کا ایک مرکز۔',
+			'title_ar' => 'مرحبًا بك في منصة صبري الاجتماعية للمعالجة المثلية',
+			'message_ar' => 'مساحة للتعلّم والتواصل واستكشاف موارد المعالجة المثلية الكلاسيكية.',
 			'start_at' => '',
 			'end_at' => '',
 			'eligible_paths' => array( '/' ),
@@ -88,11 +92,19 @@ final class WelcomeExperience {
 		if ( array_key_exists( 'enabled', $input ) ) {
 			$value['enabled'] = in_array( $input['enabled'], array( true, 1, '1', 'on', 'yes' ), true );
 		}
-		if ( isset( $input['title'] ) ) {
-			$value['title'] = self::limit_text( sanitize_text_field( (string) $input['title'] ), 180 );
+		foreach ( array( 'title', 'title_ur', 'title_ar' ) as $field ) {
+			if ( array_key_exists( $field, $input ) ) {
+				$value[ $field ] = self::limit_text(
+					sanitize_text_field( is_scalar( $input[ $field ] ) ? (string) $input[ $field ] : '' ), 180
+				);
+			}
 		}
-		if ( isset( $input['message'] ) ) {
-			$value['message'] = self::limit_text( sanitize_textarea_field( (string) $input['message'] ), 600 );
+		foreach ( array( 'message', 'message_ur', 'message_ar' ) as $field ) {
+			if ( array_key_exists( $field, $input ) ) {
+				$value[ $field ] = self::limit_text(
+					sanitize_textarea_field( is_scalar( $input[ $field ] ) ? (string) $input[ $field ] : '' ), 600
+				);
+			}
 		}
 		foreach ( array( 'start_at', 'end_at' ) as $field ) {
 			if ( array_key_exists( $field, $input ) ) {
@@ -269,15 +281,52 @@ final class WelcomeExperience {
 		return true;
 	}
 
+	/**
+	 * Versioned, Founder-approved language variants. Only fixed labels are
+	 * translated internally. All editable source copy is part of the signed
+	 * configuration digest and cannot change silently by locale.
+	 */
+	public static function localized_panel_copy( array $config, $locale = '' ) {
+		if ( ! is_string( $locale ) || '' === $locale ) {
+			$locale = function_exists( 'determine_locale' ) ? determine_locale() :
+				( function_exists( 'get_locale' ) ? get_locale() : 'en_US' );
+		}
+		$language = strtolower( substr( str_replace( '-', '_', (string) $locale ), 0, 2 ) );
+		$defaults = self::defaults();
+		$labels = array(
+			'en' => array( 'continue' => 'Explore platform', 'skip' => 'Skip', 'close' => 'Close',
+				'aria' => 'Welcome to Sabri Homeopathy' ),
+			'ur' => array( 'continue' => 'پلیٹ فارم دیکھیں', 'skip' => 'چھوڑ دیں', 'close' => 'بند کریں',
+				'aria' => 'صابری ہومیوپیتھی میں خوش آمدید' ),
+			'ar' => array( 'continue' => 'استكشف المنصة', 'skip' => 'تخطَّ', 'close' => 'إغلاق',
+				'aria' => 'مرحبًا بك في صبري للمعالجة المثلية' ),
+		);
+		$label_set = $labels[ $language ] ?? $labels['en'];
+		$title_key = in_array( $language, array( 'ur', 'ar' ), true ) ? 'title_' . $language : 'title';
+		$message_key = in_array( $language, array( 'ur', 'ar' ), true ) ? 'message_' . $language : 'message';
+		$title = (string) ( $config[ $title_key ] ?? $defaults[ $title_key ] ?? '' );
+		$message = (string) ( $config[ $message_key ] ?? $defaults[ $message_key ] ?? '' );
+		return array(
+			'title' => '' !== trim( $title ) ? $title : (string) ( $config['title'] ?? $defaults['title'] ),
+			'message' => '' !== trim( $message ) ? $message : (string) ( $config['message'] ?? $defaults['message'] ),
+			'continue' => $label_set['continue'],
+			'skip' => $label_set['skip'],
+			'close' => $label_set['close'],
+			'aria' => $label_set['aria'],
+			'language' => $language,
+		);
+	}
+
 	private static function panel( array $config ) {
 		if ( ! self::visual_available() ) { return ''; }
+		$copy = self::localized_panel_copy( $config );
 		return (string) sabri_visual_experience_render_welcome( array(
 			'invoked_by_file_20' => true,
-			'title' => $config['title'],
-			'message' => $config['message'],
-			'continue_label' => __( 'Explore platform', 'sabri-unified-application-shell' ),
-			'close_label' => __( 'Close', 'sabri-unified-application-shell' ),
-			'skip_label' => __( 'Skip', 'sabri-unified-application-shell' ),
+			'title' => $copy['title'],
+			'message' => $copy['message'],
+			'continue_label' => $copy['continue'],
+			'close_label' => $copy['close'],
+			'skip_label' => $copy['skip'],
 			'continue_url' => home_url( '/' ),
 		) );
 	}
@@ -316,7 +365,7 @@ final class WelcomeExperience {
 		$panel = self::panel( self::configuration() );
 		if ( '' === $panel ) { return; }
 		self::$rendered = true;
-		echo '<aside id="sabri-shell-welcome" class="sabri-shell-welcome" hidden aria-label="' . esc_attr__( 'Welcome to Sabri Homeopathy', 'sabri-unified-application-shell' ) . '" data-owner="file-20">';
+		echo '<aside id="sabri-shell-welcome" class="sabri-shell-welcome" hidden aria-label="' . esc_attr( self::localized_panel_copy( self::configuration() )['aria'] ) . '" data-owner="file-20">';
 		echo $panel; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- File 25 owns and escapes its visual markup.
 		echo '</aside>';
 		} catch ( \Throwable $error ) {
@@ -357,7 +406,7 @@ final class WelcomeExperience {
 		echo '<input type="hidden" name="action" value="sabri_shell_welcome_save"><input type="hidden" name="config_version" value="' . esc_attr( $config['config_version'] ) . '">';
 		wp_nonce_field( self::NONCE_ACTION );
 		echo '<p><label><input type="checkbox" name="enabled" value="1" ' . checked( $config['enabled'], true, false ) . '> ' . esc_html__( 'Request activation (approval gate remains mandatory)', 'sabri-unified-application-shell' ) . '</label></p>';
-		foreach ( array( 'title' => 'Title', 'message' => 'Message', 'start_at' => 'Start (UTC)', 'end_at' => 'End (UTC)' ) as $key => $label ) {
+		foreach ( array( 'title' => 'English (US) title', 'message' => 'English (US) message', 'title_ur' => 'Urdu title', 'message_ur' => 'Urdu message', 'title_ar' => 'Arabic title', 'message_ar' => 'Arabic message', 'start_at' => 'Start (UTC)', 'end_at' => 'End (UTC)' ) as $key => $label ) {
 			echo '<p><label>' . esc_html( $label ) . '<br><input class="regular-text" type="text" name="' . esc_attr( $key ) . '" value="' . esc_attr( $config[ $key ] ) . '"></label></p>';
 		}
 		echo '<p><label>' . esc_html__( 'Eligible public paths (one per line)', 'sabri-unified-application-shell' ) . '<br><textarea name="eligible_paths" rows="5" cols="55">' . esc_textarea( implode( "\n", $config['eligible_paths'] ) ) . '</textarea></label></p>';
@@ -474,6 +523,10 @@ final class WelcomeExperience {
 			'enabled' => isset( $input['enabled'] ) ? '1' : false,
 			'title' => $input['title'] ?? '',
 			'message' => $input['message'] ?? '',
+			'title_ur' => $input['title_ur'] ?? '',
+			'message_ur' => $input['message_ur'] ?? '',
+			'title_ar' => $input['title_ar'] ?? '',
+			'message_ar' => $input['message_ar'] ?? '',
 			'start_at' => $input['start_at'] ?? '',
 			'end_at' => $input['end_at'] ?? '',
 			'eligible_paths' => $input['eligible_paths'] ?? '',
@@ -485,7 +538,11 @@ final class WelcomeExperience {
 			wp_die( 'Invalid UTC schedule or reversed start/end window. The prior configuration is unchanged.', '', array( 'response' => 422 ) );
 		}
 		$new['config_version'] = $expected + 1;
-		$new['copy_version'] = absint( $base['copy_version'] ) + ( ( $base['title'] !== $new['title'] || $base['message'] !== $new['message'] ) ? 1 : 0 );
+		$copy_changed = false;
+		foreach ( array( 'title', 'message', 'title_ur', 'message_ur', 'title_ar', 'message_ar' ) as $field ) {
+			if ( (string) $base[ $field ] !== (string) $new[ $field ] ) { $copy_changed = true; }
+		}
+		$new['copy_version'] = absint( $base['copy_version'] ) + ( $copy_changed ? 1 : 0 );
 		global $wpdb;
 		$changed = $wpdb->query( $wpdb->prepare(
 			"UPDATE {$wpdb->options} SET option_value=%s WHERE option_name=%s AND option_value=%s",
