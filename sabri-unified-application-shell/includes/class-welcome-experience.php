@@ -17,6 +17,7 @@ final class WelcomeExperience {
 	const AUDIT_GAP_OPTION = 'sabri_shell_welcome_audit_gap';
 	const APPROVAL_OPTION = 'sabri_shell_welcome_founder_approval';
 	const APPROVAL_ACTION = 'sabri_shell_welcome_approve';
+	const RECONCILE_ACTION = 'sabri_shell_welcome_reconcile_audit';
 	const NONCE_ACTION = 'sabri_shell_welcome_save';
 	const PREVIEW_ACTION = 'sabri_shell_welcome_preview';
 	const STORAGE_KEY = 'sabri-shell-welcome-dismiss-until-v1';
@@ -32,6 +33,8 @@ final class WelcomeExperience {
 		add_action( 'admin_menu', array( __CLASS__, 'register_admin' ), 99 );
 		add_action( 'admin_post_sabri_shell_welcome_save', array( __CLASS__, 'save' ) );
 		add_action( 'admin_post_' . self::APPROVAL_ACTION, array( __CLASS__, 'approve' ) );
+		add_action( 'admin_post_' . self::RECONCILE_ACTION, array( __CLASS__, 'reconcile_audit_action' ) );
+		add_action( 'template_redirect', array( __CLASS__, 'prevent_public_html_cache' ), 0 );
 		add_action( 'admin_post_' . self::PREVIEW_ACTION, array( __CLASS__, 'preview' ) );
 		add_filter( 'sabri_shell_welcome_contract', array( __CLASS__, 'contract' ) );
 		add_shortcode( 'sabri_welcome_manual_link', array( __CLASS__, 'manual_link' ) );
@@ -341,8 +344,9 @@ final class WelcomeExperience {
 		if ( ! self::operator_authorized( get_current_user_id() ) ) { return; }
 		$config = self::configuration();
 		$approved = self::approval_valid( $config );
-		if ( false !== get_option( self::AUDIT_GAP_OPTION, false ) ) {
-			echo '<div class="notice notice-error"><p>' . esc_html__( 'Welcome disabled: configuration audit is incomplete. Review and reconcile the recorded audit gap before approval.', 'sabri-unified-application-shell' ) . '</p></div>';
+		$gap = get_option( self::AUDIT_GAP_OPTION, false );
+		if ( false !== $gap ) {
+			echo '<div class="notice notice-error"><p>' . esc_html__( 'Welcome disabled: configuration audit is incomplete. Review the affected DB row and reconcile before approval.', 'sabri-unified-application-shell' ) . '</p></div>';
 		}
 		echo '<div class="wrap"><h1>' . esc_html__( 'Welcome experience — File 20', 'sabri-unified-application-shell' ) . '</h1>';
 		echo '<p>' . esc_html__( 'File 20 owns route/frequency state; File 25 owns visual presentation. Public activation also requires the independent canonical Founder approval assertion.', 'sabri-unified-application-shell' ) . '</p>';
@@ -357,6 +361,13 @@ final class WelcomeExperience {
 		echo '<p><label>' . esc_html__( 'Eligible public paths (one per line)', 'sabri-unified-application-shell' ) . '<br><textarea name="eligible_paths" rows="5" cols="55">' . esc_textarea( implode( "\n", $config['eligible_paths'] ) ) . '</textarea></label></p>';
 		submit_button( __( 'Save guarded configuration', 'sabri-unified-application-shell' ) );
 		echo '</form>';
+		if ( false !== $gap && self::founder_authorized( get_current_user_id() ) ) {
+			echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="' . esc_attr( self::RECONCILE_ACTION ) . '">';
+			wp_nonce_field( self::RECONCILE_ACTION );
+			echo '<p>' . esc_html__( 'A previous configuration update may be missing from the audit trail. Verify current options and backups before acknowledging this gap. All earlier entries remain unchanged.', 'sabri-unified-application-shell' ) . '</p>';
+			submit_button( __( 'Record signed audit reconciliation (Founder only)', 'sabri-unified-application-shell' ), 'secondary' );
+			echo '</form>';
+		}
 		if ( self::founder_authorized( get_current_user_id() ) ) {
 			echo '<form action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" method="post"><input type="hidden" name="action" value="' . esc_attr( self::APPROVAL_ACTION ) . '">';
 			wp_nonce_field( self::APPROVAL_ACTION );
@@ -372,6 +383,32 @@ final class WelcomeExperience {
 		echo '</div>';
 	}
 
+
+	/** Direct SQL writes must invalidate all WordPress option cache layers. */
+	private static function invalidate_option_cache( $key ) {
+		foreach ( array( $key, 'alloptions', 'notoptions' ) as $cache_key ) {
+			wp_cache_delete( $cache_key, 'options' );
+		}
+	}
+
+	/** Honor the platform's established privacy cache and LiteSpeed purger. */
+	private static function purge_public_cache() {
+		if ( class_exists( __NAMESPACE__ . '\\PlanV4PrivacyCache' ) ) {
+			PlanV4PrivacyCache::purge();
+		}
+		do_action( 'sabri_shell_welcome_cache_purge', self::OPTION );
+	}
+
+	/** Eligible welcome HTML is never a reusable cached public response. */
+	public static function prevent_public_html_cache() {
+		try {
+			if ( ! self::public_eligible() || ! self::visual_available() ) { return; }
+			if ( ! defined( 'DONOTCACHEPAGE' ) ) { define( 'DONOTCACHEPAGE', true ); }
+			if ( function_exists( 'nocache_headers' ) && ! headers_sent() ) { nocache_headers(); }
+		} catch ( \Throwable $error ) {
+			unset( $error );
+		}
+	}
 
 	/**
 	 * Compare-and-swap audit updates; do not silently discard a concurrent
@@ -398,7 +435,7 @@ final class WelcomeExperience {
 				self::AUDIT_OPTION, (string) $row['option_value']
 			) );
 			if ( 1 === $updated ) {
-				wp_cache_delete( self::AUDIT_OPTION, 'options' );
+				self::invalidate_option_cache( self::AUDIT_OPTION );
 				return true;
 			}
 		}
@@ -443,12 +480,17 @@ final class WelcomeExperience {
 			maybe_serialize( $new ), self::OPTION, maybe_serialize( $old )
 		) );
 		if ( 1 !== $changed ) {
-			wp_cache_delete( self::OPTION, 'options' );
+			self::invalidate_option_cache( self::OPTION );
 			wp_die( 'Concurrent change detected; no configuration overwritten.', '', array( 'response' => 409 ) );
 		}
-		wp_cache_delete( self::OPTION, 'options' );
+		self::invalidate_option_cache( self::OPTION );
 		delete_option( self::APPROVAL_OPTION ); // Any changed configuration invalidates the previous Founder approval.
-		self::append_audit( array( 'event' => 'config_saved', 'at' => gmdate( 'c' ), 'actor' => get_current_user_id(), 'from' => $expected, 'to' => $new['config_version'], 'enabled' => $new['enabled'] ) );
+		$audited = self::append_audit( array( 'event' => 'config_saved', 'at' => gmdate( 'c' ), 'actor' => get_current_user_id(), 'from' => $expected, 'to' => $new['config_version'], 'enabled' => $new['enabled'] ) );
+		self::purge_public_cache();
+		if ( ! $audited ) {
+			wp_safe_redirect( admin_url( 'options-general.php?page=sabri-shell-welcome&audit_gap=1' ) );
+			exit;
+		}
 		wp_safe_redirect( admin_url( 'options-general.php?page=sabri-shell-welcome&updated=1' ) );
 		exit;
 	}
@@ -569,12 +611,53 @@ final class WelcomeExperience {
 			'approved_at' => gmdate( 'c' ),
 			'signature' => $signature,
 		), false );
-		wp_cache_delete( self::APPROVAL_OPTION, 'options' );
+		self::invalidate_option_cache( self::APPROVAL_OPTION );
 		if ( ! self::approval_valid( $config ) || ! self::append_audit( array( 'event' => 'founder_approved', 'at' => gmdate( 'c' ), 'actor' => $user_id, 'copy_version' => $config['copy_version'] ) ) ) {
 			delete_option( self::APPROVAL_OPTION );
 			wp_die( 'Founder approval not durably recorded; welcome remains disabled.', '', array( 'response' => 503 ) );
 		}
+		self::purge_public_cache();
 		wp_safe_redirect( admin_url( 'options-general.php?page=sabri-shell-welcome&approved=1' ) );
+		exit;
+	}
+
+
+	/**
+	 * Founder-confirmed recovery is a NEW append-only record, not an invented
+	 * reconstruction of lost audit entries. Approval is invalidated afterwards.
+	 */
+	private static function reconcile_gap( $actor_id ) {
+		$actor_id = absint( $actor_id );
+		if ( ! self::founder_authorized( $actor_id ) ) { return false; }
+		$gap = get_option( self::AUDIT_GAP_OPTION, false );
+		if ( ! is_array( $gap ) ) { return false; }
+		$config = self::configuration();
+		$record = array(
+			'event' => 'audit_gap_reconciled',
+			'at' => gmdate( 'c' ),
+			'actor' => $actor_id,
+			'prior_gap_event' => sanitize_key( $gap['event'] ?? 'unknown' ),
+			'prior_gap_detected_at' => sanitize_text_field( (string) ( $gap['detected_at'] ?? '' ) ),
+			'config_version' => absint( $config['config_version'] ),
+			'config_sha256' => hash( 'sha256', wp_json_encode( $config ) ),
+			'historical_entries_reconstructed' => false,
+		);
+		if ( ! self::append_audit( $record ) ) { return false; }
+		delete_option( self::APPROVAL_OPTION );
+		delete_option( self::AUDIT_GAP_OPTION );
+		self::purge_public_cache();
+		return false === get_option( self::AUDIT_GAP_OPTION, false );
+	}
+
+	public static function reconcile_audit_action() {
+		self::require_admin( self::RECONCILE_ACTION );
+		if ( 'POST' !== (string) ( $_SERVER['REQUEST_METHOD'] ?? '' ) ) {
+			wp_die( 'POST required', '', array( 'response' => 405 ) );
+		}
+		if ( ! self::reconcile_gap( get_current_user_id() ) ) {
+			wp_die( 'Founder verification/audit reconciliation failed. Welcome remains disabled.', '', array( 'response' => 409 ) );
+		}
+		wp_safe_redirect( admin_url( 'options-general.php?page=sabri-shell-welcome&audit_reconciled=1' ) );
 		exit;
 	}
 
