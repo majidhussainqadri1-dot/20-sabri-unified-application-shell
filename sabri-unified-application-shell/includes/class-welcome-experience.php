@@ -454,13 +454,32 @@ final class WelcomeExperience {
 	public static function approval_signature( array $config ) {
 		if ( ! self::visual_available() ) { return ''; }
 		try {
-			$source = ( new \ReflectionClass( 'Sabri\\PublicExperience\\Three_Plan_Corrections' ) )->getFileName();
-			$visual_hash = is_string( $source ) && is_readable( $source ) ? hash_file( 'sha256', $source ) : false;
-			if ( ! is_string( $visual_hash ) || '' === $visual_hash ) { return ''; }
+			$renderer = ( new \ReflectionClass( 'Sabri\\PublicExperience\\Three_Plan_Corrections' ) )->getFileName();
+			$visual_owner = ( new \ReflectionClass( 'Sabri\\PublicExperience\\Design_System' ) )->getFileName();
+			$paths = array(
+				'file25_renderer' => $renderer,
+				'file25_visual_contract' => $visual_owner,
+				'file25_design_css' => SABRI_PUBLIC_EXPERIENCE_DIR . 'assets/css/design-system.css',
+				'file25_component_css' => SABRI_PUBLIC_EXPERIENCE_DIR . 'assets/css/design-system-components.css',
+				'file25_token_bridge_css' => SABRI_PUBLIC_EXPERIENCE_DIR . 'assets/css/companion-token-bridge.css',
+			);
+			$root = realpath( SABRI_PUBLIC_EXPERIENCE_DIR );
+			if ( false === $root ) { return ''; }
+			$digests = array();
+			foreach ( $paths as $name => $file ) {
+				$resolved = realpath( $file );
+				if ( false === $resolved || 0 !== strpos( $resolved, $root . DIRECTORY_SEPARATOR ) ||
+					! is_readable( $resolved ) ) {
+					return '';
+				}
+				$hash = hash_file( 'sha256', $resolved );
+				if ( ! is_string( $hash ) || '' === $hash ) { return ''; }
+				$digests[ $name ] = $hash;
+			}
 			return hash( 'sha256', wp_json_encode( array(
 				'file20_version' => SABRI_SHELL_VERSION,
 				'file25_version' => SABRI_PUBLIC_EXPERIENCE_VERSION,
-				'file25_renderer_sha256' => $visual_hash,
+				'file25_visual_sha256' => $digests,
 				'config' => self::sanitize( $config, $config ),
 				'frequency_days' => self::DAYS,
 			) ) );
