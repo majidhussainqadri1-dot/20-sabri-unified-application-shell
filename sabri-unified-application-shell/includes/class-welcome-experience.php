@@ -272,6 +272,7 @@ final class WelcomeExperience {
 				'days' => self::DAYS,
 				'copyVersion' => self::configuration()['copy_version'],
 				'manual' => self::manual_requested( isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '/' ),
+				'serverPath' => self::normalize_path( (string) wp_parse_url( isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '/', PHP_URL_PATH ) ),
 			) ) . ';',
 			'before'
 		);
