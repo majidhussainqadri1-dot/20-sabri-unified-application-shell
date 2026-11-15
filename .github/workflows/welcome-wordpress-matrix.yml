@@ -47,6 +47,12 @@ jobs:
           repository: majidhussainqadri1-dot/25-sabri-public-ui-profile-timeline-visual-experience
           ref: 5c954718f61870c5b9621bc2cd39dc6cfd031515
           path: file25
+      - name: Checkout exact historical File13 compatibility source PR 6
+        uses: actions/checkout@v5
+        with:
+          repository: majidhussainqadri1-dot/13-sabri-welcome-intro-animation
+          ref: 62e6e19a88b16c3fbb483b9bc51a944f361cc6f3
+          path: file13
       - name: Checkout actual canonical File00 membership authority
         uses: actions/checkout@v5
         with:
@@ -88,9 +94,11 @@ jobs:
           mkdir -p wordpress/wp-content/plugins
           cp -a file20/sabri-unified-application-shell wordpress/wp-content/plugins/
           cp -a file00/source/sabri-membership-core wordpress/wp-content/plugins/
+          cp -a file13/sabri-welcome-intro-13 wordpress/wp-content/plugins/
           mkdir -p wordpress/wp-content/plugins/sabri-public-experience
           rsync -a --exclude=".git" --exclude="build" \
             file25/ wordpress/wp-content/plugins/sabri-public-experience/
+          ${W} plugin activate sabri-welcome-intro-13
           ${W} plugin activate sabri-membership-core
           # File00 activation intentionally queues schema migrations until an admin request.
           # Invoke its exact native deferred installer in isolated ephemeral CI;
