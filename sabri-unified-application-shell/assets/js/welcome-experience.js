@@ -110,9 +110,11 @@
     }
 
     if (!manual) {
-      try {
-        session.setItem(key + ':seen', '1');
-      } catch (_) {
+      // The first *shown* eligible visit starts the 30-day device interval,
+      // even if the visitor navigates away without clicking a control.
+      // Both session and device state must be writable before showing:
+      // otherwise the promised no-repeat guarantee cannot be honored.
+      if (!dismissUntil(local, session, key, clock(), configuration.days)) {
         panel.hidden = true;
         return { shown: () => false, dismiss, hide };
       }
