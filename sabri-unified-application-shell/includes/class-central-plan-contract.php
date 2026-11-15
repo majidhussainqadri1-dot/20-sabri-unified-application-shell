@@ -169,7 +169,7 @@ final class CentralPlanContract {
 			'10' => array( 'Video Wall and Live Broadcasting', 'recorded-live-media', 'immersive-route-and-exit', 'optional', 'hidden-or-unavailable' ),
 			'11' => array( 'Reels and Short Video Discovery', 'reels-discovery', 'immersive-route-and-exit', 'optional', 'hidden-or-unavailable' ),
 			'12' => array( 'PDF Library and Digital Reading', 'pdf-metadata-access-reader', 'library-two-column-reader-immersive', 'optional', 'hidden-or-unavailable' ),
-			'13' => array( 'Sabri Welcome Intro Animation', 'first-visit-intro-preferences', 'eligibility-and-suppression-context', 'optional', 'intro-suppressed' ),
+			'13' => array( 'Sabri Welcome Intro Historical Compatibility', 'legacy-intro-compatibility', 'file20-welcome-frequency-and-file25-visual', 'optional', 'legacy-intro-suppressed' ),
 			'14' => array( 'Global Clinic USP and Conversion Integration', 'approved-clinic-cta', 'slots-only', 'optional', 'cta-hidden' ),
 			'15' => array( 'Radar and Trend Intelligence', 'research-and-approved-trends', 'navigation-search-provider-state', 'optional', 'hidden-or-unavailable' ),
 			'16' => array( 'Sabri Classical Homeopathy AI', 'source-linked-educational-ai', 'route-entitlement-placement', 'optional', 'hidden-or-unavailable' ),

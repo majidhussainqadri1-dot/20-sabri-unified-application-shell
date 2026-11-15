@@ -16,6 +16,8 @@ $harmonization = $read( 'includes/class-four-plan-harmonization.php' );
 $client        = $read( 'assets/js/four-plan-harmonization.js' );
 $central       = $read( 'includes/class-central-plan-contract.php' );
 $uninstall     = $read( 'uninstall.php' );
+$welcome       = $read( 'includes/class-welcome-experience.php' );
+$device        = $read( 'assets/js/welcome-experience.js' );
 
 foreach ( array(
     'WELCOME_USER_META', 'WELCOME_COOKIE', 'WELCOME_SESSION_COOKIE',
@@ -23,22 +25,32 @@ foreach ( array(
     'update_user_meta(', 'get_user_meta(', 'setcookie(',
 ) as $forbidden ) {
     if ( false !== strpos( $harmonization, $forbidden ) ) {
-        $fail( 'File 20 still owns Welcome Intro preference/session state: ' . $forbidden );
+        $fail( 'Legacy File20 harmonization must not duplicate the new owner: ' . $forbidden );
     }
 }
 foreach ( array( 'localStorage', 'sessionStorage', 'data-sabri-welcome-dismiss', 'sabri:welcome-dismissed' ) as $forbidden ) {
     if ( false !== strpos( $client, $forbidden ) ) {
-        $fail( 'File 20 client still persists or consumes File 13 Welcome state: ' . $forbidden );
+        $fail( 'Retired File20 client must not duplicate the canonical welcome controller: ' . $forbidden );
     }
 }
-if ( false === strpos( $harmonization, "'preference_state_owner' => 'file-13'" ) ) {
-    $fail( 'File 13 preference-state ownership is not explicit in the shell invocation contract.' );
+if ( false !== strpos( $harmonization, "'preference_state_owner' => 'file-13'" ) ||
+     false === strpos( $harmonization, 'WelcomeExperience::register();' ) ) {
+    $fail( 'The obsolete File13 state owner was not replaced with canonical File20 ownership.' );
 }
-if ( false === strpos( $harmonization, "apply_filters( 'sabri_shell_welcome_request_eligible'" ) ) {
-    $fail( 'Shell-owned route/layout eligibility extension point is missing.' );
+if ( false === strpos( $welcome, 'STORAGE_KEY' ) ||
+     false === strpos( $welcome, 'self::approval_valid( $config )' ) ||
+     false === strpos( $welcome, 'self::route_eligible( $uri, $config )' ) ) {
+    $fail( 'File20 welcome approval/device/route boundary is missing.' );
+}
+if ( false === strpos( $device, 'localStorage' ) || false === strpos( $device, 'sessionStorage' ) ||
+     false === strpos( $device, 'data-sabri-welcome-skip' ) ) {
+    $fail( 'File20 missing canonical per-device dismissal with session suppression.' );
+}
+if ( false !== strpos( $harmonization, "add_action( 'wp_body_open', array( __CLASS__, 'invoke_welcome_intro' )" ) ) {
+    $fail( 'Legacy File13 public invocation must not register.' );
 }
 if ( false !== strpos( $uninstall, 'sabri_shell_welcome_dismissed_at' ) ) {
-    $fail( 'File 20 uninstall still deletes File 13-owned welcome state.' );
+    $fail( 'File20 must not touch File13 legacy state.' );
 }
 if ( false === strpos( $central, "'bootstrap-registry-contracts-activation-shared-conventions'" )
     || false === strpos( $central, "'consume-foundation-registry-no-shell-or-search-truth'" ) ) {

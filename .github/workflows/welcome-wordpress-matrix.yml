@@ -1,0 +1,202 @@
+name: V12.3 WordPress 7.0.1 and 7.1.4 Real Runtime Integration
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "sabri-unified-application-shell/includes/class-welcome-experience.php"
+      - "sabri-unified-application-shell/tests/wp-real-environment-smoke.php"
+      - "sabri-unified-application-shell/includes/class-four-plan-harmonization.php"
+      - ".github/workflows/welcome-wordpress-matrix.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  real-wordpress:
+    name: WordPress ${{ matrix.wp }} + PHP 8.3 real plugin smoke
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        wp: ["7.0.1", "7.1.4"]
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: wp-root-test
+          MYSQL_DATABASE: sabri_wp_ci
+          MYSQL_USER: sabri_ci
+          MYSQL_PASSWORD: sabri-ci-test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pwp-root-test"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - name: Checkout exact File20 PR source
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: file20
+      - name: Checkout exact reviewed File25 PR 51 source
+        uses: actions/checkout@v5
+        with:
+          repository: majidhussainqadri1-dot/25-sabri-public-ui-profile-timeline-visual-experience
+          ref: 5c954718f61870c5b9621bc2cd39dc6cfd031515
+          path: file25
+      - name: Checkout exact historical File13 compatibility source PR 6
+        uses: actions/checkout@v5
+        with:
+          repository: majidhussainqadri1-dot/13-sabri-welcome-intro-animation
+          ref: 62e6e19a88b16c3fbb483b9bc51a944f361cc6f3
+          path: file13
+      - name: Checkout exact real File24 native security owner
+        uses: actions/checkout@v5
+        with:
+          repository: majidhussainqadri1-dot/24-sabri-platform-security-privacy-compliance-and-resilience-center
+          ref: 0b6d31815c78efb797c4c9415351b75266d1703c
+          path: file24
+      - name: Checkout actual canonical File00 membership authority
+        uses: actions/checkout@v5
+        with:
+          repository: majidhussainqadri1-dot/00-sabri-membership-core
+          ref: 1fad051c86d530d558be3eb1890d3c6e67bce6e8
+          path: file00
+      - name: Set PHP 8.3 and WordPress requirements
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mysqli, mbstring, intl, curl, zip, xml, gd
+          coverage: none
+      - name: Download pinned WordPress core with WP-CLI
+        shell: bash
+        env:
+          WP_VERSION: ${{ matrix.wp }}
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error \
+            https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
+            --output "${RUNNER_TEMP}/wp-cli.phar"
+          php "${RUNNER_TEMP}/wp-cli.phar" --info
+          mkdir -p wordpress
+          php "${RUNNER_TEMP}/wp-cli.phar" core download \
+            --path="${GITHUB_WORKSPACE}/wordpress" --version="${WP_VERSION}" --skip-content --locale=en_US
+      - name: Install completely isolated ephemeral WordPress and reviewed plugins
+        shell: bash
+        run: |
+          set -euo pipefail
+          W="php ${RUNNER_TEMP}/wp-cli.phar --path=${GITHUB_WORKSPACE}/wordpress"
+          ${W} config create --dbname=sabri_wp_ci --dbuser=sabri_ci \
+            --dbpass=sabri-ci-test --dbhost=127.0.0.1 --skip-check
+          ${W} core install --url=http://localhost --title="Sabri source CI" \
+            --admin_user=ci_founder --admin_password=CI-runner-only-placeholder \
+            --admin_email=ci@example.test --skip-email
+          # --skip-content omits bundled themes; no active theme returns a blank 200 HTML response.
+          ${W} theme install twentytwentyfive --activate
+          ${W} theme list --fields=name,status,version --format=table
+          mkdir -p wordpress/wp-content/plugins
+          cp -a file20/sabri-unified-application-shell wordpress/wp-content/plugins/
+          cp -a file00/source/sabri-membership-core wordpress/wp-content/plugins/
+          cp -a file13/sabri-welcome-intro-13 wordpress/wp-content/plugins/
+          cp -a file24/plugin/sabri-security-center wordpress/wp-content/plugins/
+          mkdir -p wordpress/wp-content/plugins/sabri-public-experience
+          rsync -a --exclude=".git" --exclude="build" \
+            file25/ wordpress/wp-content/plugins/sabri-public-experience/
+          ${W} plugin activate sabri-welcome-intro-13
+          ${W} plugin activate sabri-membership-core
+          # File00 activation intentionally queues schema migrations until an admin request.
+          # Invoke its exact native deferred installer in isolated ephemeral CI;
+          # never infer migration success from plugin activation or green code checks.
+          SABRI_EPHEMERAL_CI=1 ${W} eval-file \
+            "${GITHUB_WORKSPACE}/file20/sabri-unified-application-shell/tests/wp-file00-deferred-migration-ci.php"
+          ${W} option update smc_founder_user_id 1
+          ${W} plugin activate sabri-unified-application-shell
+          ${W} plugin activate sabri-public-experience
+          ${W} plugin activate sabri-security-center
+          ${W} plugin list --fields=name,status,version --format=table
+          test "$(${W} core version)" = "${{ matrix.wp }}"
+      - name: Execute real WordPress 7.0.1/7.1.4 plugin contract smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "${RUNNER_TEMP}/wp-cli.phar" \
+            --path="${GITHUB_WORKSPACE}/wordpress" \
+            eval-file "${GITHUB_WORKSPACE}/file20/sabri-unified-application-shell/tests/wp-real-environment-smoke.php"
+      - name: Test true File00 Founder identity and guarded File20/File25 approval
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "${RUNNER_TEMP}/wp-cli.phar" \
+            --path="${GITHUB_WORKSPACE}/wordpress" --user=ci_founder \
+            eval-file "${GITHUB_WORKSPACE}/file20/sabri-unified-application-shell/tests/wp-full-owner-setup.php"
+      - name: Exercise genuine MySQL welcome audit-gap, Founder reconciliation and rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "${RUNNER_TEMP}/wp-cli.phar" \
+            --path="${GITHUB_WORKSPACE}/wordpress" --user=ci_founder \
+            eval-file "${GITHUB_WORKSPACE}/file20/sabri-unified-application-shell/tests/wp-welcome-db-recovery-smoke.php"
+      - name: Real Chromium browser journeys on WordPress 7.1.4 only
+        if: matrix.wp == '7.1.4'
+        shell: bash
+        run: |
+          set -euo pipefail
+          W="php ${RUNNER_TEMP}/wp-cli.phar --path=${GITHUB_WORKSPACE}/wordpress"
+          ${W} option update home http://127.0.0.1:8888
+          ${W} option update siteurl http://127.0.0.1:8888
+          cd "${GITHUB_WORKSPACE}/file20/sabri-unified-application-shell"
+          npm install --no-save --no-audit --no-fund playwright@1.56.1 @axe-core/playwright@4.10.2
+          npx playwright install --with-deps chromium
+          cd "${GITHUB_WORKSPACE}"
+          SABRI_WP_CI_ROOT="${GITHUB_WORKSPACE}/wordpress" \
+            php -S 127.0.0.1:8888 -t wordpress \
+            file20/sabri-unified-application-shell/tests/wp-ci-router.php \
+            > "${RUNNER_TEMP}/sabri-welcome-http.log" 2>&1 &
+          for attempt in {1..30}; do
+            if curl --fail --silent --output /dev/null http://127.0.0.1:8888/; then break; fi
+            sleep 1
+          done
+          echo "CI welcome HTTP status, headers and first real HTML bytes:"
+          curl -sS -i http://127.0.0.1:8888/ | head -c 2200 || true
+          echo
+          SABRI_CI_ADMIN_PASSWORD=CI-runner-only-placeholder \
+          SABRI_WP_TEST_URL=http://127.0.0.1:8888/ \
+            SABRI_CI_SCREENSHOT="${RUNNER_TEMP}/sabri-welcome-mobile.png" \
+            node file20/sabri-unified-application-shell/tests/welcome-browser-e2e.cjs
+          # Genuine WordPress site-locale round trips; all data remains ephemeral.
+          for locale in ur ar; do
+            # Install the actual WordPress locale pack and switch the site's
+            # canonical language, not a synthetic JS or uninstalled WPLANG value.
+            ${W} language core install "${locale}"
+            ${W} site switch-language "${locale}"
+            installed_locale="$(php "${RUNNER_TEMP}/wp-cli.phar" --path="${GITHUB_WORKSPACE}/wordpress" eval 'echo get_locale();')"
+            test "${installed_locale}" = "${locale}"
+            SABRI_E2E_LOCALE="${locale}" \
+              SABRI_WP_TEST_URL=http://127.0.0.1:8888/ \
+              SABRI_CI_SCREENSHOT="${RUNNER_TEMP}/sabri-welcome-${locale}.png" \
+              node file20/sabri-unified-application-shell/tests/welcome-locale-e2e.cjs
+          done
+          ${W} site switch-language en_US
+      - name: Print private CI WordPress server error log on browser failure
+        if: failure() && matrix.wp == '7.1.4'
+        run: tail -n 120 "${RUNNER_TEMP}/sabri-welcome-http.log" || true
+      - name: Upload real-browser diagnostics for review
+        if: always() && matrix.wp == '7.1.4'
+        uses: actions/upload-artifact@v4
+        with:
+          name: file20-welcome-real-browser-${{ github.event.pull_request.head.sha || github.sha }}
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            ${{ runner.temp }}/sabri-welcome-http.log
+            ${{ runner.temp }}/sabri-welcome-mobile.png
+            ${{ runner.temp }}/sabri-welcome-ur.png
+            ${{ runner.temp }}/sabri-welcome-ar.png
+      - name: Truth boundary
+        run: |
+          echo "Isolated WordPress core + ephemeral MySQL/plugin smoke only."
+          echo "No production site accessed; test-only Founder claim comes from actual File00 plugin on an ephemeral DB."
+          echo "No real browser, screen reader, restored DB, live parity or deployment acceptance claimed."
