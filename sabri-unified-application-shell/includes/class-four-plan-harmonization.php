@@ -33,8 +33,9 @@ final class FourPlanHarmonization {
 		add_filter( 'pre_update_option_' . Defaults::OPTION_NAME, array( __CLASS__, 'enforce_settings' ), 50, 2 );
 		add_action( 'init', array( __CLASS__, 'migrate_settings' ), 3 );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue' ), 120 );
-		add_action( 'wp', array( __CLASS__, 'prepare_welcome_invocation' ), 98 );
-		add_action( 'wp_body_open', array( __CLASS__, 'invoke_welcome_intro' ), 2 );
+		// File 20 owns V12.3 welcome invocation, 30-day frequency and route eligibility.
+		// The old File 13 public event is intentionally not registered.
+		WelcomeExperience::register();
 	}
 
 	/**
@@ -176,7 +177,7 @@ final class FourPlanHarmonization {
 		echo '</form>';
 	}
 
-	/** Enqueue structural guardrails only; File 13 owns welcome preference/session state. */
+	/** Enqueue structural guardrails; File 20 welcome device state lives separately. */
 	public static function enqueue() {
 		if ( ! in_array( Layout::current_mode(), array( Layout::TWO, Layout::THREE ), true ) ) {
 			return;
@@ -197,57 +198,21 @@ final class FourPlanHarmonization {
 	}
 
 	/**
-	 * Prepare File 13 invocation from shell-owned route/layout eligibility only.
-	 * File 13 remains the canonical owner of once-per-session/frequency state.
+	 * Compatibility methods retained for dependent source callers only.
+	 * They cannot emit File 13's retired public welcome event.
 	 */
 	public static function prepare_welcome_invocation() {
-		if ( self::$welcome_prepared ) {
-			return;
-		}
 		self::$welcome_prepared = true;
-		self::$welcome_invoke   = false;
-
-		if ( ! self::welcome_eligible() || ! has_action( 'sabri_shell_welcome_intro_invoke' ) ) {
-			return;
-		}
-
-		self::$welcome_invoke = true;
+		self::$welcome_invoke = false;
 	}
 
-	/**
-	 * Invoke File 13 only when this exact request was prepared as eligible.
-	 * File 13 remains visual/content owner; File 20 fabricates no substitute.
-	 */
 	public static function invoke_welcome_intro() {
-		if ( ! self::$welcome_invoke || ! has_action( 'sabri_shell_welcome_intro_invoke' ) ) {
-			return;
-		}
-		$context = array(
-			'contract_version'       => self::CONTRACT_VERSION,
-			'owner'                  => 'file-20-shell-placement',
-			'preference_state_owner' => 'file-13',
-			'route_eligible'         => true,
-			'layout_mode'            => Layout::current_mode(),
-		);
-		do_action( 'sabri_shell_welcome_intro_invoke', $context );
+		return;
 	}
 
-	/** Whether the current request is eligible for the welcome invocation. */
+	/** Canonical route and release-gate evaluation is now in File 20. */
 	public static function welcome_eligible() {
-		if ( is_admin() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
-			return false;
-		}
-		if ( Layout::MINIMAL === Layout::current_mode() || Layout::IMMERSIVE === Layout::current_mode() ) {
-			return false;
-		}
-		$eligible = true;
-		if ( function_exists( 'is_feed' ) && is_feed() ) {
-			$eligible = false;
-		}
-		if ( function_exists( 'is_404' ) && is_404() ) {
-			$eligible = false;
-		}
-		return (bool) apply_filters( 'sabri_shell_welcome_request_eligible', $eligible );
+		return WelcomeExperience::public_eligible();
 	}
 
 	/** Enforce post-directive settings invariants on every write. */
