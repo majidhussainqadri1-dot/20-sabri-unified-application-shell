@@ -164,6 +164,27 @@ test('New browser session cannot repeat a viewed welcome without explicit dismis
   const freshSession = store();
   assert.equal(controller.canAutoShow(a.localStorage, freshSession, KEY, Date.now() + 1000), false);
 });
+test('History API pushState and replaceState immediately suppress SPA task-route welcome', () => {
+  for (const method of ['pushState', 'replaceState']) {
+    const a = environment();
+    a.win.location = { pathname: '/', search: '', hash: '' };
+    const native = (state, title, path) => {
+      const url = new URL(path, 'https://example.test/');
+      a.win.location.pathname = url.pathname;
+      a.win.location.search = url.search;
+      a.win.location.hash = url.hash;
+    };
+    a.win.history = { pushState: native, replaceState: native };
+    const c = controller.createController(a.win, a.doc, { storageKey: KEY, serverPath: '/' });
+    assert.equal(c.shown(), true);
+    assert.notEqual(a.win.history[method], native);
+    a.win.history[method]({ private: true }, '', '/clinical/patient?task=1');
+    assert.equal(c.shown(), false);
+    assert.equal(a.panel.hidden, true);
+    assert.equal(a.win.history[method], native, 'History methods restored after hiding');
+    assert.ok(Number(a.localStorage.getItem(KEY)) > Date.now(), 'First-view suppression preserved');
+  }
+});
 test('Manual welcome remains usable without localStorage and never changes recurrence', () => {
   const a = environment();
   Object.defineProperty(a.win, 'localStorage', { get() { throw Error('blocked'); } });
@@ -186,4 +207,4 @@ test('Storage failure still exposes ordinary underlying content', () => {
   try { controller.createController(a.win, a.doc, { storageKey: KEY }); } catch (_) { a.panel.hidden = true; }
   assert.equal(a.panel.hidden, true);
 });
-if (!process.exitCode) process.stdout.write('File20 V12.3 welcome JS behavior: 16 cases passed\n');
+if (!process.exitCode) process.stdout.write('File20 V12.3 welcome JS behavior: 17 cases passed\n');
