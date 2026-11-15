@@ -378,8 +378,12 @@ final class WelcomeExperience {
 		echo '<p>' . esc_html__( 'UTC schedules must use YYYY-MM-DD HH:MM or YYYY-MM-DD HH:MM:SS; invalid or reversed windows deny activation.', 'sabri-unified-application-shell' ) . '</p>';
 		echo '<p>' . esc_html__( 'A dismissal always suppresses automatic display for at least 30 days on that device. Preview never writes device preference.', 'sabri-unified-application-shell' ) . '</p>';
 		foreach ( array( 'default', 'skipped', 'reduced', 'disabled', 'error' ) as $state ) {
-			$url = wp_nonce_url( admin_url( 'admin-post.php?action=' . self::PREVIEW_ACTION . '&state=' . $state ), self::PREVIEW_ACTION );
-			echo '<a class="button button-secondary" target="_blank" rel="noopener" href="' . esc_url( $url ) . '">' . esc_html( ucfirst( $state ) ) . '</a> ';
+			echo '<p><strong>' . esc_html( ucfirst( $state ) ) . ':</strong> ';
+			foreach ( array( 'desktop', 'tablet', 'mobile' ) as $viewport ) {
+				$url = wp_nonce_url( admin_url( 'admin-post.php?action=' . self::PREVIEW_ACTION . '&state=' . $state . '&viewport=' . $viewport ), self::PREVIEW_ACTION );
+				echo '<a class="button button-secondary" target="_blank" rel="noopener" href="' . esc_url( $url ) . '">' . esc_html( ucfirst( $viewport ) ) . '</a> ';
+			}
+			echo '</p>';
 		}
 		echo '</div>';
 	}
@@ -674,6 +678,9 @@ final class WelcomeExperience {
 		header( 'X-Robots-Tag: noindex, nofollow, noarchive', true );
 		$state = sanitize_key( wp_unslash( $_GET['state'] ?? 'default' ) );
 		if ( ! in_array( $state, array( 'default', 'skipped', 'reduced', 'disabled', 'error' ), true ) ) { $state = 'default'; }
+		$viewport = sanitize_key( wp_unslash( $_GET['viewport'] ?? 'desktop' ) );
+		$widths = array( 'desktop' => '1200px', 'tablet' => '768px', 'mobile' => '360px' );
+		if ( ! array_key_exists( $viewport, $widths ) ) { $viewport = 'desktop'; }
 		$panel = self::panel( self::configuration() );
 		$show = ! in_array( $state, array( 'skipped', 'disabled', 'error' ), true ) && '' !== $panel;
 		echo '<!doctype html><html lang="' . esc_attr( get_bloginfo( 'language' ) ) . '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Welcome Preview</title><style>';
@@ -682,13 +689,15 @@ final class WelcomeExperience {
 		if ( class_exists( 'Sabri\\PublicExperience\\Three_Plan_Corrections' ) ) {
 			echo \Sabri\PublicExperience\Three_Plan_Corrections::css(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
-		echo '</style></head><body class="' . ( 'reduced' === $state ? 'sabri-shell-welcome-preview-reduced' : '' ) . '"><main><h1>Underlying content is immediately available</h1><p>Preview state: ' . esc_html( $state ) . ' (no public storage or session mutation)</p></main>';
+		echo '.sabri-welcome-preview-viewport{box-sizing:border-box;margin-inline:auto;min-block-size:16rem;max-inline-size:100%;border:1px dashed #888;padding:1rem;position:relative}';
+		echo '</style></head><body class="' . ( 'reduced' === $state ? 'sabri-shell-welcome-preview-reduced' : '' ) . '"><div class="sabri-welcome-preview-viewport" style="inline-size:' . esc_attr( $widths[ $viewport ] ) . '"><main><h1>Underlying content is immediately available</h1><p>Preview state: ' . esc_html( $state ) . ', viewport: ' . esc_html( $viewport ) . ' (no public storage or session mutation)</p></main>';
 		if ( $show ) {
 			echo '<aside class="sabri-shell-welcome" style="position:relative;inset:auto;pointer-events:auto">';
 			echo $panel; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- File25 escapes.
 			echo '</aside>';
 		}
-		echo '</body></html>';
+		if ( 'error' === $state ) { echo '<p role="status">Optional welcome visual unavailable. The main content remains usable.</p>'; }
+		echo '</div></body></html>';
 		exit;
 	}
 }
