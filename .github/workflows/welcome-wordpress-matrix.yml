@@ -45,7 +45,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: majidhussainqadri1-dot/25-sabri-public-ui-profile-timeline-visual-experience
-          ref: e48f9195d50f07cd52501e023fd729f84ca91e40
+          ref: 35a34e9c8f919c1839d39ce4df7cfd3ee1bb77eb
           path: file25
       - name: Set PHP 8.3 and WordPress requirements
         uses: shivammathur/setup-php@v2
