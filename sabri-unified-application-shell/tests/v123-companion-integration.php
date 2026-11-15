@@ -99,8 +99,14 @@ namespace {
 	$GLOBALS['welcome_manage_options'] = true;
 	$GLOBALS['welcome_user_id'] = 91;
 	$check( $owner::operator_authorized( 91 ), 'Canonical File00 Founder with current native admin capability is an operator.' );
+	$system = $owner::system_health( array() );
+	$check( is_array( $system['file20-welcome-v123'] ?? null ), 'Current authorized operator can read bounded System Check welcome state.' );
+	$check( false === $system['file20-welcome-v123']['enabled'], 'Source-health reports actual disabled welcome default.' );
+	$check( ! array_key_exists( 'signer_id', $system['file20-welcome-v123'] ), 'Privacy-safe diagnostics never expose Founder identifier.' );
+
 	$check( $owner::founder_authorized( 91 ), 'Current Founder claim is valid.' );
 	$GLOBALS['welcome_manage_options'] = false;
+	$check( array() === $owner::system_health( array() ), 'Disallowed actor cannot read File20 welcome runtime health.' );
 	$check( ! $owner::operator_authorized( 91 ), 'File00 Founder identity alone is insufficient without native capability.' );
 	$GLOBALS['welcome_manage_options'] = true;
 	$GLOBALS['welcome_user_id'] = 17;
