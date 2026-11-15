@@ -47,6 +47,7 @@ function storageSnapshot() {
       assert.ok(await page.locator('[data-sabri-welcome-continue]').count());
       assert.equal(await page.locator('[aria-live="polite"]').count() > 0, true);
     });
+    if (process.exitCode) throw Error('Stop at first HTTP/frontend gate until the cause is established.');
     let dismissed = null;
     await caseOf('Skip hides immediately and persists a full 30 days', async () => {
       await page.locator('[data-sabri-welcome-skip]').click();
