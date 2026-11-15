@@ -76,10 +76,12 @@
     const clock = () => Date.now();
     let shown = false;
     let priorFocus = null;
+    let restoreHistory = () => {};
 
     function hide() {
       panel.hidden = true;
       shown = false;
+      restoreHistory();
       const focused = doc.activeElement;
       if (focused && panel.contains(focused)) {
         let target = priorFocus && typeof priorFocus.focus === 'function' &&
@@ -130,6 +132,33 @@
     }
     win.addEventListener('hashchange', suppressOnClientRouteChange);
     win.addEventListener('popstate', suppressOnClientRouteChange);
+    // history.pushState/replaceState do not emit popstate. Observe only while
+    // the optional intro is visible, and restore native methods on dismissal.
+    // A route mutation must hide immediately, including query-only task paths.
+    const history = win.history;
+    if (history) {
+      const wrapped = [];
+      for (const method of ['pushState', 'replaceState']) {
+        const original = history[method];
+        if (typeof original !== 'function') continue;
+        const wrapper = function (...args) {
+          const result = original.apply(this, args);
+          suppressOnClientRouteChange();
+          return result;
+        };
+        try {
+          history[method] = wrapper;
+          if (history[method] === wrapper) wrapped.push({ method, original, wrapper });
+        } catch (_) { /* Browser may expose read-only history methods. */ }
+      }
+      restoreHistory = function () {
+        for (const { method, original, wrapper } of wrapped) {
+          if (history[method] === wrapper) {
+            try { history[method] = original; } catch (_) {}
+          }
+        }
+      };
+    }
     const closeButtons = panel.querySelectorAll('[data-sabri-welcome-dismiss], [data-sabri-welcome-skip]');
     closeButtons.forEach(button => button.addEventListener('click', dismiss));
     const continueLink = panel.querySelector('[data-sabri-welcome-continue]');
