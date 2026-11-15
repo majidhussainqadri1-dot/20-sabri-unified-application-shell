@@ -71,7 +71,9 @@
       // to preserve Urdu/Arabic slugs without accepting encoded separators.
       function normalizedPath(raw) {
         try {
-          const path = decodeURIComponent(String(raw || '/'));
+          const encoded = String(raw || '/');
+          if (/%(?:2e|2f|5c|00|0a|0d|7f)/i.test(encoded)) return null;
+          const path = decodeURIComponent(encoded);
           if (path.includes('\\') || path.includes('\0') || path.includes('..') ||
               /%(?:2e|2f|5c|00|0a|0d|7f)/i.test(path)) return null;
           return path.replace(/\/+$/, '') || '/';
