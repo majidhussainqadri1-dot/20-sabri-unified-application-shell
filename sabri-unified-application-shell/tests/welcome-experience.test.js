@@ -172,6 +172,25 @@ test('New browser session cannot repeat a viewed welcome without explicit dismis
   const freshSession = store();
   assert.equal(controller.canAutoShow(a.localStorage, freshSession, KEY, Date.now() + 1000), false);
 });
+test('Unicode Urdu/Arabic slugs normalize identically in PHP/client; encoded separator is denied', () => {
+  for (const slug of ['اردو', 'العربية']) {
+    const a = environment();
+    a.win.location = { pathname: '/learn/' + encodeURIComponent(slug), search: '', hash: '' };
+    const c = controller.createController(a.win, a.doc, {
+      storageKey: KEY,
+      serverPath: '/learn/' + slug,
+      days: 30,
+    });
+    assert.equal(c.shown(), true, 'Correct Unicode public route must remain eligible');
+    assert.ok(Number(a.localStorage.getItem(KEY)) > Date.now());
+  }
+  const hostile = environment();
+  hostile.win.location = { pathname: '/learn%2fclinical', search: '', hash: '' };
+  assert.equal(controller.createController(hostile.win, hostile.doc, {
+    storageKey: KEY, serverPath: '/learn/clinical',
+  }), null);
+  assert.equal(hostile.localStorage.getItem(KEY), null);
+});
 test('History API pushState and replaceState immediately suppress SPA task-route welcome', () => {
   for (const method of ['pushState', 'replaceState']) {
     const a = environment();
@@ -215,4 +234,4 @@ test('Storage failure still exposes ordinary underlying content', () => {
   try { controller.createController(a.win, a.doc, { storageKey: KEY }); } catch (_) { a.panel.hidden = true; }
   assert.equal(a.panel.hidden, true);
 });
-if (!process.exitCode) process.stdout.write('File20 V12.3 welcome JS behavior: 18 cases passed\n');
+if (!process.exitCode) process.stdout.write('File20 V12.3 welcome JS behavior: 19 cases passed\n');
